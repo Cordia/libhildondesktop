@@ -1,0 +1,12 @@
+General Information
+===================
+
+This library contains:
+
+* API to create new plugins for hildon-status-menu and hildon-home.
+  * Status Menu plugin API
+
+* Plugin management API for hildon-status-menu and hildon-home. Supports loading of plugin modules (HDPluginModule),
+  supports additional plugin loaders (python). Custom configuration via key files.
+
+* Example plugins.
