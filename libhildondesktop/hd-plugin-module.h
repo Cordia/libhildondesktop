@@ -92,12 +92,17 @@ void hd_plugin_module_unload (HDPluginModule *plugin)			\
 }
 
 /**
- * SECTION:libhildondesktop
- * @short_description: macros to define Hildon Desktop plugins.
+ * SECTION:hd-plugin-module
+ * @short_description: Support for the definition of Hildon Desktop plugins.
+ *
+ * There are some macros to define Hildon Desktop plugins:
+ *
+ * HD_DEFINE_PLUGIN_MODULE_EXTENDED()
+ *
  */
 
 /**
- * HD_DEFINE_PLUGIN_EXTENDED:
+ * HD_DEFINE_PLUGIN_MODULE_EXTENDED:
  * @TN: The name of the object type, in Camel case. (ex: ObjectType)
  * @t_n: The name of the object type, in lowercase, with words separated by '_'.  (ex: object_type)
  * @T_P: The GType of the parent (ex: #STATUSBAR_TYPE_ITEM)

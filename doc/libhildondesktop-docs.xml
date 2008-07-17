@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" 
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!ENTITY version SYSTEM "version.xml">
+]>
+<book lang="en" id="libhildondesktop" xmlns:xi="http://www.w3.org/2003/XInclude">
+  <title>libhildondesktop Reference Manual</title>
+  <bookinfo>
+    <title>libhildondesktop Reference Manual</title>
+    <releaseinfo>For libhildondesktop &version;</releaseinfo>
+  </bookinfo>
+
+  <part id="plugin-api">
+    <title>Plugin API</title>
+    <chapter id="common">
+      <title>Common</title>
+      <xi:include href="xml/hd-plugin-module-macros.xml"/>
+      <xi:include href="xml/hd-plugin-item.xml"/>
+      <xi:include href="xml/hd-plugin-module.xml"/>
+    </chapter>
+    <chapter id="status-menu">
+      <title>Status Menu</title>
+      <xi:include href="xml/hd-status-menu-item.xml"/>
+    </chapter>
+  </part>
+
+  <part id="hildon-desktop-api">
+    <title>Hildon Desktop API</title>
+
+    <chapter id="plugin-loading">
+      <title>Plugin Loading</title>
+      <xi:include href="xml/hd-plugin-loader.xml"/>
+      <xi:include href="xml/hd-plugin-loader-default.xml"/>
+      <xi:include href="xml/hd-plugin-loader-factory.xml"/>
+    </chapter>
+
+    <chapter id="plugin-configuration">
+      <title>Plugin Configuration</title>
+      <xi:include href="xml/hd-config-file.xml"/>
+      <xi:include href="xml/hd-plugin-manager.xml"/>
+    </chapter>
+
+  </part>
+
+  <index id="symbols">
+    <title>Index</title>
+  </index>
+  <index role="hierarchy" id="hierarchy">
+    <title>Object Hierarchy</title>
+    <xi:include href="xml/tree_index.sgml"/>
+  </index>
+</book>

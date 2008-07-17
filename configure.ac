@@ -140,6 +140,8 @@ AC_SUBST(hildondesktopmenudir)
 
 AC_CONFIG_FILES([			\
 Makefile				\
+doc/Makefile				\
+doc/version.xml				\
 examples/Makefile			\
 examples/status-menu/Makefile		\
 libhildondesktop/Makefile		\

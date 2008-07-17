@@ -1,0 +1,12 @@
+#include <libhildondesktop/libhildondesktop.h>
+
+hd_config_file_get_type
+hd_plugin_item_get_type
+hd_plugin_loader_default_get_type
+hd_plugin_loader_factory_get_type
+hd_plugin_loader_get_type
+hd_plugin_manager_get_type
+hd_plugin_module_get_type
+hd_status_area_item_get_type
+hd_status_menu_item_get_type
+hd_ui_policy_get_type

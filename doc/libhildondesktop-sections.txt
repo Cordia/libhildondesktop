@@ -1,0 +1,156 @@
+<INCLUDE>libhildondesktop/libhildondesktop.h</INCLUDE>
+
+<SECTION>
+<FILE>hd-status-menu-item</FILE>
+<TITLE>HDStatusMenuItem</TITLE>
+HDStatusMenuItem
+<SUBSECTION Standard>
+hd_status_menu_item_get_type
+HD_IS_STATUS_MENU_ITEM
+HD_IS_STATUS_MENU_ITEM_CLASS
+HD_STATUS_MENU_ITEM
+HD_STATUS_MENU_ITEM_CLASS
+HD_STATUS_MENU_ITEM_GET_CLASS
+HD_TYPE_STATUS_MENU_ITEM
+<SUBSECTION Private>
+HDStatusMenuItemClass
+</SECTION>
+
+<SECTION>
+<FILE>hd-plugin-item</FILE>
+<TITLE>HDPluginItem</TITLE>
+HDPluginItem
+<SUBSECTION Standard>
+hd_plugin_item_get_type
+HD_IS_PLUGIN_ITEM
+HD_IS_PLUGIN_ITEM_CLASS
+HD_PLUGIN_ITEM
+HD_PLUGIN_ITEM_CLASS
+HD_PLUGIN_ITEM_GET_CLASS
+HD_TYPE_PLUGIN_ITEM
+<SUBSECTION Private>
+HDPluginItemClass
+</SECTION>
+
+<SECTION>
+<FILE>hd-plugin-module-macros</FILE>
+<TITLE>Plugin Definition Macros</TITLE>
+HD_DEFINE_PLUGIN_MODULE
+HD_DEFINE_PLUGIN_MODULE_EXTENDED
+HD_DEFINE_PLUGIN_MODULE_WITH_CODE
+HD_PLUGIN_MODULE_SYMBOLS
+HD_PLUGIN_MODULE_SYMBOLS_CODE
+</SECTION>
+
+<SECTION>
+<FILE>hd-plugin-module</FILE>
+<TITLE>HDPluginModule</TITLE>
+HDPluginModule
+hd_plugin_module_new
+hd_plugin_module_add_type
+hd_plugin_module_get_type
+hd_plugin_module_new_object
+<SUBSECTION Standard>
+HD_IS_PLUGIN_MODULE
+HD_IS_PLUGIN_MODULE_CLASS
+HD_PLUGIN_MODULE
+HD_PLUGIN_MODULE_CLASS
+HD_PLUGIN_MODULE_GET_CLASS
+HD_TYPE_PLUGIN_MODULE
+<SUBSECTION Private>
+HDPluginModuleClass
+HDPluginModulePrivate
+</SECTION>
+
+<SECTION>
+<FILE>hd-config-file</FILE>
+<TITLE>HDConfigFile</TITLE>
+HDConfigFile
+hd_config_file_new
+hd_config_file_load_file
+<SUBSECTION Standard>
+hd_config_file_get_type
+HD_CONFIG_FILE
+HD_CONFIG_FILE_CLASS
+HD_CONFIG_FILE_GET_CLASS
+HD_IS_CONFIG_FILE
+HD_IS_CONFIG_FILE_CLASS
+HD_TYPE_CONFIG_FILE
+<SUBSECTION Private>
+HDConfigFileClass
+HDConfigFilePrivate
+</SECTION>
+
+<SECTION>
+<FILE>hd-plugin-manager</FILE>
+<TITLE>HDPluginManager</TITLE>
+HDPluginManager
+hd_plugin_manager_new
+hd_plugin_manager_run
+<SUBSECTION Standard>
+hd_plugin_manager_get_type
+HD_IS_PLUGIN_MANAGER
+HD_IS_PLUGIN_MANAGER_CLASS
+HD_PLUGIN_MANAGER
+HD_PLUGIN_MANAGER_CLASS
+HD_PLUGIN_MANAGER_GET_CLASS
+HD_TYPE_PLUGIN_MANAGER
+<SUBSECTION Private>
+HDPluginManagerClass
+HDPluginManagerPrivate
+hd_plugin_manager_get_all_plugin_paths
+</SECTION>
+
+<SECTION>
+<FILE>hd-plugin-loader</FILE>
+<TITLE>HDPluginLoader</TITLE>
+HDPluginLoader
+hd_plugin_loader_load
+<SUBSECTION Standard>
+hd_plugin_loader_get_type
+HD_IS_PLUGIN_LOADER
+HD_IS_PLUGIN_LOADER_CLASS
+HD_PLUGIN_LOADER
+HD_PLUGIN_LOADER_CLASS
+HD_PLUGIN_LOADER_GET_CLASS
+HD_TYPE_PLUGIN_LOADER
+<SUBSECTION Private>
+HDPluginLoaderClass
+HDPluginLoaderPrivate
+</SECTION>
+
+<SECTION>
+<FILE>hd-plugin-loader-default</FILE>
+<TITLE>HDPluginLoaderDefault</TITLE>
+HDPluginLoaderDefault
+<SUBSECTION Standard>
+hd_plugin_loader_default_get_type
+HD_IS_PLUGIN_LOADER_DEFAULT
+HD_IS_PLUGIN_LOADER_DEFAULT_CLASS
+HD_PLUGIN_LOADER_DEFAULT
+HD_PLUGIN_LOADER_DEFAULT_CLASS
+HD_PLUGIN_LOADER_DEFAULT_GET_CLASS
+HD_TYPE_PLUGIN_LOADER_DEFAULT
+<SUBSECTION Private>
+HDPluginLoaderDefaultClass
+HDPluginLoaderDefaultPrivate
+</SECTION>
+
+<SECTION>
+<FILE>hd-plugin-loader-factory</FILE>
+<TITLE>HDPluginLoaderFactory</TITLE>
+HDPluginLoaderFactory
+hd_plugin_loader_factory_new
+hd_plugin_loader_factory_create
+<SUBSECTION Standard>
+hd_plugin_loader_factory_get_type
+HD_IS_PLUGIN_LOADER_FACTORY
+HD_IS_PLUGIN_LOADER_FACTORY_CLASS
+HD_PLUGIN_LOADER_FACTORY
+HD_PLUGIN_LOADER_FACTORY_CLASS
+HD_PLUGIN_LOADER_FACTORY_GET_CLASS
+HD_TYPE_PLUGIN_LOADER_FACTORY
+<SUBSECTION Private>
+HDPluginLoaderFactoryClass
+HDPluginLoaderFactoryPrivate
+</SECTION>

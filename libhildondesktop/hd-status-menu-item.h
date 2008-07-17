@@ -24,7 +24,7 @@
 #define __HD_STATUS_MENU_ITEM_H__
 
 #include <glib-object.h>
-#include <gtk/gtk.h>
+#include <libhildondesktop/hd-plugin-item.h>
 
 G_BEGIN_DECLS
 
@@ -35,30 +35,24 @@ G_BEGIN_DECLS
 #define HD_IS_STATUS_MENU_ITEM_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), HD_TYPE_STATUS_MENU_ITEM))
 #define HD_STATUS_MENU_ITEM_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), HD_TYPE_STATUS_MENU_ITEM, HDStatusMenuItemClass))
 
-typedef struct _HDStatusMenuItem        HDStatusMenuItem;
-typedef struct _HDStatusMenuItemClass   HDStatusMenuItemClass;
-typedef struct _HDStatusMenuItemPrivate HDStatusMenuItemPrivate;
-
 /** HDStatusMenuItem:
  *
  * An item in the Hildon Status Menu.
  */
+typedef struct _HDStatusMenuItem        HDStatusMenuItem;
+typedef struct _HDStatusMenuItemClass   HDStatusMenuItemClass;
+
 struct _HDStatusMenuItem
 {
-  GtkBin parent;
-
-  HDStatusMenuItemPrivate *priv;
+  HDPluginItem parent;
 };
 
 struct _HDStatusMenuItemClass
 {
-  GtkBinClass parent;
-
-  void (*status_menu_map) (HDStatusMenuItem *status_menu_item);
-  void (*status_menu_unmap) (HDStatusMenuItem *status_menu_item);
+  HDPluginItemClass parent;
 };
 
-GType    hd_status_menu_item_get_type                (void);
+GType hd_status_menu_item_get_type (void);
 
 G_END_DECLS
 

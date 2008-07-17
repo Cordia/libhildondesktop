@@ -1,1 +1,1 @@
-SUBDIRS = libhildondesktop examples
+SUBDIRS = libhildondesktop examples doc

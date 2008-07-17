@@ -57,6 +57,16 @@ example_clock_status_menu_item_dispose (GObject *object)
   G_OBJECT_CLASS (example_clock_status_menu_item_parent_class)->dispose (object);
 }
 
+static void
+example_clock_status_menu_item_class_init (ExampleClockStatusMenuItemClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  object_class->dispose = example_clock_status_menu_item_dispose;
+
+  g_type_class_add_private (klass, sizeof (ExampleClockStatusMenuItemPrivate));
+}
+
 static gboolean
 example_clock_status_menu_item_timeout_cb (ExampleClockStatusMenuItem *menu_item)
 {
@@ -75,43 +85,6 @@ example_clock_status_menu_item_timeout_cb (ExampleClockStatusMenuItem *menu_item
 }
 
 static void
-example_clock_status_menu_item_status_menu_map (HDStatusMenuItem *menu_item)
-{
-  if (EXAMPLE_CLOCK_STATUS_MENU_ITEM (menu_item)->priv->timeout_id == 0)
-    {
-      g_warning ("Example clock: timeout added");
-      example_clock_status_menu_item_timeout_cb (EXAMPLE_CLOCK_STATUS_MENU_ITEM (menu_item));
-      EXAMPLE_CLOCK_STATUS_MENU_ITEM (menu_item)->priv->timeout_id = 
-        gdk_threads_add_timeout (1000, (GSourceFunc) example_clock_status_menu_item_timeout_cb, menu_item);
-    }
-}
-
-static void
-example_clock_status_menu_item_status_menu_unmap (HDStatusMenuItem *menu_item)
-{
-  if (EXAMPLE_CLOCK_STATUS_MENU_ITEM (menu_item)->priv->timeout_id != 0)
-  {
-    g_warning ("Example clock: timeout removed");
-    g_source_remove (EXAMPLE_CLOCK_STATUS_MENU_ITEM (menu_item)->priv->timeout_id);
-    EXAMPLE_CLOCK_STATUS_MENU_ITEM (menu_item)->priv->timeout_id = 0;
-  }
-}
-
-static void
-example_clock_status_menu_item_class_init (ExampleClockStatusMenuItemClass *klass)
-{
-  HDStatusMenuItemClass *status_menu_item_class = HD_STATUS_MENU_ITEM_CLASS (klass);
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
-  status_menu_item_class->status_menu_map = example_clock_status_menu_item_status_menu_map;
-  status_menu_item_class->status_menu_unmap = example_clock_status_menu_item_status_menu_unmap;
-
-  object_class->dispose = example_clock_status_menu_item_dispose;
-
-  g_type_class_add_private (klass, sizeof (ExampleClockStatusMenuItemPrivate));
-}
-
-static void
 example_clock_status_menu_item_init (ExampleClockStatusMenuItem *menu_item)
 {
   menu_item->priv = EXAMPLE_CLOCK_STATUS_MENU_ITEM_GET_PRIVATE (menu_item);
@@ -123,6 +96,10 @@ example_clock_status_menu_item_init (ExampleClockStatusMenuItem *menu_item)
   gtk_widget_show (menu_item->priv->label);
 
   gtk_container_add (GTK_CONTAINER (menu_item), menu_item->priv->label);
+
+  /* Add timeout */
+  example_clock_status_menu_item_timeout_cb (EXAMPLE_CLOCK_STATUS_MENU_ITEM (menu_item));
+  menu_item->priv->timeout_id = gdk_threads_add_timeout (1000, (GSourceFunc) example_clock_status_menu_item_timeout_cb, menu_item);
 
   /* permanent visible */
   gtk_widget_show (GTK_WIDGET (menu_item));

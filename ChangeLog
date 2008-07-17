@@ -1,3 +1,59 @@
+2008-07-17  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* Makefile.am:
+	* configure.ac:
+	* doc/*:
+	* doc/libhildondesktop-docs.xml:
+	* doc/libhildondesktop-sections.txt:
+	* doc/libhildondesktop.types:
+	* doc/version.xml.in: Add gtk-doc documentation support.
+
+	* examples/status-menu/example-button-status-menu-item.c
+	  (example_button_status_menu_item_class_init,
+	  example_button_status_menu_item_init):
+	* examples/status-menu/example-clock-status-menu-item.c
+	  (example_clock_status_menu_item_dispose,
+	  example_clock_status_menu_item_class_init,
+	  example_clock_status_menu_item_init): Remove status-menu-map and
+	  status-menu-unmap signals.
+
+	* libhildondesktop/Makefile.am:
+	* libhildondesktop/hd-plugin-item.c: 
+	* libhildondesktop/hd-plugin-item.h: Add a new base class for plugable
+	items.
+
+	* libhildondesktop/hd-status-menu-item.c
+	  (hd_status_menu_item_class_init):
+	* libhildondesktop/hd-status-menu-item.h (HDStatusMenuItem,
+	  HDStatusMenuItemClass): Remove status-menu-map and status-menu-unmap
+	  signals. Use HDPluginItem as new parent class.
+
+	* libhildondesktop/hd-plugin-module.h (HD_PLUGIN_MODULE_SYMBOLS_CODE):
+	Update documentation.
+
+2008-07-15  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* README: Add some general information about the library.
+
+	* libhildondesktop/hd-plugin-manager.c
+	  (hd_plugin_manager_remove_plugin,
+	  hd_plugin_manager_plugin_module_removed): Add a remove_plugin
+	  function (required by the new sync_plugins function).
+
+	  (create_sync_lists, hd_plugin_manager_sync_plugins): Add support for
+	  syncing a new list of plugins with a list of already loaded plugins.
+
+	  (hd_plugin_manager_get_property, hd_plugin_manager_class_init):
+	  Change property "conf-file" to be write only (and construct only).
+
+	  (hd_plugin_manager_load_configuration, hd_plugin_manager_run): Use
+	  the new sync_plugins function to load all plugins. Move loading from
+	  the run function to the load_configuration function (required by
+	  configuration reloading support).
+
+	  (hd_plugin_manager_set_property): Add support for reloading a changed
+	  configuration file.
+
 2008-07-14  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	Initial import.

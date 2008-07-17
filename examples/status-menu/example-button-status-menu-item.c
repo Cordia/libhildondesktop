@@ -73,35 +73,9 @@ example_button_status_menu_item_timeout_cb (ExampleButtonStatusMenuItem *menu_it
 }
 
 static void
-example_button_status_menu_item_status_menu_map (HDStatusMenuItem *menu_item)
-{
-  if (EXAMPLE_BUTTON_STATUS_MENU_ITEM (menu_item)->priv->timeout_id == 0)
-    {
-      g_warning ("Example button: timeout added");
-      EXAMPLE_BUTTON_STATUS_MENU_ITEM (menu_item)->priv->timeout_id = 
-        gdk_threads_add_timeout (10000, (GSourceFunc) example_button_status_menu_item_timeout_cb, menu_item);
-    }
-}
-
-static void
-example_button_status_menu_item_status_menu_unmap (HDStatusMenuItem *menu_item)
-{
-  if (EXAMPLE_BUTTON_STATUS_MENU_ITEM (menu_item)->priv->timeout_id != 0)
-  {
-    g_warning ("Example button: timeout removed");
-    g_source_remove (EXAMPLE_BUTTON_STATUS_MENU_ITEM (menu_item)->priv->timeout_id);
-    EXAMPLE_BUTTON_STATUS_MENU_ITEM (menu_item)->priv->timeout_id = 0;
-  }
-}
-
-static void
 example_button_status_menu_item_class_init (ExampleButtonStatusMenuItemClass *klass)
 {
-  HDStatusMenuItemClass *status_menu_item_class = HD_STATUS_MENU_ITEM_CLASS (klass);
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
-  status_menu_item_class->status_menu_map = example_button_status_menu_item_status_menu_map;
-  status_menu_item_class->status_menu_unmap = example_button_status_menu_item_status_menu_unmap;
 
   object_class->dispose = example_button_status_menu_item_dispose;
 
@@ -126,5 +100,8 @@ example_button_status_menu_item_init (ExampleButtonStatusMenuItem *menu_item)
   gtk_container_add (GTK_CONTAINER (menu_item), button);
 
   /* This is a temporary visible menu item so 
-   * gtk_widget_show isn't called. */
+   * gtk_widget_show isn't called. Instead a timeout is installed which shows and hide
+   * the item
+   */
+  menu_item->priv->timeout_id = gdk_threads_add_timeout (10000, (GSourceFunc) example_button_status_menu_item_timeout_cb, menu_item);
 }
