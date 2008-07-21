@@ -1,5 +1,21 @@
 2008-07-22  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* configure.ac:
+	* examples/status-menu/Makefile.am:
+	* libhildondesktop/Makefile.am: Add libdbus dependency.
+
+	* libhildondesktop/hd-status-menu-item.h:
+	* libhildondesktop/hd-status-menu-item.c
+	(hd_status_menu_item_get_dbus_connection): Add convenience function
+	for getting a private D-Bus session/system bus connection.
+
+	* libhildondesktop/hd-status-plugin-item.h:
+	* libhildondesktop/hd-status-plugin-item.c
+	(hd_status_plugin_item_set_status_area_icon): Add function for setting
+	the Status Area icon.
+
+2008-07-22  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* doc/libhildondesktop-docs.xml:
 	* doc/libhildondesktop-sections.txt:
 	* doc/libhildondesktop.types:

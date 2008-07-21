@@ -5,6 +5,7 @@ libhildondesktop_@API_VERSION_MAJOR@_la_LDFLAGS = $(LIBHILDONDESKTOP_LT_LDFLAGS)
 libhildondesktop_@API_VERSION_MAJOR@_la_CFLAGS = \
 	$(HILDON_CFLAGS)							\
 	$(GNOME_VFS_CFLAGS)							\
+	$(DBUS_CFLAGS)								\
 	-I$(top_srcdir) 							\
 	-DLOCALEDIR=\"$(localedir)\" 						\
 	-DDATADIR=\"$(datadir)\"						\
@@ -30,6 +31,7 @@ libhildondesktop_@API_VERSION_MAJOR@_la_SOURCES = \
 libhildondesktop_@API_VERSION_MAJOR@_la_LIBADD = \
 	$(HILDON_LIBS)								\
 	$(GNOME_VFS_LIBS)							\
+	$(DBUS_LIBS)								\
 	@LIBHILDONDESKTOP_LT_LDFLAGS@
 
 libhildondesktop_@API_VERSION_MAJOR@_includedir = $(includedir)/$(PACKAGE)-$(API_VERSION_MAJOR)/$(PACKAGE)

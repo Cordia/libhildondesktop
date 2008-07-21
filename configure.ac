@@ -98,6 +98,10 @@ PKG_CHECK_MODULES(GNOME_VFS, gnome-vfs-2.0 >= 2.8.3)
 AC_SUBST(GNOME_VFS_CFLAGS)
 AC_SUBST(GNOME_VFS_LIBS)
 
+PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.0.2)
+AC_SUBST(DBUS_CFLAGS)
+AC_SUBST(DBUS_LIBS)
+
 #+++++++++++++++++++
 # Directories setup
 #+++++++++++++++++++

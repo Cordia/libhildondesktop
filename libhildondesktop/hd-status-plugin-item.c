@@ -93,3 +93,18 @@ static void
 hd_status_plugin_item_init (HDStatusPluginItem *menu_item)
 {
 }
+
+/**
+ * hd_status_plugin_item_set_status_area_icon:
+ * @item: a #HDStatusPluginItem
+ * @icon: a #GdkPixbuf
+ *
+ * Sets the Status Area icon corresponding to this item to @icon.
+ *
+ **/
+void 
+hd_status_plugin_item_set_status_area_icon (HDStatusPluginItem *item,
+                                            GdkPixbuf          *icon)
+{
+  /* FIXME stub */
+}
