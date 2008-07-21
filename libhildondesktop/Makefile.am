@@ -18,14 +18,13 @@ libhildondesktop_@API_VERSION_MAJOR@_la_CFLAGS = \
 
 libhildondesktop_@API_VERSION_MAJOR@_la_SOURCES = \
 	hd-config-file.c							\
-	hd-plugin-item.c							\
 	hd-plugin-loader-default.c						\
 	hd-plugin-loader-factory.c						\
 	hd-plugin-loader.c							\
 	hd-plugin-manager.c							\
 	hd-plugin-module.c							\
-	hd-status-area-item.c							\
 	hd-status-menu-item.c							\
+	hd-status-plugin-item.c							\
 	hd-ui-policy.c
 
 libhildondesktop_@API_VERSION_MAJOR@_la_LIBADD = \
@@ -37,14 +36,13 @@ libhildondesktop_@API_VERSION_MAJOR@_includedir = $(includedir)/$(PACKAGE)-$(API
 
 libhildondesktop_@API_VERSION_MAJOR@_public_headers = \
 	hd-config-file.h							\
-	hd-plugin-item.h							\
 	hd-plugin-loader-default.h						\
 	hd-plugin-loader-factory.h						\
 	hd-plugin-loader.h							\
 	hd-plugin-manager.h							\
 	hd-plugin-module.h							\
-	hd-status-area-item.h							\
 	hd-status-menu-item.h							\
+	hd-status-plugin-item.h							\
 	hd-ui-policy.h								\
 	libhildondesktop.h
 

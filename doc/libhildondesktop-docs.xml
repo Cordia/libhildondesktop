@@ -15,11 +15,11 @@
     <chapter id="common">
       <title>Common</title>
       <xi:include href="xml/hd-plugin-module-macros.xml"/>
-      <xi:include href="xml/hd-plugin-item.xml"/>
       <xi:include href="xml/hd-plugin-module.xml"/>
     </chapter>
     <chapter id="status-menu">
       <title>Status Menu</title>
+      <xi:include href="xml/hd-status-plugin-item.xml"/>
       <xi:include href="xml/hd-status-menu-item.xml"/>
     </chapter>
   </part>

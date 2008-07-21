@@ -24,14 +24,14 @@
 #define __HD_STATUS_MENU_ITEM_H__
 
 #include <glib-object.h>
-#include <libhildondesktop/hd-plugin-item.h>
+#include <libhildondesktop/hd-status-plugin-item.h>
 
 G_BEGIN_DECLS
 
 #define HD_TYPE_STATUS_MENU_ITEM            (hd_status_menu_item_get_type ())
 #define HD_STATUS_MENU_ITEM(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), HD_TYPE_STATUS_MENU_ITEM, HDStatusMenuItem))
 #define HD_STATUS_MENU_ITEM_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), HD_TYPE_STATUS_MENU_ITEM, HDStatusMenuItemClass))
-#define HD_IS_STATUS_MENU_ITEM(obj)	        (G_TYPE_CHECK_INSTANCE_TYPE ((obj), HD_TYPE_STATUS_MENU_ITEM))
+#define HD_IS_STATUS_MENU_ITEM(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), HD_TYPE_STATUS_MENU_ITEM))
 #define HD_IS_STATUS_MENU_ITEM_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), HD_TYPE_STATUS_MENU_ITEM))
 #define HD_STATUS_MENU_ITEM_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), HD_TYPE_STATUS_MENU_ITEM, HDStatusMenuItemClass))
 
@@ -44,12 +44,12 @@ typedef struct _HDStatusMenuItemClass   HDStatusMenuItemClass;
 
 struct _HDStatusMenuItem
 {
-  HDPluginItem parent;
+  HDStatusPluginItem parent;
 };
 
 struct _HDStatusMenuItemClass
 {
-  HDPluginItemClass parent;
+  HDStatusPluginItemClass parent;
 };
 
 GType hd_status_menu_item_get_type (void);

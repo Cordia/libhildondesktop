@@ -24,26 +24,26 @@
 #include <config.h>
 #endif
 
-#include "hd-plugin-item.h"
+#include "hd-status-plugin-item.h"
 
 /** 
- * SECTION:hd-plugin-item
- * @short_description: Base class for plugable Hildon Desktop items.
+ * SECTION:hd-status-plugin-item
+ * @short_description: Base class for plugable status Hildon Desktop items.
  *
- * Base class for all plugable Hildon Desktop items.
+ * Base class for all plugable status Hildon Desktop items.
  *
  * 
  **/
 
-G_DEFINE_ABSTRACT_TYPE (HDPluginItem, hd_plugin_item, GTK_TYPE_BIN);
+G_DEFINE_ABSTRACT_TYPE (HDStatusPluginItem, hd_status_plugin_item, GTK_TYPE_BIN);
 
 static void
-hd_plugin_item_size_allocate (GtkWidget     *widget,
+hd_status_plugin_item_size_allocate (GtkWidget     *widget,
                               GtkAllocation *allocation)
 {
   GtkWidget *child;
 
-  GTK_WIDGET_CLASS (hd_plugin_item_parent_class)->size_allocate (widget,
+  GTK_WIDGET_CLASS (hd_status_plugin_item_parent_class)->size_allocate (widget,
                                                                  allocation);
 
   child = GTK_BIN (widget)->child;
@@ -65,7 +65,7 @@ hd_plugin_item_size_allocate (GtkWidget     *widget,
 }
 
 static void
-hd_plugin_item_size_request (GtkWidget      *widget,
+hd_status_plugin_item_size_request (GtkWidget      *widget,
                              GtkRequisition *requisition)
 {
   GtkWidget *child;
@@ -81,15 +81,15 @@ hd_plugin_item_size_request (GtkWidget      *widget,
 }
 
 static void
-hd_plugin_item_class_init (HDPluginItemClass *klass)
+hd_status_plugin_item_class_init (HDStatusPluginItemClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-  widget_class->size_allocate = hd_plugin_item_size_allocate;
-  widget_class->size_request = hd_plugin_item_size_request;
+  widget_class->size_allocate = hd_status_plugin_item_size_allocate;
+  widget_class->size_request = hd_status_plugin_item_size_request;
 }
 
 static void
-hd_plugin_item_init (HDPluginItem *menu_item)
+hd_status_plugin_item_init (HDStatusPluginItem *menu_item)
 {
 }

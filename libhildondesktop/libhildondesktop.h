@@ -26,8 +26,8 @@
 #include <libhildondesktop/hd-plugin-module.h>
 
 /* Status Menu API */
-#include <libhildondesktop/hd-status-area-item.h>
 #include <libhildondesktop/hd-status-menu-item.h>
+#include <libhildondesktop/hd-status-plugin-item.h>
 
 /* Other API */
 #include <libhildondesktop/hd-config-file.h>

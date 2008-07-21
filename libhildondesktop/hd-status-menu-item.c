@@ -44,7 +44,7 @@
  *
  **/
 
-G_DEFINE_ABSTRACT_TYPE (HDStatusMenuItem, hd_status_menu_item, HD_TYPE_PLUGIN_ITEM);
+G_DEFINE_ABSTRACT_TYPE (HDStatusMenuItem, hd_status_menu_item, HD_TYPE_STATUS_PLUGIN_ITEM);
 
 static void
 hd_status_menu_item_button_clicked_cb (GtkButton *button,
