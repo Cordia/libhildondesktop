@@ -1,5 +1,14 @@
 2008-07-22  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* debian/changelog:
+	* debian/control:
+	* debian/libhildondesktop1-dev.install:
+	* debian/libhildondesktop1-examples.install:
+	* debian/libhildondesktop1.install:
+	* debian/rules: Add debian packaging files.
+
+2008-07-22  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* libhildondesktop/hd-status-menu-item.c:
 	* libhildondesktop/hd-status-menu-item.h: Remove
 	hd_status_menu_item_get_dbus_connection function.

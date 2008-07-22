@@ -1,0 +1,30 @@
+Source: libhildondesktop
+Section: x11
+Priority: optional
+Maintainer: ? <?@?>
+Build-Depends: debhelper (>= 4.0.0), pkg-config, libhildon1-dev (>= 2.1.0), libosso-gnomevfs2-dev, libdbus-1-dev (>= 1.0.2), gtk-doc-tools
+Standards-Version: 3.6.0
+
+Package: libhildondesktop1-dev
+Section: devel
+Architecture: any
+Depends: libhildondesktop1 (= ${Source-Version}), libhildon1-dev (>= 2.1.0), libosso-gnomevfs2-dev, libdbus-1-dev (>= 1.0.2)
+Description: Hildon Desktop libraries development files
+
+Package: libhildondesktop1
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Hildon Desktop libraries
+
+Package: libhildondesktop1-dbg
+Section: libdevel
+Architecture: any
+Depends: libhildondesktop1 (= ${Source-Version})
+Description: Debug symbols for Hildon Desktop libraries
+
+Package: libhildondesktop1-examples
+Section: x11
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Hildon Desktop examples
