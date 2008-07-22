@@ -4,6 +4,7 @@
 <FILE>hd-status-menu-item</FILE>
 <TITLE>HDStatusMenuItem</TITLE>
 HDStatusMenuItem
+hd_status_menu_item_get_dbus_connection
 <SUBSECTION Standard>
 hd_status_menu_item_get_type
 HD_IS_STATUS_MENU_ITEM
@@ -20,6 +21,7 @@ HDStatusMenuItemClass
 <FILE>hd-status-plugin-item</FILE>
 <TITLE>HDStatusPluginItem</TITLE>
 HDStatusPluginItem
+hd_status_plugin_item_set_status_area_icon
 <SUBSECTION Standard>
 hd_status_plugin_item_get_type
 HD_IS_STATUS_PLUGIN_ITEM
@@ -30,6 +32,7 @@ HD_STATUS_PLUGIN_ITEM_GET_CLASS
 HD_TYPE_STATUS_PLUGIN_ITEM
 <SUBSECTION Private>
 HDStatusPluginItemClass
+HDStatusPluginItemPrivate
 </SECTION>
 
 <SECTION>

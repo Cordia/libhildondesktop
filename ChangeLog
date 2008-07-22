@@ -1,5 +1,17 @@
 2008-07-22  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* doc/libhildondesktop-sections.txt:
+	* libhildondesktop/hd-status-plugin-item.c
+	  (hd_status_plugin_item_dispose, hd_status_plugin_item_finalize,
+	  hd_status_plugin_item_get_property,
+	  hd_status_plugin_item_set_property, hd_status_plugin_item_class_init,
+	  hd_status_plugin_item_init,
+	  hd_status_plugin_item_set_status_area_icon):
+	* libhildondesktop/hd-status-plugin-item.h: Add ::status-area-icon and
+	::dl-name properties to HDStatusPluginItem.
+
+2008-07-22  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* configure.ac:
 	* examples/status-menu/Makefile.am:
 	* libhildondesktop/Makefile.am: Add libdbus dependency.

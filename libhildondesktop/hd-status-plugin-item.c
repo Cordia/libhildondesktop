@@ -32,8 +32,24 @@
  *
  * Base class for all plugable status Hildon Desktop items.
  *
- * 
  **/
+
+#define HD_STATUS_PLUGIN_ITEM_GET_PRIVATE(object) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((object), HD_TYPE_STATUS_PLUGIN_ITEM, HDStatusPluginItemPrivate))
+
+enum
+{
+  PROP_0,
+  PROP_STATUS_AREA_ICON,
+  PROP_DL_NAME,
+};
+
+struct _HDStatusPluginItemPrivate
+{
+  GdkPixbuf *status_area_icon;
+
+  gchar     *dl_name;
+};
 
 G_DEFINE_ABSTRACT_TYPE (HDStatusPluginItem, hd_status_plugin_item, GTK_TYPE_BIN);
 
@@ -81,17 +97,121 @@ hd_status_plugin_item_size_request (GtkWidget      *widget,
 }
 
 static void
-hd_status_plugin_item_class_init (HDStatusPluginItemClass *klass)
+hd_status_plugin_item_dispose (GObject *object)
 {
-  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+  HDStatusPluginItemPrivate *priv;
 
-  widget_class->size_allocate = hd_status_plugin_item_size_allocate;
-  widget_class->size_request = hd_status_plugin_item_size_request;
+  priv = HD_STATUS_PLUGIN_ITEM (object)->priv;
+
+  if (priv->status_area_icon)
+    {
+      g_object_unref (priv->status_area_icon);
+      priv->status_area_icon = NULL;
+    }
+
+  G_OBJECT_CLASS (hd_status_plugin_item_parent_class)->dispose (object);
 }
 
 static void
-hd_status_plugin_item_init (HDStatusPluginItem *menu_item)
+hd_status_plugin_item_finalize (GObject *object)
 {
+  HDStatusPluginItemPrivate *priv;
+
+  priv = HD_STATUS_PLUGIN_ITEM (object)->priv;
+
+  if (priv->dl_name)
+    {
+      g_free (priv->dl_name);
+      priv->dl_name = NULL;
+    }
+
+  G_OBJECT_CLASS (hd_status_plugin_item_parent_class)->finalize (object);
+}
+
+static void
+hd_status_plugin_item_get_property (GObject      *object,
+                                    guint         prop_id,
+                                    GValue       *value,
+                                    GParamSpec   *pspec)
+{
+  HDStatusPluginItemPrivate *priv = HD_STATUS_PLUGIN_ITEM (object)->priv;
+
+  switch (prop_id)
+    {
+    case PROP_STATUS_AREA_ICON:
+      g_value_set_object (value, priv->status_area_icon);
+      break;
+
+    case PROP_DL_NAME:
+      g_value_set_string (value, priv->dl_name);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
+
+static void
+hd_status_plugin_item_set_property (GObject      *object,
+                                    guint         prop_id,
+                                    const GValue *value,
+                                    GParamSpec   *pspec)
+{
+  HDStatusPluginItemPrivate *priv = HD_STATUS_PLUGIN_ITEM (object)->priv;
+
+  switch (prop_id)
+    {
+    case PROP_STATUS_AREA_ICON:
+      hd_status_plugin_item_set_status_area_icon (HD_STATUS_PLUGIN_ITEM (object),
+                                                  g_value_get_object (value));
+      break;
+
+    case PROP_DL_NAME:
+      g_free (priv->dl_name);
+      priv->dl_name = g_value_dup_string (value);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
+
+static void
+hd_status_plugin_item_class_init (HDStatusPluginItemClass *klass)
+{
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  widget_class->size_allocate = hd_status_plugin_item_size_allocate;
+  widget_class->size_request = hd_status_plugin_item_size_request;
+
+  object_class->dispose = hd_status_plugin_item_dispose;
+  object_class->finalize = hd_status_plugin_item_finalize;
+  object_class->get_property = hd_status_plugin_item_get_property;
+  object_class->set_property = hd_status_plugin_item_set_property;
+
+  g_object_class_install_property (object_class,
+                                   PROP_STATUS_AREA_ICON,
+                                   g_param_spec_object ("status-area-icon",
+                                                        "Status Area icon",
+                                                        "The Status Area icon which should be displayed for the item",
+                                                        GDK_TYPE_PIXBUF,
+                                                        G_PARAM_READWRITE));
+  g_object_class_install_property (object_class,
+                                   PROP_DL_NAME,
+                                   g_param_spec_string ("dl-name",
+                                                        "DL name",
+                                                        "The name of the dynamic library file from which this item was loaded (used for debugging)",
+                                                        NULL,
+                                                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+  g_type_class_add_private (klass, sizeof (HDStatusPluginItemPrivate));
+}
+
+static void
+hd_status_plugin_item_init (HDStatusPluginItem *item)
+{
+  item->priv = HD_STATUS_PLUGIN_ITEM_GET_PRIVATE (item);  
 }
 
 /**
@@ -106,5 +226,14 @@ void
 hd_status_plugin_item_set_status_area_icon (HDStatusPluginItem *item,
                                             GdkPixbuf          *icon)
 {
-  /* FIXME stub */
+  HDStatusPluginItemPrivate *priv;
+
+  g_return_if_fail (HD_IS_STATUS_PLUGIN_ITEM (item));
+
+  priv = item->priv;
+
+  if (priv->status_area_icon)
+    g_object_unref (priv->status_area_icon);
+
+  priv->status_area_icon = g_object_ref (icon);
 }
