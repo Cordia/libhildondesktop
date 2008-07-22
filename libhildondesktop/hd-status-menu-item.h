@@ -25,8 +25,6 @@
 
 #include <libhildondesktop/hd-status-plugin-item.h>
 
-#include <dbus/dbus.h>
-
 G_BEGIN_DECLS
 
 #define HD_TYPE_STATUS_MENU_ITEM            (hd_status_menu_item_get_type ())
@@ -54,10 +52,6 @@ struct _HDStatusMenuItemClass
 };
 
 GType           hd_status_menu_item_get_type            (void);
-
-DBusConnection *hd_status_menu_item_get_dbus_connection (HDStatusMenuItem *menu_item,
-                                                         DBusBusType       type,
-                                                         DBusError        *error);
 
 G_END_DECLS
 

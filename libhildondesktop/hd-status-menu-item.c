@@ -82,35 +82,3 @@ hd_status_menu_item_init (HDStatusMenuItem *menu_item)
 {
 }
 
-/**
- * hd_status_menu_item_get_dbus_connection:
- * @menu_item: A #HDStatusMenuItem.
- * @type: The #DBusBusType %DBUS_BUS_SESSION or %DBUS_BUS_SYSTEM.
- * @error: A #DBusError to return error messages.
- *
- * Creates a new private #DBusConnection to the bus @type.
- *
- * See dbus_bus_get_private.
- *
- * Returns: A new private connection which must be unrefed by the caller.
- **/
-DBusConnection *
-hd_status_menu_item_get_dbus_connection (HDStatusMenuItem *menu_item,
-                                         DBusBusType       type,
-                                         DBusError        *error)
-{
-  DBusConnection *connection;
-
-  /* Create a private connection */
-  connection = dbus_bus_get_private (type, error);
-
-  if (!connection)
-  return NULL;
-
-  /* Do not exit on disconnect */
-  dbus_connection_set_exit_on_disconnect (connection, FALSE);
-
-  /* FIXME: log the connection name for debug purposes */
-
-  return connection;
-}

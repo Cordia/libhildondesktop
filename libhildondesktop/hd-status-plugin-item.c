@@ -32,6 +32,11 @@
  *
  * Base class for all plugable status Hildon Desktop items.
  *
+ * The class provides the hd_status_plugin_item_set_status_area_icon() function to set or update
+ * the Status Area icon.
+ *
+ * The hd_status_plugin_item_get_dl_filename() function can be used to get the filename of
+ * the dynamic library for debuggin purposes.
  **/
 
 #define HD_STATUS_PLUGIN_ITEM_GET_PRIVATE(object) \
@@ -217,7 +222,7 @@ hd_status_plugin_item_init (HDStatusPluginItem *item)
 /**
  * hd_status_plugin_item_set_status_area_icon:
  * @item: a #HDStatusPluginItem
- * @icon: a #GdkPixbuf
+ * @icon: a #GdkPixbuf used as the new icon
  *
  * Sets the Status Area icon corresponding to this item to @icon.
  *
@@ -260,4 +265,37 @@ hd_status_plugin_item_get_dl_filename (HDStatusPluginItem *item)
     return g_strdup (priv->dl_filename);
 
   return NULL;
+}
+
+/**
+ * hd_status_plugin_item_get_dbus_connection:
+ * @item: A #HDStatusPluginItem
+ * @type: The #DBusBusType %DBUS_BUS_SESSION or %DBUS_BUS_SYSTEM
+ * @error: A #DBusError to return error messages
+ *
+ * Creates a new private #DBusConnection to the bus @type.
+ *
+ * See dbus_bus_get_private.
+ *
+ * Returns: A new private connection which must be unrefed by the caller.
+ **/
+DBusConnection *
+hd_status_plugin_item_get_dbus_connection (HDStatusPluginItem *item,
+                                           DBusBusType       type,
+                                           DBusError        *error)
+{
+  DBusConnection *connection;
+
+  /* Create a private connection */
+  connection = dbus_bus_get_private (type, error);
+
+  if (!connection)
+  return NULL;
+
+  /* Do not exit on disconnect */
+  dbus_connection_set_exit_on_disconnect (connection, FALSE);
+
+  /* FIXME: log the connection name for debug purposes */
+
+  return connection;
 }

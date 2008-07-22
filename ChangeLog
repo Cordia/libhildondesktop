@@ -1,5 +1,21 @@
 2008-07-22  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* libhildondesktop/hd-status-menu-item.c:
+	* libhildondesktop/hd-status-menu-item.h: Remove
+	hd_status_menu_item_get_dbus_connection function.
+
+	* libhildondesktop/hd-status-plugin-item.h:
+	* libhildondesktop/hd-status-plugin-item.c
+	(hd_status_plugin_item_get_dbus_connection): Add
+	hd_status_plugin_item_get_dbus_connection function.
+
+	* doc/libhildondesktop-sections.txt: Update gtk-doc.
+
+	* libhildondesktop/libhildondesktop.pc.in: Add gnome-vfs and dbus as
+	requirements.
+
+2008-07-22  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* libhildondesktop/hd-status-plugin-item.h:
 	* libhildondesktop/hd-status-plugin-item.c
 	(hd_status_plugin_item_finalize, hd_status_plugin_item_get_property,
