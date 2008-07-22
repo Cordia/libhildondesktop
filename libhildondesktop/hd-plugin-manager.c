@@ -95,12 +95,51 @@ static guint plugin_manager_signals [LAST_SIGNAL] = { 0 };
 G_DEFINE_TYPE (HDPluginManager, hd_plugin_manager, G_TYPE_OBJECT);
 
 static void
+delete_plugin (gpointer  data,
+               GObject  *object_pointer)
+{
+  HDPluginInfo *info = ((GList *) data)->data;
+
+  g_free (info->module_id);
+  g_slice_free (HDPluginInfo, info);
+  ((GList *) data)->data = NULL;
+}
+
+static void
+hd_plugin_manager_remove_plugin (HDPluginManager *manager,
+                                 const gchar     *module_id)
+{
+  HDPluginManagerPrivate *priv = manager->priv;
+  GList *p;
+
+  /* remove all plugins with module_id */
+  for (p = priv->plugins; p; p = p->next)
+    {
+      HDPluginInfo *info = p->data;
+
+      if (!info)
+        continue;
+
+      if (!strcmp (info->module_id, module_id))
+        {
+          g_object_weak_unref (info->plugin, delete_plugin, p);
+          priv->plugins = g_list_delete_link (priv->plugins, p);
+          g_signal_emit (manager, plugin_manager_signals[PLUGIN_REMOVED], 0, info->plugin);
+        }
+    }
+}
+
+static void
 hd_plugin_manager_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
                                       const gchar *monitor_uri,
                                       const gchar *info_uri,
                                       GnomeVFSMonitorEventType event_type,
                                       HDPluginManager *manager)
 {
+  /* Ignore the temporary dpkg files */
+  if (!g_str_has_suffix (info_uri, ".desktop"))
+    return;
+
   if (event_type == GNOME_VFS_MONITOR_EVENT_CREATED)
     {
       GnomeVFSURI *uri = gnome_vfs_uri_new (info_uri);
@@ -109,6 +148,9 @@ hd_plugin_manager_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
       uri_str = gnome_vfs_uri_to_string (uri, GNOME_VFS_URI_HIDE_TOPLEVEL_METHOD);
 
       g_warning ("plugin-added: %s", uri_str);
+
+      /* FIXME: dpkg install involves some renaming */
+      hd_plugin_manager_remove_plugin (manager, uri_str);
 
       g_signal_emit (manager, plugin_manager_signals[PLUGIN_MODULE_ADDED], 0, uri_str);
     }
@@ -123,17 +165,6 @@ hd_plugin_manager_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
 
       g_signal_emit (manager, plugin_manager_signals[PLUGIN_MODULE_REMOVED], 0, uri_str);
     }
-}
-
-static void
-delete_plugin (gpointer  data,
-               GObject  *object_pointer)
-{
-  HDPluginInfo *info = ((GList *) data)->data;
-
-  g_free (info->module_id);
-  g_slice_free (HDPluginInfo, info);
-  ((GList *) data)->data = NULL;
 }
 
 static gboolean 
@@ -296,30 +327,6 @@ hd_plugin_manager_plugin_module_added (HDPluginManager *manager,
         {
           if (g_str_has_suffix (module_id, priv->debug_plugins[i]))
             hd_plugin_manager_load_plugin (manager, module_id);
-        }
-    }
-}
-
-static void
-hd_plugin_manager_remove_plugin (HDPluginManager *manager,
-                                 const gchar     *module_id)
-{
-  HDPluginManagerPrivate *priv = manager->priv;
-  GList *p;
-
-  /* remove all plugins with module_id */
-  for (p = priv->plugins; p; p = p->next)
-    {
-      HDPluginInfo *info = p->data;
-
-      if (!info)
-        continue;
-
-      if (!strcmp (info->module_id, module_id))
-        {
-          g_object_weak_unref (info->plugin, delete_plugin, p);
-          priv->plugins = g_list_delete_link (priv->plugins, p);
-          g_signal_emit (manager, plugin_manager_signals[PLUGIN_REMOVED], 0, info->plugin);
         }
     }
 }

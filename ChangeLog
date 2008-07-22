@@ -1,5 +1,11 @@
 2008-07-22  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* libhildondesktop/hd-plugin-manager.c
+	(hd_plugin_manager_plugin_dir_changed): Fix a bug with plugins
+	installed by dpkg.
+
+2008-07-22  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* debian/changelog:
 	* debian/control:
 	* debian/libhildondesktop1-dev.install:
