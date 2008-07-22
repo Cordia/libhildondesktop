@@ -55,10 +55,11 @@ struct _HDStatusPluginItemClass
   GtkBinClass parent;
 };
 
-GType hd_status_plugin_item_get_type             (void);
+GType  hd_status_plugin_item_get_type             (void);
 
-void  hd_status_plugin_item_set_status_area_icon (HDStatusPluginItem *item,
-                                                  GdkPixbuf          *icon);
+void   hd_status_plugin_item_set_status_area_icon (HDStatusPluginItem *item,
+                                                   GdkPixbuf          *icon);
+gchar *hd_status_plugin_item_get_dl_filename      (HDStatusPluginItem *item);
 
 G_END_DECLS
 

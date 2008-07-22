@@ -41,14 +41,14 @@ enum
 {
   PROP_0,
   PROP_STATUS_AREA_ICON,
-  PROP_DL_NAME,
+  PROP_DL_FILENAME,
 };
 
 struct _HDStatusPluginItemPrivate
 {
   GdkPixbuf *status_area_icon;
 
-  gchar     *dl_name;
+  gchar     *dl_filename;
 };
 
 G_DEFINE_ABSTRACT_TYPE (HDStatusPluginItem, hd_status_plugin_item, GTK_TYPE_BIN);
@@ -119,10 +119,10 @@ hd_status_plugin_item_finalize (GObject *object)
 
   priv = HD_STATUS_PLUGIN_ITEM (object)->priv;
 
-  if (priv->dl_name)
+  if (priv->dl_filename)
     {
-      g_free (priv->dl_name);
-      priv->dl_name = NULL;
+      g_free (priv->dl_filename);
+      priv->dl_filename = NULL;
     }
 
   G_OBJECT_CLASS (hd_status_plugin_item_parent_class)->finalize (object);
@@ -142,8 +142,8 @@ hd_status_plugin_item_get_property (GObject      *object,
       g_value_set_object (value, priv->status_area_icon);
       break;
 
-    case PROP_DL_NAME:
-      g_value_set_string (value, priv->dl_name);
+    case PROP_DL_FILENAME:
+      g_value_set_string (value, priv->dl_filename);
       break;
 
     default:
@@ -166,9 +166,9 @@ hd_status_plugin_item_set_property (GObject      *object,
                                                   g_value_get_object (value));
       break;
 
-    case PROP_DL_NAME:
-      g_free (priv->dl_name);
-      priv->dl_name = g_value_dup_string (value);
+    case PROP_DL_FILENAME:
+      g_free (priv->dl_filename);
+      priv->dl_filename = g_value_dup_string (value);
       break;
 
     default:
@@ -198,10 +198,10 @@ hd_status_plugin_item_class_init (HDStatusPluginItemClass *klass)
                                                         GDK_TYPE_PIXBUF,
                                                         G_PARAM_READWRITE));
   g_object_class_install_property (object_class,
-                                   PROP_DL_NAME,
-                                   g_param_spec_string ("dl-name",
-                                                        "DL name",
-                                                        "The name of the dynamic library file from which this item was loaded (used for debugging)",
+                                   PROP_DL_FILENAME,
+                                   g_param_spec_string ("dl-filename",
+                                                        "Dynamic library filename",
+                                                        "The filename of the dynamic library file from which this item was loaded (used for debugging)",
                                                         NULL,
                                                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
@@ -236,4 +236,28 @@ hd_status_plugin_item_set_status_area_icon (HDStatusPluginItem *item,
     g_object_unref (priv->status_area_icon);
 
   priv->status_area_icon = g_object_ref (icon);
+}
+
+/**
+ * hd_status_plugin_item_get_dl_filename:
+ * @item: a #HDStatusPluginItem
+ *
+ * Returns the filename of the dynamic library file from which this item was loaded.
+ * Useful for debugging purposes.
+ *
+ * Returns: filename of the dynamic library file. The result must be freed with g_free() when the application is finished with it. 
+ **/
+gchar *
+hd_status_plugin_item_get_dl_filename (HDStatusPluginItem *item)
+{
+  HDStatusPluginItemPrivate *priv;
+
+  g_return_val_if_fail (HD_IS_STATUS_PLUGIN_ITEM (item), NULL);
+
+  priv = item->priv;
+
+  if (priv->dl_filename)
+    return g_strdup (priv->dl_filename);
+
+  return NULL;
 }

@@ -1,5 +1,18 @@
 2008-07-22  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* libhildondesktop/hd-status-plugin-item.h:
+	* libhildondesktop/hd-status-plugin-item.c
+	(hd_status_plugin_item_finalize, hd_status_plugin_item_get_property,
+	hd_status_plugin_item_set_property, hd_status_plugin_item_class_init,
+	hd_status_plugin_item_set_status_area_icon): Rename ::dl-name property to
+	::dl-filename.
+	(hd_status_plugin_item_get_dl_filename): Add
+	hd_status_plugin_item_get_dl_filename function.
+
+	* doc/libhildondesktop-sections.txt: Add gtk-doc for new function.
+
+2008-07-22  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* doc/libhildondesktop-sections.txt:
 	* libhildondesktop/hd-status-plugin-item.c
 	  (hd_status_plugin_item_dispose, hd_status_plugin_item_finalize,

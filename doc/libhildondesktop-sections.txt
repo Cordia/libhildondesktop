@@ -22,6 +22,7 @@ HDStatusMenuItemClass
 <TITLE>HDStatusPluginItem</TITLE>
 HDStatusPluginItem
 hd_status_plugin_item_set_status_area_icon
+hd_status_plugin_item_get_dl_filename
 <SUBSECTION Standard>
 hd_status_plugin_item_get_type
 HD_IS_STATUS_PLUGIN_ITEM
