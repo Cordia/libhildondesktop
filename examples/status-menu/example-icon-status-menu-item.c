@@ -25,6 +25,7 @@
 
 #include <gtk/gtk.h>
 #include <hildon/hildon.h>
+#include <dbus/dbus.h>
 
 #include "example-icon-status-menu-item.h"
 
@@ -32,7 +33,7 @@
 
 struct _ExampleIconStatusMenuItemPrivate
 {
-  gpointer data;
+  DBusConnection *connection;
 };
 
 HD_DEFINE_PLUGIN_MODULE (ExampleIconStatusMenuItem, example_icon_status_menu_item, HD_TYPE_STATUS_MENU_ITEM);
@@ -43,8 +44,29 @@ example_icon_status_menu_item_class_finalize (ExampleIconStatusMenuItemClass *kl
 }
 
 static void
+example_icon_status_menu_item_dispose (GObject *object)
+{
+  ExampleIconStatusMenuItemPrivate *priv = EXAMPLE_ICON_STATUS_MENU_ITEM (object)->priv;
+
+  /* Close and unref the D-Bus connection */
+  if (priv->connection)
+    {
+      g_debug ("Close connection '%s' to Session Bus", dbus_bus_get_unique_name(priv->connection));
+      dbus_connection_close (priv->connection);
+      dbus_connection_unref (priv->connection);
+      priv->connection = NULL;
+    }
+
+  G_OBJECT_CLASS (example_icon_status_menu_item_parent_class)->dispose (object);
+}
+
+static void
 example_icon_status_menu_item_class_init (ExampleIconStatusMenuItemClass *klass)
 {
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  object_class->dispose = example_icon_status_menu_item_dispose;
+
   g_type_class_add_private (klass, sizeof (ExampleIconStatusMenuItemPrivate));
 }
 
@@ -70,6 +92,9 @@ example_icon_status_menu_item_init (ExampleIconStatusMenuItem *menu_item)
   GtkWidget *image;
   GtkWidget *label1, *label2;
   PangoAttrList *attr_list;
+  DBusError error;
+
+  menu_item->priv = EXAMPLE_ICON_STATUS_MENU_ITEM_GET_PRIVATE (menu_item);
 
   /* Button with icon and two rows of text */
   button = gtk_button_new ();
@@ -100,6 +125,21 @@ example_icon_status_menu_item_init (ExampleIconStatusMenuItem *menu_item)
   gtk_box_pack_start (GTK_BOX (vbox2), label1, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox2), label2, FALSE, FALSE, 0);
   gtk_container_add (GTK_CONTAINER (menu_item), button);
+
+  /* Open a private D-Bus connection */
+  dbus_error_init (&error);
+  menu_item->priv->connection = hd_status_plugin_item_get_dbus_connection (HD_STATUS_PLUGIN_ITEM (menu_item),
+                                                                           DBUS_BUS_SESSION, &error);
+
+  if (dbus_error_is_set (&error))
+    {
+      g_warning ("Failed to open connection to Session Bus: %s", error.message);
+      dbus_error_free (&error);
+    }
+  else
+    {
+      g_debug ("Opened connection '%s' to Session Bus", dbus_bus_get_unique_name(menu_item->priv->connection));
+    }
 
   gtk_widget_show_all (GTK_WIDGET (menu_item));
 }

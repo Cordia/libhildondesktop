@@ -236,8 +236,11 @@ hd_plugin_module_new_object (HDPluginModule *module)
 {
   g_return_val_if_fail (HD_IS_PLUGIN_MODULE (module), NULL);
 
+  /* All plugin classes must define a 'dl-filename' property */
   if (module->priv->gtypes != NULL)
-    return g_object_new ((GType) GPOINTER_TO_INT (module->priv->gtypes->data), NULL);
+    return g_object_new ((GType) GPOINTER_TO_INT (module->priv->gtypes->data),
+                         "dl-filename", module->priv->path,
+                         NULL);
 
   return NULL;
 }

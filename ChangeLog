@@ -1,5 +1,38 @@
 2008-07-23  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* examples/status-menu/example-icon-status-menu-item.c (connection,
+	  example_icon_status_menu_item_dispose,
+	  example_icon_status_menu_item_class_init,
+	  example_icon_status_menu_item_init): Add an example
+	  hd_status_plugin_item_get_dbus_connection() function call.
+
+	* libhildondesktop/hd-plugin-manager.c
+	  (hd_plugin_manager_plugin_dir_changed,
+	  hd_plugin_manager_load_plugin): Use g_debug() instead of g_warning()
+	  for debug messages.
+
+	* libhildondesktop/hd-plugin-module.c (hd_plugin_module_new_object):
+	Set 'dl-filename' property to the module path.
+
+	* libhildondesktop/hd-status-plugin-item.c
+	  (hd_status_plugin_item_get_dl_filename,
+	  hd_status_plugin_item_get_dbus_connection): Enhance the gtk-doc
+	  documentation.
+
+2008-07-23  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	reviewed by: <delete if not using a buddy>
+	patch by: <delete if not someone else's patch>
+
+	* examples/status-menu/example-icon-status-menu-item.c (connection,
+	  example_icon_status_menu_item_finalize,
+	  example_icon_status_menu_item_class_init,
+	  example_icon_status_menu_item_init):
+	* libhildondesktop/hd-status-plugin-item.c
+	  (hd_status_plugin_item_get_dl_filename):
+
+2008-07-23  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* examples/status-menu/example-button-status-menu-item.c
 	  (example_button_status_menu_item_init): Replace HildonButton with
 	  GtkButton for now.

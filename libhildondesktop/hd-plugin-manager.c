@@ -147,7 +147,7 @@ hd_plugin_manager_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
 
       uri_str = gnome_vfs_uri_to_string (uri, GNOME_VFS_URI_HIDE_TOPLEVEL_METHOD);
 
-      g_warning ("plugin-added: %s", uri_str);
+      g_debug ("plugin-added: %s", uri_str);
 
       /* FIXME: dpkg install involves some renaming */
       hd_plugin_manager_remove_plugin (manager, uri_str);
@@ -161,7 +161,7 @@ hd_plugin_manager_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
 
       uri_str = gnome_vfs_uri_to_string (uri, GNOME_VFS_URI_HIDE_TOPLEVEL_METHOD);
 
-      g_warning ("plugin-removed: %s", uri_str);
+      g_debug ("plugin-removed: %s", uri_str);
 
       g_signal_emit (manager, plugin_manager_signals[PLUGIN_MODULE_REMOVED], 0, uri_str);
     }
@@ -245,7 +245,7 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
   info->plugin = plugin;
   info->module_id = g_strdup (module_id);
 
-  g_warning ("Added plugin to list: %s", info->module_id);
+  g_debug ("Added plugin to list: %s", info->module_id);
 
   p = g_list_append (NULL, info);
   priv->plugins = g_list_concat (priv->plugins, p);

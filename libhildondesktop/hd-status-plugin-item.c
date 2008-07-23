@@ -37,6 +37,10 @@
  *
  * The hd_status_plugin_item_get_dl_filename() function can be used to get the filename of
  * the dynamic library for debuggin purposes.
+ *
+ * Plugins should use private D-Bus connections. There is the 
+ * hd_status_plugin_item_get_dbus_connection() function which should be used to create such
+ * connections.
  **/
 
 #define HD_STATUS_PLUGIN_ITEM_GET_PRIVATE(object) \
@@ -273,29 +277,42 @@ hd_status_plugin_item_get_dl_filename (HDStatusPluginItem *item)
  * @type: The #DBusBusType %DBUS_BUS_SESSION or %DBUS_BUS_SYSTEM
  * @error: A #DBusError to return error messages
  *
- * Creates a new private #DBusConnection to the bus @type.
+ * Creates a new private #DBusConnection to the D-Bus session or system bus.
  *
- * See dbus_bus_get_private.
+ * It is similar to the dbus_bus_get_private() function but in contrast to the
+ * dbus_bus_get_private() function the application will not exit if the connection
+ * closes. Additionally this function is used to map the unique D-Bus name to the
+ * plugin.
  *
- * Returns: A new private connection which must be unrefed by the caller.
+ * So this function should be used by plugins to create D-Bus connections.
+ *
+ * Returns: A new private connection to bus %type. The connection must be unrefed with dbus_connection_unref() when it is not longer needed.
  **/
 DBusConnection *
 hd_status_plugin_item_get_dbus_connection (HDStatusPluginItem *item,
                                            DBusBusType       type,
                                            DBusError        *error)
 {
+  HDStatusPluginItemPrivate *priv;
   DBusConnection *connection;
+
+  g_return_val_if_fail (HD_IS_STATUS_PLUGIN_ITEM (item), NULL);
+
+  priv = item->priv;
 
   /* Create a private connection */
   connection = dbus_bus_get_private (type, error);
 
-  if (!connection)
+  if (!connection || (error != NULL && dbus_error_is_set (error)))
   return NULL;
 
   /* Do not exit on disconnect */
   dbus_connection_set_exit_on_disconnect (connection, FALSE);
 
   /* FIXME: log the connection name for debug purposes */
+  g_debug ("D-Bus connection %s for plugin %s opened.",
+           dbus_bus_get_unique_name (connection),
+           priv->dl_filename);
 
   return connection;
 }
