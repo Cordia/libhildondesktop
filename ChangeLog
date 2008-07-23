@@ -1,5 +1,11 @@
 2008-07-23  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* Makefile.am: Remove doc from build.
+
+	* debian/rules: disable gtk-doc.
+
+2008-07-23  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* autogen.sh: Add call to gtkdocize.
 
 2008-07-23  Jan Arne Petersen  <jpetersen@openismus.com>
