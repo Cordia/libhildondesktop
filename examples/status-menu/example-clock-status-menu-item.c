@@ -79,7 +79,7 @@ example_clock_status_menu_item_timeout_cb (ExampleClockStatusMenuItem *menu_item
 
   strftime (time_str, sizeof (time_str), "%d.%m.%Y %H:%M:%S", tmp);
 
-  hildon_button_set_title (HILDON_BUTTON (menu_item->priv->label), time_str);
+  gtk_button_set_label (GTK_BUTTON (menu_item->priv->label), time_str);
 
   return TRUE;
 }
@@ -89,9 +89,7 @@ example_clock_status_menu_item_init (ExampleClockStatusMenuItem *menu_item)
 {
   menu_item->priv = EXAMPLE_CLOCK_STATUS_MENU_ITEM_GET_PRIVATE (menu_item);
 
-  menu_item->priv->label = hildon_button_new (HILDON_BUTTON_AUTO_WIDTH | 
-                                              HILDON_BUTTON_FINGER_HEIGHT,
-                                              "...", NULL);
+  menu_item->priv->label = gtk_button_new_with_label ("...");
   gtk_container_set_border_width (GTK_CONTAINER (menu_item->priv->label), 3);
   gtk_widget_show (menu_item->priv->label);
 

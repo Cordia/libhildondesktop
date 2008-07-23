@@ -89,10 +89,13 @@ example_button_status_menu_item_init (ExampleButtonStatusMenuItem *menu_item)
 
   menu_item->priv = EXAMPLE_BUTTON_STATUS_MENU_ITEM_GET_PRIVATE (menu_item);
 
+  /*
   button = hildon_button_new (HILDON_BUTTON_WITH_VERTICAL_VALUE | 
 		              HILDON_BUTTON_AUTO_WIDTH |
 			      HILDON_BUTTON_FINGER_HEIGHT,
-                              "Some Title", "Some Value");
+                              "Some Title", "Some Value");*/
+
+  button = gtk_button_new_with_label ("Some Title");
   gtk_container_set_border_width (GTK_CONTAINER (button), 3);
   gtk_widget_show (button);
 

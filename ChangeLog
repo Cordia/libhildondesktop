@@ -1,3 +1,15 @@
+2008-07-23  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* examples/status-menu/example-button-status-menu-item.c
+	  (example_button_status_menu_item_init): Replace HildonButton with
+	  GtkButton for now.
+	* examples/status-menu/example-clock-status-menu-item.c
+	  (example_clock_status_menu_item_timeout_cb,
+	  example_clock_status_menu_item_init): Replace HildonButton with
+	  GtkButton.
+
+	* gtk-doc.make: Add missing Makefile for gtk-doc documenation.
+
 2008-07-22  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* libhildondesktop/hd-plugin-manager.c
