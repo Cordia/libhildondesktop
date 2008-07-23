@@ -82,6 +82,9 @@ if grep "^AM_PROG_LIBTOOL" configure.ac >/dev/null; then
   fi
 fi
 
+echo "Running gtkdocize..."
+gtkdocize --copy
+
 echo "Running aclocal $ACLOCAL_FLAGS ..."
 aclocal $ACLOCAL_FLAGS || {
   echo

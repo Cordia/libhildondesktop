@@ -1,5 +1,9 @@
 2008-07-23  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* autogen.sh: Add call to gtkdocize.
+
+2008-07-23  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* configure.ac: Hardcode hildonstatusmenudesktopentrydir, to be fixed
 	later.
 
