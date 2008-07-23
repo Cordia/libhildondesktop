@@ -110,7 +110,8 @@ AC_SUBST(DBUS_LIBS)
 hildondesktoplibdir="${libdir}/hildon-desktop"
                   
 hildonhomedesktopentrydir="${datadir}/applications/hildon-home"
-hildonstatusmenudesktopentrydir="${datadir}/applications/hildon-status-menu"
+# Fixme don't hardcode
+hildonstatusmenudesktopentrydir="/usr/share/applications/hildon-status-menu"
 
 hildondesktopconfdir=${sysconfdir}/hildon-desktop
 AC_SUBST(hildondesktoplibdir)
