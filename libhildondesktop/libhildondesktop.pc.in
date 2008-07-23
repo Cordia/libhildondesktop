@@ -4,6 +4,7 @@ libdir=@libdir@
 includedir=@includedir@
 hildondesktoplibdir=@hildondesktoplibdir@
 hildonpluginloaderlibdir=@hildonpluginloaderlibdir@
+hildonstatusmenudesktopentrydir=@hildonstatusmenudesktopentrydir@
 
 Name: libhildondesktop
 Description: Hildon Desktop Library

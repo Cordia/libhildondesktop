@@ -70,5 +70,4 @@ example_volume_status_menu_item_la_SOURCES = \
 	example-volume-status-menu-item.c \
 	example-volume-status-menu-item.h
 
-hildonstatusmenudir = $(datadir)/applications/hildon-status-menu
-hildonstatusmenu_DATA = example-clock.desktop example-icon.desktop example-button.desktop example-volume.desktop
+hildonstatusmenudesktopentry_DATA = example-clock.desktop example-icon.desktop example-button.desktop example-volume.desktop

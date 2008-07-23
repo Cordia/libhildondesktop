@@ -1,5 +1,16 @@
 2008-07-23  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* configure.ac: Don't need to expand the
+	hildonstatusmenudesktopentrydir variable.
+
+	* examples/status-menu/Makefile.am: Use
+	hildonstatusmenudesktopentrydir for the .desktop files.
+
+	* libhildondesktop/libhildondesktop.pc.in: Add
+	hildonstatusmenudesktopentrydir variable to .pc file.
+
+2008-07-23  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* examples/status-menu/example-icon-status-menu-item.c (connection,
 	  example_icon_status_menu_item_dispose,
 	  example_icon_status_menu_item_class_init,

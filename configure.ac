@@ -121,7 +121,7 @@ eval "hildonhomedesktopentrydir=$hildonhomedesktopentrydir"
 AC_SUBST(hildonhomedesktopentrydir)
 
 # Expand nested variables
-eval "hildonstatusmenudesktopentrydir=$hildonstatusmenudesktopentrydir"
+# eval "hildonstatusmenudesktopentrydir=$hildonstatusmenudesktopentrydir"
 AC_SUBST(hildonstatusmenudesktopentrydir)
 
 hildondesktopbackgroundsdir=${datadir}/backgrounds
