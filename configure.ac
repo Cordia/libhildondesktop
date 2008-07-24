@@ -1,4 +1,4 @@
-AC_INIT([libhildondesktop], [2.1.0], [], [libhildondesktop])
+AC_INIT([libhildondesktop], [2.1.1], [], [libhildondesktop])
 AC_CANONICAL_SYSTEM
 
 AM_CONFIG_HEADER(config.h)
@@ -110,8 +110,7 @@ AC_SUBST(DBUS_LIBS)
 hildondesktoplibdir="${libdir}/hildon-desktop"
                   
 hildonhomedesktopentrydir="${datadir}/applications/hildon-home"
-# Fixme don't hardcode
-hildonstatusmenudesktopentrydir="/usr/share/applications/hildon-status-menu"
+hildonstatusmenudesktopentrydir="${datadir}/applications/hildon-status-menu"
 
 hildondesktopconfdir=${sysconfdir}/hildon-desktop
 AC_SUBST(hildondesktoplibdir)

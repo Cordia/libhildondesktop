@@ -1,3 +1,20 @@
+2008-07-24  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* autogen.sh:
+	* gtk-doc.make:
+	* m4/gtk-doc.m4: Use newer gtk-doc templates. Should fix the gtk-doc
+	problem. Don't call gtkdocize.
+
+	* Makefile.am:
+	* debian/rules: Reenable gtk-doc build.
+
+	* debian/libhildondesktop1-dev.install: Add gtk-doc documentation
+	to the -dev package.
+
+	* configure.ac:
+	* libhildondesktop/libhildondesktop.pc.in: Add datarootdir and
+	datadir. Should fix the variable substitution problems.
+
 2008-07-23  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* Makefile.am: Remove doc from build.

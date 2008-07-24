@@ -1,3 +1,1 @@
-SUBDIRS = libhildondesktop examples
-
-# FIXME doc
+SUBDIRS = libhildondesktop examples doc
