@@ -1,3 +1,9 @@
+2008-08-06  Jan Arne Petersen  <jpetersen@oppenismus.com>
+
+	* libhildondesktop/hd-status-plugin-item.c
+	(hd_status_plugin_item_set_status_area_icon): Fix a bug if icon is
+	NULL. Add notification of property change. Enhance documentation.
+
 2008-07-24  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* autogen.sh:

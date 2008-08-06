@@ -226,9 +226,11 @@ hd_status_plugin_item_init (HDStatusPluginItem *item)
 /**
  * hd_status_plugin_item_set_status_area_icon:
  * @item: a #HDStatusPluginItem
- * @icon: a #GdkPixbuf used as the new icon
+ * @icon: a #GdkPixbuf used as the new icon or %NULL
  *
  * Sets the Status Area icon corresponding to this item to @icon.
+ *
+ * To hide (or unset) the Status Area icon use %NULL for @icon.
  *
  **/
 void 
@@ -244,7 +246,12 @@ hd_status_plugin_item_set_status_area_icon (HDStatusPluginItem *item,
   if (priv->status_area_icon)
     g_object_unref (priv->status_area_icon);
 
-  priv->status_area_icon = g_object_ref (icon);
+  if (icon)
+    priv->status_area_icon = g_object_ref (icon);
+  else
+    priv->status_area_icon = NULL;
+
+  g_object_notify (G_OBJECT (item), "status-area-icon");
 }
 
 /**
