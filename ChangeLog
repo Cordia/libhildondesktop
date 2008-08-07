@@ -1,3 +1,27 @@
+2008-08-07  Jan Arne Petersen  <jpetersen@oppenismus.com>
+
+
+	* libhildondesktop/hd-plugin-module.h: Add
+	HD_PLUGIN_MODULE_DL_FILENAME defintion.
+	* libhildondesktop/hd-plugin-module.c (hd_plugin_module_new_object,
+	  hd_plugin_module_add_type): Use type data instead of a plugin
+	  property to store the dl filename.
+
+	* libhildondesktop/hd-status-plugin-item.h
+	(hd_status_plugin_item_get_dl_filename): Return const gchar* instead
+	of gchar* (easier for debugging).
+	(hd_status_plugin_item_get_dbus_g_connection): Added new function to
+	return a DBusGConnection.
+
+	* libhildondesktop/hd-status-plugin-item.c (
+	  hd_status_plugin_item_get_dl_filename,
+	  hd_status_plugin_item_get_dbus_connection): Use type data instead of
+	  a property to store the dl filename.
+	  (hd_status_plugin_item_get_dbus_g_connection): Added new function to
+	return a DBusGConnection.
+
+	* configure.ac: Add dbus-glib-1 dependency.
+
 2008-08-06  Jan Arne Petersen  <jpetersen@oppenismus.com>
 
 	* libhildondesktop/hd-status-plugin-item.c

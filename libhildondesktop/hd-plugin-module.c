@@ -236,10 +236,8 @@ hd_plugin_module_new_object (HDPluginModule *module)
 {
   g_return_val_if_fail (HD_IS_PLUGIN_MODULE (module), NULL);
 
-  /* All plugin classes must define a 'dl-filename' property */
   if (module->priv->gtypes != NULL)
     return g_object_new ((GType) GPOINTER_TO_INT (module->priv->gtypes->data),
-                         "dl-filename", module->priv->path,
                          NULL);
 
   return NULL;
@@ -248,10 +246,25 @@ hd_plugin_module_new_object (HDPluginModule *module)
 void
 hd_plugin_module_add_type (HDPluginModule *module, GType type)
 {
+  static GQuark dl_filename_quark = 0;
+  gchar *old_dl_filename;
+
   g_return_if_fail (HD_IS_PLUGIN_MODULE (module));
 
   if (module->priv->gtypes != NULL)
     g_warning ("Only one module type per module supported.");
+
+  /* Create hd-plugin-module-dl-filename quark */
+  if (G_UNLIKELY (!dl_filename_quark))
+    dl_filename_quark = g_quark_from_static_string (HD_PLUGIN_MODULE_DL_FILENAME);
+
+  /* Set hd-plugin-module-dl-filename data in type */
+  old_dl_filename = g_type_get_qdata (type,
+                                      dl_filename_quark);
+  g_free (old_dl_filename);
+  g_type_set_qdata (type,
+                    dl_filename_quark,
+                    g_strdup (module->priv->path));
 
   module->priv->gtypes = g_list_append (module->priv->gtypes, GINT_TO_POINTER (type));
 }

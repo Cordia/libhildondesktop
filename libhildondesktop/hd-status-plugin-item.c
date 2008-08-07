@@ -24,6 +24,10 @@
 #include <config.h>
 #endif
 
+#include <dbus/dbus-glib-lowlevel.h>
+
+#include <libhildondesktop/hd-plugin-module.h>
+
 #include "hd-status-plugin-item.h"
 
 /** 
@@ -50,26 +54,23 @@ enum
 {
   PROP_0,
   PROP_STATUS_AREA_ICON,
-  PROP_DL_FILENAME,
 };
 
 struct _HDStatusPluginItemPrivate
 {
   GdkPixbuf *status_area_icon;
-
-  gchar     *dl_filename;
 };
 
 G_DEFINE_ABSTRACT_TYPE (HDStatusPluginItem, hd_status_plugin_item, GTK_TYPE_BIN);
 
 static void
 hd_status_plugin_item_size_allocate (GtkWidget     *widget,
-                              GtkAllocation *allocation)
+                                     GtkAllocation *allocation)
 {
   GtkWidget *child;
 
   GTK_WIDGET_CLASS (hd_status_plugin_item_parent_class)->size_allocate (widget,
-                                                                 allocation);
+                                                                        allocation);
 
   child = GTK_BIN (widget)->child;
 
@@ -91,7 +92,7 @@ hd_status_plugin_item_size_allocate (GtkWidget     *widget,
 
 static void
 hd_status_plugin_item_size_request (GtkWidget      *widget,
-                             GtkRequisition *requisition)
+                                    GtkRequisition *requisition)
 {
   GtkWidget *child;
   GtkRequisition child_requisition = {0, 0};
@@ -122,22 +123,6 @@ hd_status_plugin_item_dispose (GObject *object)
 }
 
 static void
-hd_status_plugin_item_finalize (GObject *object)
-{
-  HDStatusPluginItemPrivate *priv;
-
-  priv = HD_STATUS_PLUGIN_ITEM (object)->priv;
-
-  if (priv->dl_filename)
-    {
-      g_free (priv->dl_filename);
-      priv->dl_filename = NULL;
-    }
-
-  G_OBJECT_CLASS (hd_status_plugin_item_parent_class)->finalize (object);
-}
-
-static void
 hd_status_plugin_item_get_property (GObject      *object,
                                     guint         prop_id,
                                     GValue       *value,
@@ -151,10 +136,6 @@ hd_status_plugin_item_get_property (GObject      *object,
       g_value_set_object (value, priv->status_area_icon);
       break;
 
-    case PROP_DL_FILENAME:
-      g_value_set_string (value, priv->dl_filename);
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -166,18 +147,11 @@ hd_status_plugin_item_set_property (GObject      *object,
                                     const GValue *value,
                                     GParamSpec   *pspec)
 {
-  HDStatusPluginItemPrivate *priv = HD_STATUS_PLUGIN_ITEM (object)->priv;
-
   switch (prop_id)
     {
     case PROP_STATUS_AREA_ICON:
       hd_status_plugin_item_set_status_area_icon (HD_STATUS_PLUGIN_ITEM (object),
                                                   g_value_get_object (value));
-      break;
-
-    case PROP_DL_FILENAME:
-      g_free (priv->dl_filename);
-      priv->dl_filename = g_value_dup_string (value);
       break;
 
     default:
@@ -195,7 +169,6 @@ hd_status_plugin_item_class_init (HDStatusPluginItemClass *klass)
   widget_class->size_request = hd_status_plugin_item_size_request;
 
   object_class->dispose = hd_status_plugin_item_dispose;
-  object_class->finalize = hd_status_plugin_item_finalize;
   object_class->get_property = hd_status_plugin_item_get_property;
   object_class->set_property = hd_status_plugin_item_set_property;
 
@@ -206,13 +179,6 @@ hd_status_plugin_item_class_init (HDStatusPluginItemClass *klass)
                                                         "The Status Area icon which should be displayed for the item",
                                                         GDK_TYPE_PIXBUF,
                                                         G_PARAM_READWRITE));
-  g_object_class_install_property (object_class,
-                                   PROP_DL_FILENAME,
-                                   g_param_spec_string ("dl-filename",
-                                                        "Dynamic library filename",
-                                                        "The filename of the dynamic library file from which this item was loaded (used for debugging)",
-                                                        NULL,
-                                                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
   g_type_class_add_private (klass, sizeof (HDStatusPluginItemPrivate));
 }
@@ -261,21 +227,23 @@ hd_status_plugin_item_set_status_area_icon (HDStatusPluginItem *item,
  * Returns the filename of the dynamic library file from which this item was loaded.
  * Useful for debugging purposes.
  *
- * Returns: filename of the dynamic library file. The result must be freed with g_free() when the application is finished with it. 
+ * Returns: filename of the dynamic library file. The result must not be freed. 
  **/
-gchar *
+const gchar *
 hd_status_plugin_item_get_dl_filename (HDStatusPluginItem *item)
 {
-  HDStatusPluginItemPrivate *priv;
+  static GQuark dl_filename_quark = 0;
+  GType type;
 
   g_return_val_if_fail (HD_IS_STATUS_PLUGIN_ITEM (item), NULL);
 
-  priv = item->priv;
+  /* Create hd-plugin-module-dl-filename quark */
+  if (G_UNLIKELY (!dl_filename_quark))
+    dl_filename_quark = g_quark_from_static_string (HD_PLUGIN_MODULE_DL_FILENAME);
 
-  if (priv->dl_filename)
-    return g_strdup (priv->dl_filename);
-
-  return NULL;
+  /* The dl filename is stored in the type data */
+  type = G_TYPE_FROM_INSTANCE (item);
+  return g_type_get_qdata (type, dl_filename_quark);
 }
 
 /**
@@ -297,8 +265,8 @@ hd_status_plugin_item_get_dl_filename (HDStatusPluginItem *item)
  **/
 DBusConnection *
 hd_status_plugin_item_get_dbus_connection (HDStatusPluginItem *item,
-                                           DBusBusType       type,
-                                           DBusError        *error)
+                                           DBusBusType         type,
+                                           DBusError          *error)
 {
   HDStatusPluginItemPrivate *priv;
   DBusConnection *connection;
@@ -316,10 +284,55 @@ hd_status_plugin_item_get_dbus_connection (HDStatusPluginItem *item,
   /* Do not exit on disconnect */
   dbus_connection_set_exit_on_disconnect (connection, FALSE);
 
-  /* FIXME: log the connection name for debug purposes */
-  g_debug ("D-Bus connection %s for plugin %s opened.",
-           dbus_bus_get_unique_name (connection),
-           priv->dl_filename);
+  /* Log the connection name for debug purposes */
+  g_debug ("Plugin '%s' opened D-Bus connection '%s'.",
+           hd_status_plugin_item_get_dl_filename (item),
+           dbus_bus_get_unique_name (connection));
 
   return connection;
+}
+
+/**
+ * hd_status_plugin_item_get_dbus_g_connection:
+ * @item: A #HDStatusPluginItem
+ * @type: The #DBusBusType %DBUS_BUS_SESSION or %DBUS_BUS_SYSTEM
+ * @error: A #GError to return error messages
+ *
+ * Creates a new #DBusGConnection to the D-Bus session or system bus.
+ *
+ * Internally, calls dbus_g_bus_get(). See there for further informations.
+ *
+ * Returns: A shared connection.
+ **/
+DBusGConnection *
+hd_status_plugin_item_get_dbus_g_connection (HDStatusPluginItem  *item,
+                                             DBusBusType          type,
+                                             GError             **error)
+{
+  HDStatusPluginItemPrivate *priv;
+  DBusGConnection *g_connection;
+  DBusConnection *connection;
+  GError *tmp_error = NULL;
+
+  g_return_val_if_fail (HD_IS_STATUS_PLUGIN_ITEM (item), NULL);
+
+  priv = item->priv;
+
+  /* Create a DBusGConnection (not private yet) */
+  g_connection = dbus_g_bus_get (type, &tmp_error);
+
+  if (tmp_error != NULL)
+    {
+      g_propagate_error (error, tmp_error);
+      return NULL;
+    }
+
+  connection = dbus_g_connection_get_connection (g_connection);
+
+  /* Log the connection name for debug purposes */
+  g_debug ("Plugin '%s' opened D-Bus connection '%s'.",
+           hd_status_plugin_item_get_dl_filename (item),
+           dbus_bus_get_unique_name (connection));
+
+  return g_connection;
 }

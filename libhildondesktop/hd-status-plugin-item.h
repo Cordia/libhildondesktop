@@ -25,6 +25,7 @@
 
 #include <gtk/gtk.h>
 #include <dbus/dbus.h>
+#include <dbus/dbus-glib.h>
 
 G_BEGIN_DECLS
 
@@ -55,14 +56,17 @@ struct _HDStatusPluginItemClass
   GtkBinClass parent;
 };
 
-GType           hd_status_plugin_item_get_type             (void);
+GType            hd_status_plugin_item_get_type              (void);
 
-void            hd_status_plugin_item_set_status_area_icon (HDStatusPluginItem *item,
-                                                            GdkPixbuf          *icon);
-gchar          *hd_status_plugin_item_get_dl_filename      (HDStatusPluginItem *item);
-DBusConnection *hd_status_plugin_item_get_dbus_connection  (HDStatusPluginItem *item,
-                                                            DBusBusType       type,
-                                                            DBusError        *error);
+void             hd_status_plugin_item_set_status_area_icon  (HDStatusPluginItem  *item,
+                                                              GdkPixbuf           *icon);
+const gchar     *hd_status_plugin_item_get_dl_filename       (HDStatusPluginItem  *item);
+DBusConnection  *hd_status_plugin_item_get_dbus_connection   (HDStatusPluginItem  *item,
+                                                              DBusBusType          type,
+                                                              DBusError           *error);
+DBusGConnection *hd_status_plugin_item_get_dbus_g_connection (HDStatusPluginItem  *item,
+                                                              DBusBusType          type,
+                                                              GError             **error);
 
 G_END_DECLS
 

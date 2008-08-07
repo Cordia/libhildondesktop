@@ -39,13 +39,15 @@ G_BEGIN_DECLS
 #define HD_IS_PLUGIN_MODULE_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), HD_TYPE_PLUGIN_MODULE))
 #define HD_PLUGIN_MODULE_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), HD_TYPE_PLUGIN_MODULE, HDPluginModuleClass))
 
+#define HD_PLUGIN_MODULE_DL_FILENAME "hd-plugin-module-dl-filename"
+
 typedef struct _HDPluginModule        HDPluginModule;
 typedef struct _HDPluginModuleClass   HDPluginModuleClass;
 typedef struct _HDPluginModulePrivate HDPluginModulePrivate;
 
 struct _HDPluginModule
 {
-  GTypeModule                  parent;
+  GTypeModule parent;
 
   HDPluginModulePrivate  *priv;
 };
@@ -55,14 +57,14 @@ struct _HDPluginModuleClass
   GTypeModuleClass parent_class;
 };
 
-GType           hd_plugin_module_get_type     (void);
+GType           hd_plugin_module_get_type   (void);
 
-HDPluginModule *hd_plugin_module_new          (const gchar    *path);
+HDPluginModule *hd_plugin_module_new        (const gchar    *path);
 
-GObject        *hd_plugin_module_new_object   (HDPluginModule *plugin);
+GObject        *hd_plugin_module_new_object (HDPluginModule *plugin);
 
-void            hd_plugin_module_add_type     (HDPluginModule *plugin,
-                                               GType           type);
+void            hd_plugin_module_add_type   (HDPluginModule *plugin,
+                                             GType           type);
 
 #define HD_PLUGIN_MODULE_SYMBOLS(t_n)					\
 G_MODULE_EXPORT void hd_plugin_module_load (HDPluginModule *plugin);	\
