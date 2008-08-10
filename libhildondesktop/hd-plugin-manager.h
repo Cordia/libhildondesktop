@@ -61,6 +61,8 @@ struct _HDPluginManagerClass
                                  GObject *plugin);
   void (*plugin_removed)        (HDPluginManager *manager,
                                  GObject *plugin);
+  void (*configuration_loaded)  (HDPluginManager *manager,
+                                 GKeyFile *keyfile);
 };
 
 GType            hd_plugin_manager_get_type             (void);

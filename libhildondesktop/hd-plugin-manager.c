@@ -57,6 +57,7 @@ enum
   PLUGIN_MODULE_REMOVED,
   PLUGIN_ADDED,
   PLUGIN_REMOVED,
+  CONFIGURATION_LOADED,
   LAST_SIGNAL
 };
 
@@ -516,6 +517,27 @@ hd_plugin_manager_load_configuration (HDPluginManager *manager)
 {
   HDPluginManagerPrivate *priv = manager->priv;
   GKeyFile *keyfile;
+
+  /* load new configuration */
+  keyfile = hd_config_file_load_file (priv->config_file, FALSE);
+
+  if (!keyfile)
+    {
+      g_warning ("Error loading configuration file");
+
+      return;
+    }
+
+  g_signal_emit (manager, plugin_manager_signals[CONFIGURATION_LOADED], 0, keyfile);
+
+  g_key_file_free (keyfile);
+}
+
+static void
+hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
+                                        GKeyFile        *keyfile)
+{
+  HDPluginManagerPrivate *priv = manager->priv;
   GError *error = NULL;
   gsize n_plugin_dir;
   gchar *policy_module;
@@ -543,22 +565,10 @@ hd_plugin_manager_load_configuration (HDPluginManager *manager)
       priv->policy = NULL;
     }
 
-  /* load new configuration */
-  keyfile = hd_config_file_load_file (priv->config_file, FALSE);
-
-  if (!keyfile)
-    {
-      g_warning ("Error loading configuration file");
-
-      return;
-    }
-
   if (!g_key_file_has_group (keyfile, HD_PLUGIN_MANAGER_CONFIG_GROUP))
     {
       g_warning ("Error configuration file doesn't contain group '%s'",
                  HD_PLUGIN_MANAGER_CONFIG_GROUP);
-
-      g_key_file_free (keyfile);
 
       return;
     }
@@ -584,7 +594,6 @@ hd_plugin_manager_load_configuration (HDPluginManager *manager)
                  error->message);
 
       g_error_free (error);
-      g_key_file_free (keyfile);
 
       return;
     }
@@ -639,8 +648,6 @@ hd_plugin_manager_load_configuration (HDPluginManager *manager)
 
       g_free (policy_module_path);
     }
-
-  g_key_file_free (keyfile);
 
   /* Load all plugins in the X-Plugin-Dirs directories 
    * if X-Load-All-Plugins is true */
@@ -736,6 +743,7 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
   klass->plugin_module_removed = hd_plugin_manager_plugin_module_removed;
   klass->plugin_added = hd_plugin_manager_plugin_added;
   klass->plugin_removed = hd_plugin_manager_plugin_removed;
+  klass->configuration_loaded = hd_plugin_manager_configuration_loaded;
 
   g_object_class->finalize = hd_plugin_manager_finalize;
   g_object_class->get_property = hd_plugin_manager_get_property;
@@ -788,11 +796,22 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
   plugin_manager_signals [PLUGIN_REMOVED] = g_signal_new ("plugin-removed",
                                                           G_TYPE_FROM_CLASS (klass),
                                                           G_SIGNAL_RUN_LAST,
-                                                          G_STRUCT_OFFSET (HDPluginManagerClass, plugin_removed),
+                                                          G_STRUCT_OFFSET (HDPluginManagerClass,
+                                                                           plugin_removed),
                                                           NULL, NULL,
                                                           g_cclosure_marshal_VOID__OBJECT,
                                                           G_TYPE_NONE, 1,
                                                           G_TYPE_OBJECT);
+
+  plugin_manager_signals [CONFIGURATION_LOADED] = g_signal_new ("configuration-loaded",
+                                                                G_TYPE_FROM_CLASS (klass),
+                                                                G_SIGNAL_RUN_LAST,
+                                                                G_STRUCT_OFFSET (HDPluginManagerClass,
+                                                                                 configuration_loaded),
+                                                                NULL, NULL,
+                                                                g_cclosure_marshal_VOID__POINTER,
+                                                                G_TYPE_NONE, 1,
+                                                                G_TYPE_POINTER);
 }
 
 HDPluginManager *
