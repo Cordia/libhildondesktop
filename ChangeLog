@@ -1,4 +1,37 @@
-2008-08-10  Jan Arne Petersen  <jpetersen@oppenismus.com>
+2008-08-10  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* debian/libhildondesktop1-examples.install: Install all icons from
+	the example directory.
+
+	* examples/status-menu/Makefile.am: Add new examples. Add new icons.
+
+	* examples/status-menu/example-battery-status-area-item.c
+	* examples/status-menu/example-battery-status-area-item.h
+	* examples/status-menu/example-battery.desktop: Add an example for the
+	special Status Area icon.
+
+	* examples/status-menu/example-signal-status-area-item.c
+	* examples/status-menu/example-signal-status-area-item.h
+	* examples/status-menu/example-signal.desktop: Add another example
+	for the other special Status Area icon.
+
+	* examples/status-menu/example-button-status-menu-item.c
+	  (example_button_status_menu_item_timeout_cb): Add support for a
+	  Status Area icon.
+
+	* examples/status-menu/example-icon-status-menu-item.c
+	  (example_icon_status_menu_item_init): Add support for a Status Area
+	  icon.
+
+	* examples/status-menu/example-status-area-icon-1.png:
+	* examples/status-menu/example-status-area-icon-2.png:
+	* examples/status-menu/example-status-area-icon-3.png:
+	* examples/status-menu/example-status-area-icon-4.png:
+	* examples/status-menu/example-status-area-icon-battery.png:
+	* examples/status-menu/example-status-area-icon-signal.png: Add Status
+	Area example icons.
+
+2008-08-10  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* libhildondesktop/hd-plugin-manager.c (
 	  hd_plugin_manager_load_configuration,
@@ -9,7 +42,7 @@
 	* libhildondesktop/hd-plugin-manager.h (configuration_loaded): Add
 	virtual function for "configuration-loaded" signal.
 
-2008-08-07  Jan Arne Petersen  <jpetersen@oppenismus.com>
+2008-08-07  Jan Arne Petersen  <jpetersen@openismus.com>
 
 
 	* libhildondesktop/hd-plugin-module.h: Add
@@ -33,7 +66,7 @@
 
 	* configure.ac: Add dbus-glib-1 dependency.
 
-2008-08-06  Jan Arne Petersen  <jpetersen@oppenismus.com>
+2008-08-06  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* libhildondesktop/hd-status-plugin-item.c
 	(hd_status_plugin_item_set_status_area_icon): Fix a bug if icon is

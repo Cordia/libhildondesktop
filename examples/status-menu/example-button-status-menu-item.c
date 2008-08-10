@@ -65,9 +65,24 @@ example_button_status_menu_item_timeout_cb (ExampleButtonStatusMenuItem *menu_it
   g_object_get (G_OBJECT (menu_item),
                 "visible", &visible,
                 NULL);
-  g_object_set (G_OBJECT (menu_item),
-                "visible", !visible,
-                NULL);
+
+  if (visible)
+    {
+      hd_status_plugin_item_set_status_area_icon (HD_STATUS_PLUGIN_ITEM (menu_item),
+                                                  NULL);
+      gtk_widget_hide (GTK_WIDGET (menu_item));
+    }
+  else
+    {
+      gtk_widget_show (GTK_WIDGET (menu_item));
+      GdkPixbuf *pixbuf;
+
+      pixbuf = gdk_pixbuf_new_from_file (HILDON_DATA_DIR "/example-status-area-icon-1.png",
+                                         NULL);
+      hd_status_plugin_item_set_status_area_icon (HD_STATUS_PLUGIN_ITEM (menu_item),
+                                                  pixbuf);
+      g_object_unref (pixbuf);
+    }
 
   return TRUE;
 }

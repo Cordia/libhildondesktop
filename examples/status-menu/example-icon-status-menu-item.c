@@ -93,6 +93,7 @@ example_icon_status_menu_item_init (ExampleIconStatusMenuItem *menu_item)
   GtkWidget *label1, *label2;
   PangoAttrList *attr_list;
   DBusError error;
+  GdkPixbuf *pixbuf;
 
   menu_item->priv = EXAMPLE_ICON_STATUS_MENU_ITEM_GET_PRIVATE (menu_item);
 
@@ -142,4 +143,11 @@ example_icon_status_menu_item_init (ExampleIconStatusMenuItem *menu_item)
     }
 
   gtk_widget_show_all (GTK_WIDGET (menu_item));
+
+  /* Show a Status Area icon */
+  pixbuf = gdk_pixbuf_new_from_file (HILDON_DATA_DIR "/example-status-area-icon-2.png",
+                                     NULL);
+  hd_status_plugin_item_set_status_area_icon (HD_STATUS_PLUGIN_ITEM (menu_item),
+                                              pixbuf);
+  g_object_unref (pixbuf);
 }
