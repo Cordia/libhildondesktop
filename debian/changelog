@@ -1,3 +1,9 @@
+libhildondesktop (2.1.1) unreleased; urgency=low
+
+  * New release with Status Area support.
+
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 11 Aug 2008 13:34:13 +0300
+
 libhildondesktop (2.1.0) unreleased; urgency=low
 
   * Initial release.
