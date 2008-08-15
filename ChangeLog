@@ -1,3 +1,65 @@
+2008-08-15  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* configure.ac: Increase version.
+
+	* examples/status-menu/Makefile.am: Fix SOURCES for
+	example-signal-status-area-item plugin.
+
+	* examples/status-menu/example-clock-status-menu-item.c: Update
+	example to contain a Status Area widget.
+
+	* libhildondesktop/Makefile.am: Add HDPluginConfiguration and
+	HDPluginItem.
+
+	* libhildondesktop/hd-plugin-configuration.c:
+	* libhildondesktop/hd-plugin-configuration.h: Add
+	HDPluginConfiguration class which adds support for a plugin
+	configuration file.
+
+	* libhildondesktop/hd-plugin-item.c:
+	* libhildondesktop/hd-plugin-item.h: Add HDPluginItem interface which
+	must supports a plugin-id property to identify the plugin (Required
+	to support multiple instances of a plugin).
+
+	* libhildondesktop/hd-status-plugin-item.c:
+	* libhildondesktop/hd-status-plugin-item.h: Implement the HDPluginItem
+	interface.
+
+	* libhildondesktop/hd-plugin-loader-factory.c:
+	  (hd_plugin_loader_factory_new, hd_plugin_loader_factory_create):
+	* libhildondesktop/hd-plugin-loader-factory.h:
+	* libhildondesktop/hd-plugin-loader.c (hd_plugin_loader_load):
+	* libhildondesktop/hd-plugin-loader.h (load):
+	* libhildondesktop/hd-plugin-loader-default.c
+	  (hd_plugin_loader_default_open_module,
+	  hd_plugin_loader_default_load): Add support for multiple instances
+	  of a plugin by supporting a plugin id argument to identify the
+	  plugin instance.
+
+	* libhildondesktop/hd-plugin-module.h:
+	* libhildondesktop/hd-plugin-module.c
+	  (hd_plugin_module_new_object): Add support for multiple instances of
+	  a plugin by supporting a plugin id argument to identify the plugin
+	  instance. Set the "plugin-id" property on object construction.
+	  (hd_plugin_module_add_type): Make sure the plugin is a HDPluginItem.
+
+	* libhildondesktop/hd-plugin-manager.c
+	  (hd_plugin_manager_remove_plugin): Removes a plugin instance instead
+	  of all instances.
+	  (hd_plugin_manager_remove_plugin_module): Add function to remove all
+	  instances of a plugin.
+	  (hd_plugin_manager_load_plugin, hd_plugin_manager_plugin_module_added,
+	  hd_plugin_manager_plugin_module_removed): Add support for multiple
+	  plugin instances.
+	  (create_sync_lists, cmp_info_plugin_id, cmp_info_desktop_file,
+	  cmp_info_priority, hd_plugin_manager_sync_plugins,
+	  hd_plugin_manager_configuration_loaded): Add support for multiple
+	  plugin instances. Add support for loading plugin informations from a
+	  plugin configuration file (specified in the config file by
+	  X-Plugin-Configuration).
+
+	* libhildondesktop/libhildondesktop.h: Add new headers.
+
 2008-08-11  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Released 2.1.1

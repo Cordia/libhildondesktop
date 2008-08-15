@@ -50,18 +50,36 @@
 #define HD_STATUS_PLUGIN_ITEM_GET_PRIVATE(object) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((object), HD_TYPE_STATUS_PLUGIN_ITEM, HDStatusPluginItemPrivate))
 
+static void hd_status_plugin_item_init_plugin_item (gpointer g_iface);
+
 enum
 {
   PROP_0,
+  PROP_PLUGIN_ID,
   PROP_STATUS_AREA_ICON,
+  PROP_STATUS_AREA_WIDGET,
 };
 
 struct _HDStatusPluginItemPrivate
 {
+  gchar     *plugin_id;
+
   GdkPixbuf *status_area_icon;
+
+  GtkWidget *status_area_widget;
 };
 
-G_DEFINE_ABSTRACT_TYPE (HDStatusPluginItem, hd_status_plugin_item, GTK_TYPE_BIN);
+G_DEFINE_ABSTRACT_TYPE_WITH_CODE (HDStatusPluginItem, hd_status_plugin_item, GTK_TYPE_BIN,
+                                  G_IMPLEMENT_INTERFACE (HD_TYPE_PLUGIN_ITEM,
+                                                         hd_status_plugin_item_init_plugin_item));
+
+static void
+hd_status_plugin_item_init_plugin_item (gpointer g_iface)
+{
+  /* don't do anything */
+
+  return;
+}
 
 static void
 hd_status_plugin_item_size_allocate (GtkWidget     *widget,
@@ -119,7 +137,24 @@ hd_status_plugin_item_dispose (GObject *object)
       priv->status_area_icon = NULL;
     }
 
+  if (priv->status_area_widget)
+    {
+      g_object_unref (priv->status_area_widget);
+      priv->status_area_widget = NULL;
+    }
+
   G_OBJECT_CLASS (hd_status_plugin_item_parent_class)->dispose (object);
+}
+
+static void
+hd_status_plugin_item_finalize (GObject *object)
+{
+  HDStatusPluginItemPrivate *priv = HD_STATUS_PLUGIN_ITEM (object)->priv;
+
+  g_free (priv->plugin_id);
+  priv->plugin_id = NULL;
+
+  G_OBJECT_CLASS (hd_status_plugin_item_parent_class)->finalize (object);
 }
 
 static void
@@ -132,8 +167,16 @@ hd_status_plugin_item_get_property (GObject      *object,
 
   switch (prop_id)
     {
+    case PROP_PLUGIN_ID:
+      g_value_set_string (value, priv->plugin_id);
+      break;
+
     case PROP_STATUS_AREA_ICON:
       g_value_set_object (value, priv->status_area_icon);
+      break;
+
+    case PROP_STATUS_AREA_WIDGET:
+      g_value_set_object (value, priv->status_area_widget);
       break;
 
     default:
@@ -147,11 +190,23 @@ hd_status_plugin_item_set_property (GObject      *object,
                                     const GValue *value,
                                     GParamSpec   *pspec)
 {
+  HDStatusPluginItemPrivate *priv = HD_STATUS_PLUGIN_ITEM (object)->priv;
+
   switch (prop_id)
     {
+    case PROP_PLUGIN_ID:
+      g_free (priv->plugin_id);
+      priv->plugin_id = g_value_dup_string (value);
+      break;
+
     case PROP_STATUS_AREA_ICON:
       hd_status_plugin_item_set_status_area_icon (HD_STATUS_PLUGIN_ITEM (object),
                                                   g_value_get_object (value));
+      break;
+
+    case PROP_STATUS_AREA_WIDGET:
+      hd_status_plugin_item_set_status_area_widget (HD_STATUS_PLUGIN_ITEM (object),
+                                                    g_value_get_object (value));
       break;
 
     default:
@@ -169,8 +224,13 @@ hd_status_plugin_item_class_init (HDStatusPluginItemClass *klass)
   widget_class->size_request = hd_status_plugin_item_size_request;
 
   object_class->dispose = hd_status_plugin_item_dispose;
+  object_class->finalize = hd_status_plugin_item_finalize;
   object_class->get_property = hd_status_plugin_item_get_property;
   object_class->set_property = hd_status_plugin_item_set_property;
+
+  g_object_class_override_property (object_class,
+                                    PROP_PLUGIN_ID,
+                                    "plugin-id");
 
   g_object_class_install_property (object_class,
                                    PROP_STATUS_AREA_ICON,
@@ -178,6 +238,14 @@ hd_status_plugin_item_class_init (HDStatusPluginItemClass *klass)
                                                         "Status Area icon",
                                                         "The Status Area icon which should be displayed for the item",
                                                         GDK_TYPE_PIXBUF,
+                                                        G_PARAM_READWRITE));
+
+  g_object_class_install_property (object_class,
+                                   PROP_STATUS_AREA_WIDGET,
+                                   g_param_spec_object ("status-area-widget",
+                                                        "Status Area widget",
+                                                        "The widget which should be displayed in the Status Area (should be used by clock plugin only)",
+                                                        GTK_TYPE_WIDGET,
                                                         G_PARAM_READWRITE));
 
   g_type_class_add_private (klass, sizeof (HDStatusPluginItemPrivate));
@@ -218,6 +286,36 @@ hd_status_plugin_item_set_status_area_icon (HDStatusPluginItem *item,
     priv->status_area_icon = NULL;
 
   g_object_notify (G_OBJECT (item), "status-area-icon");
+}
+
+/**
+ * hd_status_plugin_item_set_status_area_widget:
+ * @item: a #HDStatusPluginItem
+ * @widget: a #GtkWidget which should be displayed in the Status Area
+ *
+ * Sets a widget which should be displayed in the Status Area. This function
+ * should only be used by the Clock plugin.
+ *
+ **/
+void 
+hd_status_plugin_item_set_status_area_widget (HDStatusPluginItem *item,
+                                              GtkWidget          *widget)
+{
+  HDStatusPluginItemPrivate *priv;
+
+  g_return_if_fail (HD_IS_STATUS_PLUGIN_ITEM (item));
+
+  priv = item->priv;
+
+  if (priv->status_area_widget)
+    g_object_unref (priv->status_area_widget);
+
+  if (widget)
+    priv->status_area_widget = g_object_ref_sink (widget);
+  else
+    priv->status_area_widget = NULL;
+
+  g_object_notify (G_OBJECT (item), "status-area-widget");
 }
 
 /**

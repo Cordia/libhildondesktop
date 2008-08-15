@@ -19,6 +19,8 @@ libhildondesktop_@API_VERSION_MAJOR@_la_CFLAGS = \
 
 libhildondesktop_@API_VERSION_MAJOR@_la_SOURCES = \
 	hd-config-file.c							\
+	hd-plugin-configuration.c						\
+	hd-plugin-item.c							\
 	hd-plugin-loader-default.c						\
 	hd-plugin-loader-factory.c						\
 	hd-plugin-loader.c							\
@@ -38,6 +40,8 @@ libhildondesktop_@API_VERSION_MAJOR@_includedir = $(includedir)/$(PACKAGE)-$(API
 
 libhildondesktop_@API_VERSION_MAJOR@_public_headers = \
 	hd-config-file.h							\
+	hd-plugin-configuration.h						\
+	hd-plugin-item.h							\
 	hd-plugin-loader-default.h						\
 	hd-plugin-loader-factory.h						\
 	hd-plugin-loader.h							\

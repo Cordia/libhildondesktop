@@ -32,7 +32,7 @@
 
 struct _ExampleClockStatusMenuItemPrivate
 {
-  GtkWidget    *label;
+  GtkWidget    *label, *status_area_label;
   guint         timeout_id;
 };
 
@@ -81,12 +81,18 @@ example_clock_status_menu_item_timeout_cb (ExampleClockStatusMenuItem *menu_item
 
   gtk_button_set_label (GTK_BUTTON (menu_item->priv->label), time_str);
 
+  strftime (time_str, sizeof (time_str), "<span font_desc=\"12\">%H:%M</span>", tmp);
+
+  gtk_label_set_markup (GTK_LABEL (menu_item->priv->status_area_label), time_str);
+
   return TRUE;
 }
 
 static void
 example_clock_status_menu_item_init (ExampleClockStatusMenuItem *menu_item)
 {
+  GtkWidget *status_area_box;
+
   menu_item->priv = EXAMPLE_CLOCK_STATUS_MENU_ITEM_GET_PRIVATE (menu_item);
 
   menu_item->priv->label = gtk_button_new_with_label ("...");
@@ -94,6 +100,17 @@ example_clock_status_menu_item_init (ExampleClockStatusMenuItem *menu_item)
   gtk_widget_show (menu_item->priv->label);
 
   gtk_container_add (GTK_CONTAINER (menu_item), menu_item->priv->label);
+
+  /* Set Status Area widget */
+  status_area_box = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (status_area_box);
+
+  menu_item->priv->status_area_label = gtk_label_new ("...");
+  gtk_widget_show (menu_item->priv->status_area_label);
+
+  gtk_box_pack_start (GTK_BOX (status_area_box), menu_item->priv->status_area_label, FALSE, FALSE, 0);
+
+  hd_status_plugin_item_set_status_area_widget (HD_STATUS_PLUGIN_ITEM (menu_item), status_area_box);
 
   /* Add timeout */
   example_clock_status_menu_item_timeout_cb (EXAMPLE_CLOCK_STATUS_MENU_ITEM (menu_item));

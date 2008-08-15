@@ -30,6 +30,8 @@
 
 #include <glib-object.h>
 
+#include <libhildondesktop/hd-plugin-item.h>
+
 G_BEGIN_DECLS
 
 #define HD_TYPE_PLUGIN_MODULE         (hd_plugin_module_get_type ())
@@ -61,9 +63,10 @@ GType           hd_plugin_module_get_type   (void);
 
 HDPluginModule *hd_plugin_module_new        (const gchar    *path);
 
-GObject        *hd_plugin_module_new_object (HDPluginModule *plugin);
+HDPluginItem   *hd_plugin_module_new_object (HDPluginModule *module,
+                                             const gchar    *plugin_id);
 
-void            hd_plugin_module_add_type   (HDPluginModule *plugin,
+void            hd_plugin_module_add_type   (HDPluginModule *module,
                                              GType           type);
 
 #define HD_PLUGIN_MODULE_SYMBOLS(t_n)					\

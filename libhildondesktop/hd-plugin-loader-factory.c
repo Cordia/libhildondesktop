@@ -231,19 +231,20 @@ hd_plugin_loader_factory_new ()
   return factory;
 }
 
-GObject *
+HDPluginItem *
 hd_plugin_loader_factory_create (HDPluginLoaderFactory  *factory,
-                                 const gchar            *plugin_path,
+                                 const gchar            *plugin_id,
+                                 const gchar            *module_id,
                                  GError                **error)
 {
   HDPluginLoaderFactoryPrivate *priv;
   HDPluginLoader *loader = NULL;
   GKeyFile *keyfile;
   gchar *type;
-  GObject *plugin;
+  HDPluginItem *plugin;
   GError *local_error = NULL;
 
-  g_return_val_if_fail (plugin_path != NULL, NULL);
+  g_return_val_if_fail (module_id != NULL, NULL);
   g_return_val_if_fail (factory != NULL, NULL);
   g_return_val_if_fail (HD_IS_PLUGIN_LOADER_FACTORY (factory), NULL);
 
@@ -252,7 +253,7 @@ hd_plugin_loader_factory_create (HDPluginLoaderFactory  *factory,
   keyfile = g_key_file_new ();
 
   g_key_file_load_from_file (keyfile,
-                             plugin_path,
+                             module_id,
                              G_KEY_FILE_NONE,
                              &local_error);
 
@@ -315,7 +316,10 @@ hd_plugin_loader_factory_create (HDPluginLoaderFactory  *factory,
     g_hash_table_insert (priv->registry, g_strdup (type), loader);
   }
 
-  plugin = hd_plugin_loader_load (loader, keyfile, &local_error);
+  plugin = hd_plugin_loader_load (loader,
+                                  plugin_id,
+                                  keyfile,
+                                  &local_error);
 
   if (local_error != NULL)
     g_propagate_error (error, local_error);

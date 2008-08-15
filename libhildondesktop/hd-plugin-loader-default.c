@@ -41,14 +41,15 @@ struct _HDPluginLoaderDefaultPrivate
   GHashTable *registry;
 };
 
-static GObject * 
-hd_plugin_loader_default_open_module (HDPluginLoaderDefault *loader,
-                                      GKeyFile *keyfile,
-                                      GError **error)
+static HDPluginItem * 
+hd_plugin_loader_default_open_module (HDPluginLoaderDefault  *loader,
+                                      const gchar            *plugin_id,
+                                      GKeyFile               *keyfile,
+                                      GError                **error)
 {
   HDPluginLoaderDefaultPrivate *priv;
   HDPluginModule *module; 
-  GObject *object;
+  HDPluginItem *object;
   GError *keyfile_error = NULL;
   gchar *module_file = NULL;
   gchar *module_path = NULL;
@@ -83,7 +84,7 @@ hd_plugin_loader_default_open_module (HDPluginLoaderDefault *loader,
     }
 
   module = (HDPluginModule *) g_hash_table_lookup (priv->registry, 
-                                                              module_path);
+                                                   module_path);
 
   if (!module)
     {
@@ -100,7 +101,8 @@ hd_plugin_loader_default_open_module (HDPluginLoaderDefault *loader,
       return NULL;
     }  
 
-  object = hd_plugin_module_new_object (module);
+  object = hd_plugin_module_new_object (module,
+                                        plugin_id);
 
   g_type_module_unuse (G_TYPE_MODULE (module));
 
@@ -109,12 +111,13 @@ hd_plugin_loader_default_open_module (HDPluginLoaderDefault *loader,
   return object;
 }
 
-static GObject *
+static HDPluginItem *
 hd_plugin_loader_default_load (HDPluginLoader  *loader,
+                               const gchar     *plugin_id,
                                GKeyFile        *keyfile,
                                GError         **error)
 {
-  GObject *object = NULL;
+  HDPluginItem *object = NULL;
   GError *local_error = NULL;
 
   g_return_val_if_fail (loader, NULL);
@@ -131,6 +134,7 @@ hd_plugin_loader_default_load (HDPluginLoader  *loader,
 
   /* Open the module and return plugin instance */
   object = hd_plugin_loader_default_open_module (HD_PLUGIN_LOADER_DEFAULT (loader),
+                                                 plugin_id,
                                                  keyfile,
                                                  &local_error);
 

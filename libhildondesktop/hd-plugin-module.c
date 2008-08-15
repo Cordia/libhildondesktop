@@ -226,25 +226,30 @@ hd_plugin_module_new (const gchar *path)
 
   g_return_val_if_fail (path != NULL, NULL);
 
-  plugin = g_object_new (HD_TYPE_PLUGIN_MODULE, "path", path, NULL);
+  plugin = g_object_new (HD_TYPE_PLUGIN_MODULE,
+                         "path", path,
+                         NULL);
 
   return plugin;
 }
 
-GObject *
-hd_plugin_module_new_object (HDPluginModule *module)
+HDPluginItem *
+hd_plugin_module_new_object (HDPluginModule *module,
+                             const gchar    *plugin_id)
 {
   g_return_val_if_fail (HD_IS_PLUGIN_MODULE (module), NULL);
 
   if (module->priv->gtypes != NULL)
     return g_object_new ((GType) GPOINTER_TO_INT (module->priv->gtypes->data),
+                         "plugin-id", plugin_id,
                          NULL);
 
   return NULL;
 }
 
 void
-hd_plugin_module_add_type (HDPluginModule *module, GType type)
+hd_plugin_module_add_type (HDPluginModule *module,
+                           GType           type)
 {
   static GQuark dl_filename_quark = 0;
   gchar *old_dl_filename;
@@ -252,7 +257,16 @@ hd_plugin_module_add_type (HDPluginModule *module, GType type)
   g_return_if_fail (HD_IS_PLUGIN_MODULE (module));
 
   if (module->priv->gtypes != NULL)
-    g_warning ("Only one module type per module supported.");
+    {
+      g_warning ("Only one plugin type per module supported.");
+      return;
+    }
+
+  if (!g_type_is_a (type, HD_TYPE_PLUGIN_ITEM))
+    {
+      g_warning ("The plugin type must implement the HDPluginItem interface.");
+      return;
+    }
 
   /* Create hd-plugin-module-dl-filename quark */
   if (G_UNLIKELY (!dl_filename_quark))

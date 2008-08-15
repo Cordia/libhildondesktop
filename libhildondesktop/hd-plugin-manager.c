@@ -32,10 +32,12 @@
 #include <string.h>
 
 #include "hd-config.h"
-#include "hd-plugin-manager.h"
-#include "hd-ui-policy.h"
+#include "hd-plugin-configuration.h"
 #include "hd-plugin-loader.h"
 #include "hd-plugin-loader-factory.h"
+#include "hd-ui-policy.h"
+
+#include "hd-plugin-manager.h"
 
 #define HD_PLUGIN_MANAGER_GET_PRIVATE(object) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((object), HD_TYPE_PLUGIN_MANAGER, HDPluginManagerPrivate))
@@ -43,6 +45,7 @@
 #define HD_PLUGIN_MANAGER_CONFIG_GROUP "X-PluginManager"
 #define HD_PLUGIN_MANAGER_CONFIG_KEY_DEBUG_PLUGINS "X-Debug-Plugins"
 #define HD_PLUGIN_MANAGER_CONFIG_KEY_LOAD_ALL_PLUGINS "X-Load-All-Plugins"
+#define HD_PLUGIN_MANAGER_CONFIG_KEY_PLUGIN_CONFIGURATION "X-Plugin-Configuration"
 
 enum
 {
@@ -70,6 +73,8 @@ struct _HDPluginManagerPrivate
   HDConfigFile           *config_file;
   gchar                  *safe_mode_file;
 
+  HDPluginConfiguration  *plugin_configuration;
+
   gboolean                safe_mode;
 
   gchar                 **plugin_dirs;
@@ -83,14 +88,6 @@ struct _HDPluginManagerPrivate
   gchar                 **debug_plugins;
 };
 
-typedef struct _HDPluginInfo HDPluginInfo;
-
-struct _HDPluginInfo
-{
-  gchar   *module_id;
-  GObject *plugin;
-};
-
 static guint plugin_manager_signals [LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (HDPluginManager, hd_plugin_manager, G_TYPE_OBJECT);
@@ -101,19 +98,18 @@ delete_plugin (gpointer  data,
 {
   HDPluginInfo *info = ((GList *) data)->data;
 
-  g_free (info->module_id);
-  g_slice_free (HDPluginInfo, info);
+  hd_plugin_info_free (info);
   ((GList *) data)->data = NULL;
 }
 
 static void
-hd_plugin_manager_remove_plugin (HDPluginManager *manager,
-                                 const gchar     *module_id)
+hd_plugin_manager_remove_plugin_module (HDPluginManager *manager,
+                                        const gchar     *desktop_file)
 {
   HDPluginManagerPrivate *priv = manager->priv;
   GList *p;
 
-  /* remove all plugins with module_id */
+  /* remove all plugins with desktop_file */
   for (p = priv->plugins; p; p = p->next)
     {
       HDPluginInfo *info = p->data;
@@ -121,11 +117,37 @@ hd_plugin_manager_remove_plugin (HDPluginManager *manager,
       if (!info)
         continue;
 
-      if (!strcmp (info->module_id, module_id))
+      if (!strcmp (info->desktop_file, desktop_file))
         {
-          g_object_weak_unref (info->plugin, delete_plugin, p);
+          g_object_weak_unref (G_OBJECT (info->item), delete_plugin, p);
           priv->plugins = g_list_delete_link (priv->plugins, p);
-          g_signal_emit (manager, plugin_manager_signals[PLUGIN_REMOVED], 0, info->plugin);
+          g_signal_emit (manager, plugin_manager_signals[PLUGIN_REMOVED], 0, info->item);
+        }
+    }
+}
+
+static void
+hd_plugin_manager_remove_plugin (HDPluginManager *manager,
+                                 const gchar     *plugin_id)
+{
+  HDPluginManagerPrivate *priv = manager->priv;
+  GList *p;
+
+  /* Remove the plugin with id plugin_id*/
+  for (p = priv->plugins; p; p = p->next)
+    {
+      HDPluginInfo *info = p->data;
+
+      if (!info)
+        continue;
+
+      if (!strcmp (info->plugin_id, plugin_id))
+        {
+          g_object_weak_unref (G_OBJECT (info->item), delete_plugin, p);
+          priv->plugins = g_list_delete_link (priv->plugins, p);
+          g_signal_emit (manager, plugin_manager_signals[PLUGIN_REMOVED], 0, info->item);
+          /* There is only one such plugin */
+          return;
         }
     }
 }
@@ -151,7 +173,7 @@ hd_plugin_manager_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
       g_debug ("plugin-added: %s", uri_str);
 
       /* FIXME: dpkg install involves some renaming */
-      hd_plugin_manager_remove_plugin (manager, uri_str);
+      hd_plugin_manager_remove_plugin_module (manager, uri_str);
 
       g_signal_emit (manager, plugin_manager_signals[PLUGIN_MODULE_ADDED], 0, uri_str);
     }
@@ -170,43 +192,46 @@ hd_plugin_manager_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
 
 static gboolean 
 hd_plugin_manager_load_plugin (HDPluginManager *manager,
-                               const gchar     *module_id)
+                               const gchar     *desktop_file,
+                               const gchar     *plugin_id)
 {
   HDPluginManagerPrivate *priv;
   HDPluginInfo *info;
   GList *p;
-  GObject *plugin;
+  HDPluginItem *plugin;
   GError *error = NULL;
-  gchar *module_id_to_load;
+  gchar *desktop_file_to_load;
 
   g_return_val_if_fail (HD_IS_PLUGIN_MANAGER (manager), FALSE);
-  g_return_val_if_fail (module_id != NULL, FALSE);
+  g_return_val_if_fail (desktop_file != NULL, FALSE);
+  g_return_val_if_fail (plugin_id != NULL, FALSE);
 
   priv = HD_PLUGIN_MANAGER (manager)->priv;
 
   if (priv->policy)
     {
-      module_id_to_load = hd_ui_policy_get_filtered_plugin (priv->policy,
-                                                            module_id,
-                                                            priv->safe_mode);
+      desktop_file_to_load = hd_ui_policy_get_filtered_plugin (priv->policy,
+                                                               desktop_file,
+                                                               priv->safe_mode);
 
-      if (!module_id_to_load)
+      if (!desktop_file_to_load)
         return FALSE;
     }
   else
-    module_id_to_load = g_strdup (module_id);
+    desktop_file_to_load = g_strdup (desktop_file);
 
-  if (!g_file_test (module_id_to_load, G_FILE_TEST_EXISTS))
+  if (!g_file_test (desktop_file_to_load, G_FILE_TEST_EXISTS))
     {
       g_warning ("Plugin desktop file not found, ignoring plugin");
-      g_free (module_id_to_load);
+      g_free (desktop_file_to_load);
       return FALSE;
     }
 
   plugin = hd_plugin_loader_factory_create (HD_PLUGIN_LOADER_FACTORY (manager->priv->factory), 
-                                            module_id_to_load,
+                                            plugin_id,
+                                            desktop_file_to_load,
                                             &error);
-  g_free (module_id_to_load);
+  g_free (desktop_file_to_load);
 
   if (!plugin)
     {
@@ -215,25 +240,26 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
 
       if (priv->policy)
         {
-          module_id_to_load = hd_ui_policy_get_default_plugin (priv->policy,
-                                                               module_id,
+          desktop_file_to_load = hd_ui_policy_get_default_plugin (priv->policy,
+                                                               desktop_file,
                                                                priv->safe_mode);
 
-          if (module_id_to_load && g_file_test (module_id_to_load, G_FILE_TEST_EXISTS))
+          if (desktop_file_to_load && g_file_test (desktop_file_to_load, G_FILE_TEST_EXISTS))
             {
               plugin = hd_plugin_loader_factory_create (HD_PLUGIN_LOADER_FACTORY (manager->priv->factory), 
-                                                        module_id_to_load,
+                                                        plugin_id,
+                                                        desktop_file_to_load,
                                                         &error);
             }
 
-          g_free (module_id_to_load);
+          g_free (desktop_file_to_load);
 
           if (!plugin)
             {
               g_error_free (error);
 
-              plugin = hd_ui_policy_get_failure_plugin (priv->policy,
-                                                        module_id,
+              plugin = (HDPluginItem *) hd_ui_policy_get_failure_plugin (priv->policy,
+                                                        desktop_file,
                                                         priv->safe_mode);
             }
         }
@@ -242,16 +268,17 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
   if (!plugin)
     return FALSE;
 
-  info = g_slice_new0 (HDPluginInfo);
-  info->plugin = plugin;
-  info->module_id = g_strdup (module_id);
+  info = hd_plugin_info_new (plugin_id,
+                             desktop_file,
+                             0);
+  info->item = plugin;
 
-  g_debug ("Added plugin to list: %s", info->module_id);
+  g_debug ("Added plugin to list: %s", info->desktop_file);
 
   p = g_list_append (NULL, info);
   priv->plugins = g_list_concat (priv->plugins, p);
 
-  g_object_weak_ref (plugin, delete_plugin, p);
+  g_object_weak_ref (G_OBJECT (plugin), delete_plugin, p);
 
   g_signal_emit (manager, plugin_manager_signals[PLUGIN_ADDED], 0, plugin);
 
@@ -308,7 +335,7 @@ hd_plugin_manager_init (HDPluginManager *manager)
 
 static void
 hd_plugin_manager_plugin_module_added (HDPluginManager *manager,
-                                       const gchar     *module_id)
+                                       const gchar     *desktop_file)
 {
   HDPluginManagerPrivate *priv;
 
@@ -318,25 +345,36 @@ hd_plugin_manager_plugin_module_added (HDPluginManager *manager,
 
   if (priv->load_new_plugins && !priv->safe_mode)
     {
-      hd_plugin_manager_load_plugin (manager, module_id);
+      gchar *plugin_id;
+
+      plugin_id = g_path_get_basename (desktop_file);
+
+      hd_plugin_manager_load_plugin (manager, desktop_file, plugin_id);
+
+      g_free (plugin_id);
     }
   else if (priv->debug_plugins != NULL)
     {
+      gchar *plugin_id;
       guint i;
+
+      plugin_id = g_path_get_basename (desktop_file);
 
       for (i = 0; priv->debug_plugins[i]; i++)
         {
-          if (g_str_has_suffix (module_id, priv->debug_plugins[i]))
-            hd_plugin_manager_load_plugin (manager, module_id);
+          if (strcmp (plugin_id, priv->debug_plugins[i]))
+            hd_plugin_manager_load_plugin (manager, desktop_file, plugin_id);
         }
+
+      g_free (plugin_id);
     }
 }
 
 static void
 hd_plugin_manager_plugin_module_removed (HDPluginManager *manager,
-                                         const gchar     *module_id)
+                                         const gchar     *desktop_file)
 {
-  hd_plugin_manager_remove_plugin (manager, module_id);
+  hd_plugin_manager_remove_plugin_module (manager, desktop_file);
 }
 
 static void
@@ -462,6 +500,30 @@ create_sync_lists (GList          *old,
   *to_remove = g_list_concat (old, remove);
 }
 
+static gint
+cmp_info_plugin_id (const HDPluginInfo *a,
+                    const HDPluginInfo *b)
+{
+  return strcmp (a->plugin_id, b->plugin_id);
+}
+
+static gint
+cmp_info_desktop_file (const HDPluginInfo *a,
+                       const HDPluginInfo *b)
+{
+  return strcmp (a->desktop_file, b->desktop_file);
+}
+
+static gint
+cmp_info_priority (const HDPluginInfo *a,
+                   const HDPluginInfo *b)
+{
+  if (a->priority != b->priority)
+    return a->priority - b->priority;
+
+  return strcmp (a->plugin_id, b->plugin_id);
+}
+
 /* sync new_plugins with already loaded plugins 
  *
  * new_plugins is destroyed by this function
@@ -482,30 +544,34 @@ hd_plugin_manager_sync_plugins (HDPluginManager *manager,
       if (!info)
         continue;
 
-      old_plugins = g_list_prepend (old_plugins, g_strdup (info->module_id));
+      old_plugins = g_list_prepend (old_plugins, hd_plugin_info_new (info->plugin_id,
+                                                                           info->desktop_file,
+                                                                           0));
     }
 
   create_sync_lists (old_plugins, new_plugins, &to_add, &to_remove,
-                     (GCompareFunc) strcmp, (GDestroyNotify) g_free);
+                     (GCompareFunc) cmp_info_plugin_id, (GDestroyNotify) hd_plugin_info_free);
 
   /* remove plugins */
   for (p = to_remove; p; p = p->next)
     {
-      gchar *module_id = p->data;
+      HDPluginInfo *info = p->data;
 
-      hd_plugin_manager_remove_plugin (manager, module_id);
+      hd_plugin_manager_remove_plugin (manager, info->plugin_id);
 
-      g_free (module_id);
+      hd_plugin_info_free (info);
     }
+
+  to_add = g_list_sort (to_add, (GCompareFunc) cmp_info_priority);
 
   /* add plugins */
   for (p = to_add; p; p = p->next)
     {
-      gchar *module_id = p->data;
+      HDPluginInfo *info = p->data;
 
-      hd_plugin_manager_load_plugin (manager, module_id);
+      hd_plugin_manager_load_plugin (manager, info->desktop_file, info->plugin_id);
 
-      g_free (module_id);
+      hd_plugin_info_free (info);
     }
 
   g_list_free (to_remove);
@@ -541,6 +607,7 @@ hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
   GError *error = NULL;
   gsize n_plugin_dir;
   gchar *policy_module;
+  gchar *plugin_configuration_filename;
   GList *new_plugins = NULL;
 
   /* free old configuration */
@@ -564,7 +631,13 @@ hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
       g_object_unref (priv->policy);
       priv->policy = NULL;
     }
+  if (priv->plugin_configuration)
+    {
+      g_object_unref (priv->plugin_configuration);
+      priv->plugin_configuration = NULL;      
+    }
 
+  /* Load configuration ([X-PluginManager] group) */
   if (!g_key_file_has_group (keyfile, HD_PLUGIN_MANAGER_CONFIG_GROUP))
     {
       g_warning ("Error configuration file doesn't contain group '%s'",
@@ -649,6 +722,19 @@ hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
       g_free (policy_module_path);
     }
 
+  plugin_configuration_filename = g_key_file_get_string (keyfile, 
+                                                         HD_PLUGIN_MANAGER_CONFIG_GROUP, 
+                                                         HD_PLUGIN_MANAGER_CONFIG_KEY_PLUGIN_CONFIGURATION,
+                                                         NULL);
+
+  if (plugin_configuration_filename)
+    {
+      priv->plugin_configuration = hd_plugin_configuration_new_for_config_file (priv->config_file,
+                                                                                plugin_configuration_filename);
+
+      new_plugins = hd_plugin_configuration_get_plugins (priv->plugin_configuration, FALSE);
+    }
+
   /* Load all plugins in the X-Plugin-Dirs directories 
    * if X-Load-All-Plugins is true */
   if (priv->load_all_plugins)
@@ -659,28 +745,52 @@ hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
 
       for (p = all_plugins; p; p = p->next)
         {
-          gchar *plugin_id = p->data;
-          gboolean load = TRUE;
-          guint i;
+          HDPluginInfo *info = hd_plugin_info_new (NULL,
+                                                   p->data,
+                                                   G_MAXUINT);
 
-          /* Don't load plugins from X-Debug-Plugins list */
-          if (priv->debug_plugins != NULL)
-            for (i = 0; priv->debug_plugins[i]; i++)
-              {
-                if (g_str_has_suffix (plugin_id, priv->debug_plugins[i]))
-                  {
-                    load = FALSE;
-                    break;
-                  }
-              }
-
-          if (load)
-            new_plugins = g_list_prepend (new_plugins, plugin_id);
+          if (!g_list_find_custom (new_plugins, info, (GCompareFunc) cmp_info_desktop_file))
+            {
+              info->plugin_id = g_path_get_basename (info->desktop_file);
+              new_plugins = g_list_prepend (new_plugins, info);
+            }
           else
-            g_free (plugin_id);
+            hd_plugin_info_free (info);
         }
 
+      g_list_foreach (all_plugins, (GFunc) g_free, NULL);
       g_list_free (all_plugins);
+    }
+
+  /* Don't load plugins from X-Debug-Plugins list */
+  if (priv->debug_plugins != NULL)
+    {
+      guint i;
+
+      for (i = 0; priv->debug_plugins[i]; i++)
+        {
+          GList *p;
+
+          for (p = new_plugins; p; )
+            {
+              HDPluginInfo *info = p->data;
+              gchar *basename = g_path_get_basename (info->desktop_file);
+
+              if (!strcmp (basename, priv->debug_plugins[i]))
+                {
+                  GList *q = p->next;
+
+                  hd_plugin_info_free (info);
+                  new_plugins = g_list_delete_link (new_plugins, p);
+
+                  p = q;
+                }
+              else
+                p = p->next;
+
+              g_free (basename);
+            }
+        }
     }
 
   hd_plugin_manager_sync_plugins (manager, new_plugins);

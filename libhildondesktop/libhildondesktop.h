@@ -23,6 +23,7 @@
 #define __LIBHILDONDESKTOP_H__
 
 /* Plugin API */
+#include <libhildondesktop/hd-plugin-item.h>
 #include <libhildondesktop/hd-plugin-module.h>
 
 /* Status Menu API */

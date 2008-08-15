@@ -56,13 +56,14 @@ struct _HDPluginLoaderFactoryClass
   GObjectClass parent_class;
 };
 
-GType    hd_plugin_loader_factory_get_type (void);
+GType         hd_plugin_loader_factory_get_type (void);
 
-GObject* hd_plugin_loader_factory_new      (void);
+GObject      *hd_plugin_loader_factory_new      (void);
 
-GObject* hd_plugin_loader_factory_create   (HDPluginLoaderFactory  *factory,
-                                            const gchar            *plugin_path,
-                                            GError                **error);
+HDPluginItem *hd_plugin_loader_factory_create   (HDPluginLoaderFactory  *factory,
+                                                 const gchar            *plugin_id,
+                                                 const gchar            *plugin_path,
+                                                 GError                **error);
 
 G_END_DECLS
 

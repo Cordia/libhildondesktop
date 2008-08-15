@@ -91,9 +91,9 @@ example_signal_status_area_item_la_LIBADD = \
 	$(HILDON_LIBS)				\
 	$(DBUS_LIBS)
 
-example_battery_status_area_item_la_SOURCES = \
-	example-battery-status-area-item.c \
-	example-battery-status-area-item.h
+example_signal_status_area_item_la_SOURCES = \
+	example-signal-status-area-item.c \
+	example-signal-status-area-item.h
 
 example_battery_status_area_item_la_CPPFLAGS = \
 	$(HILDON_CFLAGS)			\
