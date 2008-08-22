@@ -1,5 +1,9 @@
 2008-08-22  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* configure.ac: Update version.
+
+2008-08-22  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* libhildondesktop/hd-plugin-manager.c
 	  (hd_plugin_manager_finalize): Free the load priority data.
 	  (hd_plugin_manager_load_plugin_configuration): Add function to load
