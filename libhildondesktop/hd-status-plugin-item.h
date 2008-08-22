@@ -69,6 +69,12 @@ DBusConnection  *hd_status_plugin_item_get_dbus_connection    (HDStatusPluginIte
 DBusGConnection *hd_status_plugin_item_get_dbus_g_connection  (HDStatusPluginItem  *item,
                                                                DBusBusType          type,
                                                                GError             **error);
+guint            hd_status_plugin_item_heartbeat_signal_add   (HDStatusPluginItem *item,
+                                                               guint               mintime,
+                                                               guint               maxtime,
+                                                               GSourceFunc         source_func,
+                                                               gpointer            data,
+                                                               GDestroyNotify      destroy);
 
 G_END_DECLS
 

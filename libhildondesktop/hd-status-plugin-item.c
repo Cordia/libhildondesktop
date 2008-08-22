@@ -434,3 +434,46 @@ hd_status_plugin_item_get_dbus_g_connection (HDStatusPluginItem  *item,
 
   return g_connection;
 }
+
+/** hd_status_plugin_item_heartbeat_signal_add:
+ * @item: A #HDStatusPluginItem
+ * @mintime: Time in seconds that must be waited before @function is called, or 0.
+ * @maxtime: Time in seconds when the wait must end.
+ * @source_func: Function to call.
+ * @data: Data to pass to @function.
+ * @destroy: Function to call when the signal is removed, or %NULL.
+ *
+ * Sets a function to be called at regular intervals. The %function is called repeatedly until 
+ * it returns FALSE, at which point it is automatically destroyed and the function will not be
+ * called again.
+ *
+ * It is wise to have maxtime-mintime quite big so all users of this service get synced.
+ *
+ * If iphb is not avaiable g_timeout_add_seconds_full() is used with maxtime
+ * as interval.
+ * 
+ * See iphb_wait() for more information.
+ *
+ * Returns: The ID (greater than 0) of the event source.
+ **/
+guint
+hd_status_plugin_item_heartbeat_signal_add (HDStatusPluginItem *item,
+                                            guint               mintime,
+                                            guint               maxtime,
+                                            GSourceFunc         source_func,
+                                            gpointer            data,
+                                            GDestroyNotify      destroy)
+{
+  guint id;
+
+  /* FIXME add the iphb implementation */
+
+  /* Implementation which uses g_timeout_add_seconds */
+  id = g_timeout_add_seconds_full (G_PRIORITY_DEFAULT,
+                                   maxtime,
+                                   source_func,
+                                   data,
+                                   destroy);
+
+  return id;
+}

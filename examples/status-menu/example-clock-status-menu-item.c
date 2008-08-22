@@ -77,6 +77,8 @@ example_clock_status_menu_item_timeout_cb (ExampleClockStatusMenuItem *menu_item
   t = time (NULL);
   tmp = localtime (&t);
 
+  GDK_THREADS_ENTER ();
+
   strftime (time_str, sizeof (time_str), "%d.%m.%Y %H:%M:%S", tmp);
 
   gtk_button_set_label (GTK_BUTTON (menu_item->priv->label), time_str);
@@ -84,6 +86,8 @@ example_clock_status_menu_item_timeout_cb (ExampleClockStatusMenuItem *menu_item
   strftime (time_str, sizeof (time_str), "<span font_desc=\"12\">%H:%M</span>", tmp);
 
   gtk_label_set_markup (GTK_LABEL (menu_item->priv->status_area_label), time_str);
+
+  GDK_THREADS_LEAVE ();
 
   return TRUE;
 }
@@ -114,7 +118,11 @@ example_clock_status_menu_item_init (ExampleClockStatusMenuItem *menu_item)
 
   /* Add timeout */
   example_clock_status_menu_item_timeout_cb (EXAMPLE_CLOCK_STATUS_MENU_ITEM (menu_item));
-  menu_item->priv->timeout_id = gdk_threads_add_timeout (1000, (GSourceFunc) example_clock_status_menu_item_timeout_cb, menu_item);
+  menu_item->priv->timeout_id = hd_status_plugin_item_heartbeat_signal_add (HD_STATUS_PLUGIN_ITEM (menu_item),
+                                                                            0, 60,
+                                                                            (GSourceFunc) example_clock_status_menu_item_timeout_cb,
+                                                                            menu_item,
+                                                                            NULL);
 
   /* permanent visible */
   gtk_widget_show (GTK_WIDGET (menu_item));

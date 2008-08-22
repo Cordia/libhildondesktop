@@ -1,5 +1,17 @@
 2008-08-22  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* examples/status-menu/example-clock-status-menu-item.c
+	  (example_clock_status_menu_item_timeout_cb,
+	  example_clock_status_menu_item_init): Add an example for the
+	  heartbeat function.
+
+	* libhildondesktop/hd-status-plugin-item.c
+	  (hd_status_plugin_item_heartbeat_signal_add): Add a heartbeat
+	  function (g_timeout_add implementation).
+	* libhildondesktop/hd-status-plugin-item.h:
+
+2008-08-22  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* configure.ac: Update version.
 
 2008-08-22  Jan Arne Petersen  <jpetersen@openismus.com>
