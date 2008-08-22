@@ -1,3 +1,31 @@
+2008-08-22  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* libhildondesktop/hd-plugin-manager.c
+	  (hd_plugin_manager_finalize): Free the load priority data.
+	  (hd_plugin_manager_load_plugin_configuration): Add function to load
+	  the plugin configuration file and emit the
+	  ::plugin-configuration-loaded signal.
+	  (hd_plugin_manager_configuration_loaded): Call the
+	  hd_plugin_manager_load_plugin_configuration function instead of
+	  loading the plugin.
+	  (hd_plugin_manager_plugin_configuration_loaded): Add a default
+	  method handler for the ::plugin-configuration-loadded signal, which
+	  loads the plugins (from the plugin configuration and the
+	  .desktop-dir).
+	  (hd_plugin_manager_get_property, hd_plugin_manager_class_init): Add
+	  plugin-config-key property for the plugin configuration GKeyFile.
+	  (hd_plugin_manager_get_plugin_config_key_file): Add a function which
+	  returns the plugin configuration GKeyFile.
+	  (hd_plugin_manager_set_load_priority_func): Add a function which
+	  allows to set a function which set the load priority for plugins.
+	* libhildondesktop/hd-plugin-manager.h: Add new function protoypes
+
+	* libhildondesktop/hd-plugin-configuration.h (deleted):
+	* libhildondesktop/hd-plugin-configuration.c (deleted):
+	* libhildondesktop/Makefile.am: Remove HDPluginConfiguration class
+	after the relevant code was moved to
+	hd_plugin_manager_plugin_configuration_loaded.
+
 2008-08-15  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* configure.ac: Increase version.

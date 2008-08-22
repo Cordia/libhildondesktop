@@ -42,6 +42,10 @@ typedef struct _HDPluginManager        HDPluginManager;
 typedef struct _HDPluginManagerClass   HDPluginManagerClass;
 typedef struct _HDPluginManagerPrivate HDPluginManagerPrivate;
 
+typedef guint (*HDLoadPriorityFunc) (const gchar *plugin_id,
+                                     GKeyFile    *keyfile,
+                                     gpointer     data);
+
 struct _HDPluginManager 
 {
   GObject gobject;
@@ -53,26 +57,35 @@ struct _HDPluginManagerClass
 {
   GObjectClass parent_class;
 
-  void (*plugin_module_added)   (HDPluginManager *manager,
-                                 const gchar *plugin_id);
-  void (*plugin_module_removed) (HDPluginManager *manager,
-                                 const gchar *plugin_id);
-  void (*plugin_added)          (HDPluginManager *manager,
-                                 GObject *plugin);
-  void (*plugin_removed)        (HDPluginManager *manager,
-                                 GObject *plugin);
-  void (*configuration_loaded)  (HDPluginManager *manager,
-                                 GKeyFile *keyfile);
+  void (*plugin_module_added)         (HDPluginManager *manager,
+                                       const gchar     *plugin_id);
+  void (*plugin_module_removed)       (HDPluginManager *manager,
+                                       const gchar     *plugin_id);
+  void (*plugin_added)                (HDPluginManager *manager,
+                                       GObject         *plugin);
+  void (*plugin_removed)              (HDPluginManager *manager,
+                                       GObject         *plugin);
+  void (*configuration_loaded)        (HDPluginManager *manager,
+                                       GKeyFile        *keyfile);
+  void (*plugin_configuration_loaded) (HDPluginManager *manager,
+                                       GKeyFile        *keyfile);
 };
 
-GType            hd_plugin_manager_get_type             (void);
+GType            hd_plugin_manager_get_type                   (void);
 
-HDPluginManager *hd_plugin_manager_new                  (HDConfigFile *config_file,
-                                                         const gchar  *safe_mode_file);
+HDPluginManager *hd_plugin_manager_new                        (HDConfigFile       *config_file,
+                                                               const gchar        *safe_mode_file);
 
-void             hd_plugin_manager_run                  (HDPluginManager *manager);
+void             hd_plugin_manager_run                        (HDPluginManager    *manager);
 
-GList *          hd_plugin_manager_get_all_plugin_paths (HDPluginManager *manager);
+GList *          hd_plugin_manager_get_all_plugin_paths       (HDPluginManager    *manager);
+
+GKeyFile *       hd_plugin_manager_get_plugin_config_key_file (HDPluginManager    *manager);
+
+void             hd_plugin_manager_set_load_priority_func     (HDPluginManager    *manager,
+                                                               HDLoadPriorityFunc  load_priority_func,
+                                                               gpointer            data,
+                                                               GDestroyNotify      destroy);
 
 G_END_DECLS
 

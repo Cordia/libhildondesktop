@@ -32,7 +32,6 @@
 #include <string.h>
 
 #include "hd-config.h"
-#include "hd-plugin-configuration.h"
 #include "hd-plugin-loader.h"
 #include "hd-plugin-loader-factory.h"
 #include "hd-ui-policy.h"
@@ -47,11 +46,29 @@
 #define HD_PLUGIN_MANAGER_CONFIG_KEY_LOAD_ALL_PLUGINS "X-Load-All-Plugins"
 #define HD_PLUGIN_MANAGER_CONFIG_KEY_PLUGIN_CONFIGURATION "X-Plugin-Configuration"
 
+/* PluginInfo struct */
+typedef struct _HDPluginInfo HDPluginInfo;
+
+struct _HDPluginInfo
+{
+  gchar    *plugin_id;
+  gchar    *desktop_file;
+  guint     priority;
+  gpointer  item;
+};
+
+static HDPluginInfo *hd_plugin_info_new  (const gchar           *plugin_id,
+                                          const gchar           *desktop_file,
+                                          guint                  priority);
+static void          hd_plugin_info_free (HDPluginInfo          *plugin_definition);
+
+
 enum
 {
   PROP_0,
   PROP_CONF_FILE,
   PROP_SAFE_MODE_FILE,
+  PROP_PLUGIN_CONFIG_KEY_FILE,
 };
 
 enum
@@ -61,6 +78,7 @@ enum
   PLUGIN_ADDED,
   PLUGIN_REMOVED,
   CONFIGURATION_LOADED,
+  PLUGIN_CONFIGURATION_LOADED,
   LAST_SIGNAL
 };
 
@@ -73,7 +91,12 @@ struct _HDPluginManagerPrivate
   HDConfigFile           *config_file;
   gchar                  *safe_mode_file;
 
-  HDPluginConfiguration  *plugin_configuration;
+  HDConfigFile           *plugin_config_file;
+  GKeyFile               *plugin_config_key_file;
+
+  HDLoadPriorityFunc      load_priority_func;
+  gpointer                load_priority_data;
+  GDestroyNotify          load_priority_destroy;
 
   gboolean                safe_mode;
 
@@ -435,6 +458,13 @@ hd_plugin_manager_finalize (GObject *object)
       priv->policy = NULL;
     }
 
+
+  if (priv->load_priority_data && priv->load_priority_destroy)
+    {
+      priv->load_priority_destroy (priv->load_priority_data);
+      priv->load_priority_data = NULL;
+    }
+
   G_OBJECT_CLASS (hd_plugin_manager_parent_class)->finalize (object);
 }
 
@@ -600,6 +630,37 @@ hd_plugin_manager_load_configuration (HDPluginManager *manager)
 }
 
 static void
+hd_plugin_manager_load_plugin_configuration (HDPluginManager *manager)
+{
+  HDPluginManagerPrivate *priv = manager->priv;
+
+  /* Free old plugin configuration */
+  if (priv->plugin_config_key_file)
+    {
+      g_key_file_free (priv->plugin_config_key_file);
+      priv->plugin_config_key_file = NULL;
+    }
+
+  /* Only load plugin configuration if avaiable */
+  if (priv->plugin_config_file)
+    {
+      /* Load plugin configuration */
+      priv->plugin_config_key_file = hd_config_file_load_file (priv->plugin_config_file, FALSE);
+
+      if (!priv->plugin_config_key_file)
+        g_warning ("Error loading plugin configuration file");
+    }
+
+  /* Use empty keyfile if not set */
+  if (!priv->plugin_config_key_file)
+    priv->plugin_config_key_file = g_key_file_new ();
+
+  g_object_notify (G_OBJECT (manager), "plugin-config-key-file");
+
+  g_signal_emit (manager, plugin_manager_signals[PLUGIN_CONFIGURATION_LOADED], 0, priv->plugin_config_key_file);
+}
+
+static void
 hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
                                         GKeyFile        *keyfile)
 {
@@ -607,8 +668,7 @@ hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
   GError *error = NULL;
   gsize n_plugin_dir;
   gchar *policy_module;
-  gchar *plugin_configuration_filename;
-  GList *new_plugins = NULL;
+  gchar *plugin_config_filename;
 
   /* free old configuration */
   if (priv->plugin_dirs != NULL)
@@ -631,10 +691,10 @@ hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
       g_object_unref (priv->policy);
       priv->policy = NULL;
     }
-  if (priv->plugin_configuration)
+  if (priv->plugin_config_file)
     {
-      g_object_unref (priv->plugin_configuration);
-      priv->plugin_configuration = NULL;      
+      g_object_unref (priv->plugin_config_file);
+      priv->plugin_config_file = NULL;      
     }
 
   /* Load configuration ([X-PluginManager] group) */
@@ -690,21 +750,14 @@ hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
                                                     HD_PLUGIN_MANAGER_CONFIG_GROUP,
                                                     HD_PLUGIN_MANAGER_CONFIG_KEY_DEBUG_PLUGINS,
                                                     NULL,
-                                                    &error);
+                                                    NULL);
 
   policy_module = g_key_file_get_string (keyfile, 
                                          HD_PLUGIN_MANAGER_CONFIG_GROUP, 
                                          HD_DESKTOP_CONFIG_KEY_UI_POLICY,
-                                         &error);
+                                         NULL);
 
-  if (error)
-    {
-      g_free (policy_module);
-
-      g_error_free (error);
-      error = NULL;
-    }
-  else 
+  if (policy_module)
     {
       gchar *policy_module_path = g_build_filename (HD_UI_POLICY_MODULES_PATH,
                                                     policy_module,
@@ -722,17 +775,76 @@ hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
       g_free (policy_module_path);
     }
 
-  plugin_configuration_filename = g_key_file_get_string (keyfile, 
-                                                         HD_PLUGIN_MANAGER_CONFIG_GROUP, 
-                                                         HD_PLUGIN_MANAGER_CONFIG_KEY_PLUGIN_CONFIGURATION,
-                                                         NULL);
+  plugin_config_filename = g_key_file_get_string (keyfile, 
+                                                  HD_PLUGIN_MANAGER_CONFIG_GROUP, 
+                                                  HD_PLUGIN_MANAGER_CONFIG_KEY_PLUGIN_CONFIGURATION,
+                                                  NULL);
 
-  if (plugin_configuration_filename)
+  if (plugin_config_filename)
     {
-      priv->plugin_configuration = hd_plugin_configuration_new_for_config_file (priv->config_file,
-                                                                                plugin_configuration_filename);
+      gchar *system_conf_dir, *user_conf_dir;
 
-      new_plugins = hd_plugin_configuration_get_plugins (priv->plugin_configuration, FALSE);
+      /* Get config file directories */
+      g_object_get (G_OBJECT (priv->config_file),
+                    "system-conf-dir", &system_conf_dir,
+                    "user-conf-dir", &user_conf_dir,
+                    NULL);
+
+      priv->plugin_config_file = hd_config_file_new (system_conf_dir,
+                                                     user_conf_dir,
+                                                     plugin_config_filename);
+      g_signal_connect_object (priv->plugin_config_file, "changed",
+                               G_CALLBACK (hd_plugin_manager_load_plugin_configuration),
+                               manager, G_CONNECT_SWAPPED);
+    }
+
+  hd_plugin_manager_load_plugin_configuration (manager);
+}
+
+static void
+hd_plugin_manager_plugin_configuration_loaded (HDPluginManager *manager,
+                                               GKeyFile        *keyfile)
+{
+  HDPluginManagerPrivate *priv = manager->priv;
+  GList *new_plugins = NULL;
+
+  if (priv->plugin_config_file)
+    {
+      gchar **groups;
+      guint i;
+
+      groups = g_key_file_get_groups (keyfile, NULL);
+
+      /* Iterate over all groups if any */
+      if (groups != NULL)
+        {
+          for (i = 0; groups[i]; i++)
+            {
+              gchar *desktop_file;
+              guint priority = G_MAXUINT;
+
+              /* Ignore if X-Load==false */
+              if (g_key_file_has_key (keyfile, groups[i], "X-Load", NULL))
+                if (!g_key_file_get_boolean (keyfile, groups[i], "X-Load", NULL))
+                  continue;
+
+              /* Get the .desktop file of the plugin */
+              desktop_file = g_key_file_get_string (keyfile, groups[i], "X-Desktop-File", NULL);
+              if (desktop_file == NULL)
+                {
+                  g_warning ("No X-Desktop-File entry for plugin %s.", groups[i]);
+                  continue;
+                }
+
+              /* Get the load priority of the plugin */
+              if (priv->load_priority_func)
+                priority = priv->load_priority_func (groups[i], keyfile, priv->load_priority_data);
+
+              new_plugins = g_list_prepend (new_plugins, hd_plugin_info_new (groups[i],
+                                                                             desktop_file,
+                                                                             priority));
+            }
+        }
     }
 
   /* Load all plugins in the X-Plugin-Dirs directories 
@@ -819,7 +931,6 @@ hd_plugin_manager_set_property (GObject      *object,
       priv->safe_mode_file = g_value_dup_string (value);
       break;
 
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -839,6 +950,10 @@ hd_plugin_manager_get_property (GObject      *object,
       g_value_set_string (value, priv->safe_mode_file);
       break;
 
+    case PROP_PLUGIN_CONFIG_KEY_FILE:
+      g_value_set_pointer (value, priv->plugin_config_key_file);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -854,6 +969,7 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
   klass->plugin_added = hd_plugin_manager_plugin_added;
   klass->plugin_removed = hd_plugin_manager_plugin_removed;
   klass->configuration_loaded = hd_plugin_manager_configuration_loaded;
+  klass->plugin_configuration_loaded = hd_plugin_manager_plugin_configuration_loaded;
 
   g_object_class->finalize = hd_plugin_manager_finalize;
   g_object_class->get_property = hd_plugin_manager_get_property;
@@ -875,6 +991,13 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
                                                         "Safe mode stamp file",
                                                         NULL,
                                                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+  g_object_class_install_property (g_object_class,
+                                   PROP_PLUGIN_CONFIG_KEY_FILE,
+                                   g_param_spec_pointer ("plugin-config-key-file",
+                                                         "Plugin Config Key File",
+                                                         "Plugin configuration key file",
+                                                         G_PARAM_READABLE));
 
   plugin_manager_signals [PLUGIN_MODULE_ADDED] = g_signal_new ("plugin-module-added",
                                                                G_TYPE_FROM_CLASS (klass),
@@ -922,6 +1045,15 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
                                                                 g_cclosure_marshal_VOID__POINTER,
                                                                 G_TYPE_NONE, 1,
                                                                 G_TYPE_POINTER);
+  plugin_manager_signals [PLUGIN_CONFIGURATION_LOADED] = g_signal_new ("plugin-configuration-loaded",
+                                                                       G_TYPE_FROM_CLASS (klass),
+                                                                       G_SIGNAL_RUN_LAST,
+                                                                       G_STRUCT_OFFSET (HDPluginManagerClass,
+                                                                                        plugin_configuration_loaded),
+                                                                       NULL, NULL,
+                                                                       g_cclosure_marshal_VOID__POINTER,
+                                                                       G_TYPE_NONE, 1,
+                                                                       G_TYPE_POINTER);
 }
 
 HDPluginManager *
@@ -987,6 +1119,58 @@ hd_plugin_manager_get_all_plugin_paths (HDPluginManager *manager)
     }
 
   return plugin_paths;
+}
+
+GKeyFile *
+hd_plugin_manager_get_plugin_config_key_file (HDPluginManager *manager)
+{
+  HDPluginManagerPrivate *priv = manager->priv;
+
+  return priv->plugin_config_key_file;
+}
+
+void
+hd_plugin_manager_set_load_priority_func (HDPluginManager    *manager,
+                                          HDLoadPriorityFunc  load_priority_func,
+                                          gpointer            data,
+                                          GDestroyNotify      destroy)
+{
+  HDPluginManagerPrivate *priv = manager->priv;
+
+  g_return_if_fail (HD_IS_PLUGIN_MANAGER (manager));
+
+  /* Destroy old data */
+  if (priv->load_priority_data && priv->load_priority_destroy)
+    priv->load_priority_destroy (priv->load_priority_data);
+
+  priv->load_priority_func = load_priority_func;
+  priv->load_priority_data = data;
+  priv->load_priority_destroy = destroy;
+}
+
+/* PluginInfo */
+static HDPluginInfo *
+hd_plugin_info_new (const gchar *plugin_id,
+                    const gchar *desktop_file,
+                    guint        priority)
+{
+  HDPluginInfo *new_plugin_info = g_slice_new0 (HDPluginInfo);
+
+  if (plugin_id)
+    new_plugin_info->plugin_id = g_strdup (plugin_id);
+  if (desktop_file)
+    new_plugin_info->desktop_file = g_strdup (desktop_file);
+  new_plugin_info->priority = priority;
+
+  return new_plugin_info;
+}
+
+static void
+hd_plugin_info_free (HDPluginInfo *plugin_info)
+{
+  g_free (plugin_info->plugin_id);
+  g_free (plugin_info->desktop_file);
+  g_slice_free (HDPluginInfo, plugin_info);
 }
 
 
