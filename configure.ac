@@ -102,6 +102,8 @@ PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.0.2 dbus-glib-1 >= 0.74)
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
+AC_CHECK_LIB([iphb], [iphb_open])
+
 #+++++++++++++++++++
 # Directories setup
 #+++++++++++++++++++

@@ -24,11 +24,28 @@
 #include <config.h>
 #endif
 
+#include <errno.h>
+#include <string.h>
+#include <time.h>
+#include <iphbd/libiphb.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include <libhildondesktop/hd-plugin-module.h>
 
+
 #include "hd-status-plugin-item.h"
+
+
+typedef struct _HeartbeatSource HeartbeatSource;
+
+struct _HeartbeatSource
+{
+  GSource source;
+  iphb_t iphb;
+  GPollFD poll;
+  guint mintime;
+  guint maxtime;
+};
 
 /** 
  * SECTION:hd-status-plugin-item
@@ -435,6 +452,108 @@ hd_status_plugin_item_get_dbus_g_connection (HDStatusPluginItem  *item,
   return g_connection;
 }
 
+static gboolean 
+heartbeat_prepare (GSource *source,
+                   gint    *timeout)
+{
+  *timeout = -1;
+
+  return FALSE;
+}
+
+static gboolean 
+heartbeat_check (GSource *source)
+{
+  HeartbeatSource *heartbeat_source = (HeartbeatSource *)source;
+
+  return heartbeat_source->poll.revents != 0;
+}
+
+static gboolean
+heartbeat_dispatch (GSource    *source, 
+                    GSourceFunc callback,
+                    gpointer    user_data)
+{
+  HeartbeatSource *heartbeat_source = (HeartbeatSource *)source;
+
+  if (!callback)
+    {
+      g_warning ("Idle source dispatched without callback\n"
+                 "You must call g_source_set_callback().");
+      return FALSE;
+    }
+
+  if (callback (user_data))
+    {
+      g_source_remove_poll (source, &heartbeat_source->poll);
+
+      iphb_wait (heartbeat_source->iphb, heartbeat_source->mintime, heartbeat_source->maxtime, 0);
+
+      heartbeat_source->poll.fd = iphb_get_fd (heartbeat_source->iphb);
+      heartbeat_source->poll.events = G_IO_IN;
+      heartbeat_source->poll.revents = 0;
+
+      g_source_add_poll (source, &heartbeat_source->poll);
+
+      return TRUE;
+    }
+  else
+    {
+      return FALSE;
+
+    }
+}
+
+static void
+heartbeat_finalize (GSource *source)
+{
+  HeartbeatSource *heartbeat_source = (HeartbeatSource *)source;
+
+  heartbeat_source->iphb = iphb_close (heartbeat_source->iphb);
+}
+
+
+GSourceFuncs heartbeat_funcs =
+{
+  heartbeat_prepare,
+  heartbeat_check,
+  heartbeat_dispatch,
+  heartbeat_finalize
+};
+
+static GSource *
+heartbeat_source_new (guint mintime,
+                      guint maxtime)
+{
+  iphb_t iphb;
+  GSource *source;
+  HeartbeatSource *heartbeat_source;
+  int heartbeat_interval;
+
+  iphb = iphb_open (&heartbeat_interval);
+  if (!iphb)
+    {
+      g_debug ("ERROR, iphb_open() failed %s\n", strerror (errno));
+      return NULL;
+    }
+
+  source = g_source_new (&heartbeat_funcs, sizeof (HeartbeatSource));
+  heartbeat_source = (HeartbeatSource *)source;
+
+  heartbeat_source->iphb = iphb;
+  heartbeat_source->mintime = mintime;
+  heartbeat_source->maxtime = maxtime;
+
+  iphb_wait (heartbeat_source->iphb, mintime, maxtime, 0);
+
+  heartbeat_source->poll.fd = iphb_get_fd (heartbeat_source->iphb);
+  heartbeat_source->poll.events = G_IO_IN;
+
+  g_source_add_poll (source, &heartbeat_source->poll);
+
+  return source;
+}
+
 /** hd_status_plugin_item_heartbeat_signal_add:
  * @item: A #HDStatusPluginItem
  * @mintime: Time in seconds that must be waited before @function is called, or 0.
@@ -464,16 +583,25 @@ hd_status_plugin_item_heartbeat_signal_add (HDStatusPluginItem *item,
                                             gpointer            data,
                                             GDestroyNotify      destroy)
 {
+  GSource *source;
   guint id;
 
-  /* FIXME add the iphb implementation */
+  /* Try to create heartbeat source */
+  source = heartbeat_source_new (mintime, maxtime);
 
-  /* Implementation which uses g_timeout_add_seconds */
-  id = g_timeout_add_seconds_full (G_PRIORITY_DEFAULT,
-                                   maxtime,
-                                   source_func,
-                                   data,
-                                   destroy);
+  /* If heartbeat source could not be opened use timeout source */
+  if (!source)
+    {
+      source = g_timeout_source_new_seconds (maxtime);
+    }
+
+  /* Set the callback */
+  g_source_set_callback (source, source_func, data, destroy);
+
+  /* Attach the source */
+  id = g_source_attach (source, NULL);
+
+  g_source_unref (source);
 
   return id;
 }

@@ -1,3 +1,12 @@
+2008-08-25  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* configure.ac: Add libiphb dependency
+	* debian/control: Add libiphb-dev dependency
+	* libhildondesktop/hd-status-plugin-item.c (heartbeat_source_new): Add
+	new iphb based heartbeat source.
+	  (hd_status_plugin_item_heartbeat_signal_add): Use heartbeat source
+	  ih iphb is avaiable.
+
 2008-08-22  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* examples/status-menu/example-clock-status-menu-item.c
