@@ -551,13 +551,23 @@ create_sync_lists (GList          *old,
   *to_remove = g_list_concat (old, remove);
 }
 
+/* Compare plugin id and desktop file */
 static gint
 cmp_info_plugin_id (const HDPluginInfo *a,
                     const HDPluginInfo *b)
 {
-  return strcmp (a->plugin_id, b->plugin_id);
+  gint result;
+
+  result = strcmp (a->plugin_id, b->plugin_id);
+
+  if (result)
+    return result;
+
+  /* If plugin IDs are the same compare the desktop_file */
+  return strcmp (a->desktop_file, b->desktop_file);
 }
 
+/* Compare desktop file */
 static gint
 cmp_info_desktop_file (const HDPluginInfo *a,
                        const HDPluginInfo *b)
@@ -565,6 +575,7 @@ cmp_info_desktop_file (const HDPluginInfo *a,
   return strcmp (a->desktop_file, b->desktop_file);
 }
 
+/* Compare priority */
 static gint
 cmp_info_priority (const HDPluginInfo *a,
                    const HDPluginInfo *b)
@@ -596,8 +607,8 @@ hd_plugin_manager_sync_plugins (HDPluginManager *manager,
         continue;
 
       old_plugins = g_list_prepend (old_plugins, hd_plugin_info_new (info->plugin_id,
-                                                                           info->desktop_file,
-                                                                           0));
+                                                                     info->desktop_file,
+                                                                     0));
     }
 
   create_sync_lists (old_plugins, new_plugins, &to_add, &to_remove,

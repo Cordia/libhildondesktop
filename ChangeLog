@@ -1,5 +1,12 @@
 2008-08-29  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* libhildondesktop/hd-plugin-manager.c (create_sync_lists,
+	  cmp_info_plugin_id, cmp_info_desktop_file,
+	  hd_plugin_manager_sync_plugins): Reload plugin if the
+	  X-Desktop-File value in the plugin configuration file changed.
+
+2008-08-29  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* doc/libhildondesktop-docs.xml: Add HDPluginItem documentation.
 
 	* doc/libhildondesktop-sections.txt: Add HDPluginItem documentation.
@@ -11,16 +18,16 @@
 
 	* libhildondesktop/hd-plugin-loader-default.c
 	  (hd_plugin_loader_default_open_module): Strip leading and trailing
-	  whitspaces from key file string.
+	  whitespaces from key file string.
 
 	* libhildondesktop/hd-plugin-loader-factory.c
 	  (hd_plugin_loader_factory_create): Strip leading and trailing
-	  whitspaces from key file string.
+	  whitespaces from key file string.
 
 	* libhildondesktop/hd-plugin-manager.c: Update documentation.
 	  (hd_plugin_manager_configuration_loaded,
 	  hd_plugin_manager_plugin_configuration_loaded): Strip leading and trailing
-	  whitspaces from key file string.
+	  whitespaces from key file string.
 
 	* libhildondesktop/hd-plugin-manager.h (plugin_module_added,
 	  plugin_module_removed): Rename argument name.
