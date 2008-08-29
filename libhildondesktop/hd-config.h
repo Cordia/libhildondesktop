@@ -26,11 +26,6 @@
 #define __HD_CONFIG_H__
 
 #define HD_DESKTOP_CONFIG_KEY_TYPE          	"X-Type"
-#define HD_DESKTOP_CONFIG_KEY_POSITION_X    	"X-Position-X"
-#define HD_DESKTOP_CONFIG_KEY_POSITION_Y    	"X-Position-Y"
-#define HD_DESKTOP_CONFIG_KEY_SIZE_WIDTH    	"X-Size-Width"
-#define HD_DESKTOP_CONFIG_KEY_SIZE_HEIGHT   	"X-Size-Height"
-#define HD_DESKTOP_CONFIG_KEY_ORIENTATION   	"X-Orientation"
 #define HD_DESKTOP_CONFIG_KEY_CONFIG_FILE   	"X-Config-File"
 #define HD_DESKTOP_CONFIG_KEY_UI_POLICY     	"X-UI-Policy"
 #define HD_DESKTOP_CONFIG_KEY_IS_ORDERED    	"X-Is-Ordered"
@@ -38,39 +33,9 @@
 #define HD_DESKTOP_CONFIG_KEY_LOAD	    	"X-Load"
 #define HD_DESKTOP_CONFIG_KEY_LOAD_NEW_PLUGINS	"X-Load-New-Plugins"
 
-#define HD_DESKTOP_CONFIG_KEY_PADDING_TOP       "X-Padding-Top"
-#define HD_DESKTOP_CONFIG_KEY_PADDING_BOTTOM    "X-Padding-Bottom"
-#define HD_DESKTOP_CONFIG_KEY_PADDING_LEFT      "X-Padding-Left"
-#define HD_DESKTOP_CONFIG_KEY_PADDING_RIGHT     "X-Padding-Right"
-
-#define HD_CONTAINER_TYPE_HOME              "home"
-#define HD_CONTAINER_TYPE_PANEL_FIXED       "panel_fixed"
-#define HD_CONTAINER_TYPE_PANEL_BOX         "panel_box"
-#define HD_CONTAINER_TYPE_PANEL_EXPANDABLE  "panel_expandable"
-
-#define HD_WINDOW_ORIENTATION_TOP           "top"
-#define HD_WINDOW_ORIENTATION_BOTTOM        "bottom"
-#define HD_WINDOW_ORIENTATION_LEFT          "left"
-#define HD_WINDOW_ORIENTATION_RIGHT         "right"
-
 #define HD_PLUGIN_CONFIG_GROUP              "Desktop Entry"
-#define HD_PLUGIN_CONFIG_KEY_NAME           "Name"
-#define HD_PLUGIN_CONFIG_KEY_RESOURCE       "X-Resource"
 #define HD_PLUGIN_CONFIG_KEY_TYPE           "Type"
 #define HD_PLUGIN_CONFIG_KEY_PATH           "X-Path"
 #define HD_PLUGIN_CONFIG_KEY_TEXT_DOMAIN    "X-Text-Domain"
-#define HD_PLUGIN_CONFIG_KEY_MANDATORY      "Mandatory"
-#define HD_PLUGIN_CONFIG_KEY_TEMPORARY      "X-Temporary"
-
-#define HD_PLUGIN_CONFIG_KEY_HOME_APPLET    "X-home-applet"
-#define HD_PLUGIN_CONFIG_KEY_HOME_APPLET_RESIZABLE "X-home-applet-resizable"
-#define HD_PLUGIN_CONFIG_KEY_HOME_MIN_WIDTH  "X-home-applet-minwidth"
-#define HD_PLUGIN_CONFIG_KEY_HOME_MIN_HEIGHT "X-home-applet-minheight"
-
-#define HD_PLUGIN_CONFIG_KEY_TN             "X-task-navigator-plugin"
-
-#define HD_PLUGIN_CONFIG_KEY_SB             "X-status-bar-plugin"
-
-#define AS_ICON_THUMB_SIZE      64
 
 #endif /* __HD_CONFIG_H__ */

@@ -269,6 +269,7 @@ hd_plugin_loader_factory_create (HDPluginLoaderFactory  *factory,
                                 HD_PLUGIN_CONFIG_GROUP,
                                 HD_PLUGIN_CONFIG_KEY_TYPE,
                                 &local_error);
+  g_strstrip (type);
 
   if (local_error)
   {

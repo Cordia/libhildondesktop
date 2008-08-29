@@ -58,9 +58,9 @@ struct _HDPluginManagerClass
   GObjectClass parent_class;
 
   void (*plugin_module_added)         (HDPluginManager *manager,
-                                       const gchar     *plugin_id);
+                                       const gchar     *desktop_file);
   void (*plugin_module_removed)       (HDPluginManager *manager,
-                                       const gchar     *plugin_id);
+                                       const gchar     *desktop_file);
   void (*plugin_added)                (HDPluginManager *manager,
                                        GObject         *plugin);
   void (*plugin_removed)              (HDPluginManager *manager,

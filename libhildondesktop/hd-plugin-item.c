@@ -28,6 +28,17 @@
 
 #include "hd-plugin-item.h"
 
+/** 
+ * SECTION:hd-plugin-item
+ * @short_description: Base interface for plugable items.
+ *
+ * #HDPluginItem is a base interface for plugable items. It defines the #HDPluginItem::plugin-id property
+ * for the unique plugin ID.
+ *
+ * And a hd_plugin_item_get_dl_filename() function which returns the filename of
+ * the dynamic library for debugging purposes.
+ **/
+
 static void
 hd_plugin_item_class_init (gpointer g_iface)
 {
@@ -59,9 +70,13 @@ hd_plugin_item_get_type (void)
 }
 
 /**
+ * hd_plugin_item_get_plugin_id:
+ * @item: a #HDPluginItem.
  *
- * Returns: the current pixbuf. g_free it.
- */
+ * Returns the unique plugin ID of @item.
+ * 
+ * Returns: the plugin ID. The result should be freed if no longer used.
+ **/
 gchar *
 hd_plugin_item_get_plugin_id (HDPluginItem *item)
 {
@@ -78,7 +93,7 @@ hd_plugin_item_get_plugin_id (HDPluginItem *item)
 
 /**
  * hd_plugin_item_get_dl_filename:
- * @item: a #HDPluginItem
+ * @item: a #HDPluginItem.
  *
  * Returns the filename of the dynamic library file from which this item was loaded.
  * Useful for debugging purposes.
@@ -101,4 +116,3 @@ hd_plugin_item_get_dl_filename (HDPluginItem *item)
   type = G_TYPE_FROM_INSTANCE (item);
   return g_type_get_qdata (type, dl_filename_quark);
 }
-

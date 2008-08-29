@@ -57,7 +57,7 @@ struct _HeartbeatSource
  * the Status Area icon.
  *
  * The hd_status_plugin_item_get_dl_filename() function can be used to get the filename of
- * the dynamic library for debuggin purposes.
+ * the dynamic library for debugging purposes.
  *
  * Plugins should use private D-Bus connections. There is the 
  * hd_status_plugin_item_get_dbus_connection() function which should be used to create such
@@ -554,15 +554,16 @@ heartbeat_source_new (guint mintime,
   return source;
 }
 
-/** hd_status_plugin_item_heartbeat_signal_add:
- * @item: A #HDStatusPluginItem
- * @mintime: Time in seconds that must be waited before @function is called, or 0.
+/**
+ * hd_status_plugin_item_heartbeat_signal_add:
+ * @item: A #HDStatusPluginItem.
+ * @mintime: Time in seconds that must be waited before @source_func is called, or 0.
  * @maxtime: Time in seconds when the wait must end.
  * @source_func: Function to call.
  * @data: Data to pass to @function.
  * @destroy: Function to call when the signal is removed, or %NULL.
  *
- * Sets a function to be called at regular intervals. The %function is called repeatedly until 
+ * Sets a function to be called at regular intervals. The @source_func is called repeatedly until 
  * it returns FALSE, at which point it is automatically destroyed and the function will not be
  * called again.
  *

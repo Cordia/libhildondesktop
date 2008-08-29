@@ -62,6 +62,7 @@ hd_plugin_loader_default_open_module (HDPluginLoaderDefault  *loader,
                                        HD_PLUGIN_CONFIG_GROUP,
                                        HD_PLUGIN_CONFIG_KEY_PATH,
                                        &keyfile_error);
+  g_strstrip (module_file);
 
   if (keyfile_error)
     {

@@ -16,6 +16,7 @@
       <title>Common</title>
       <xi:include href="xml/hd-plugin-module-macros.xml"/>
       <xi:include href="xml/hd-plugin-module.xml"/>
+      <xi:include href="xml/hd-plugin-item.xml"/>
     </chapter>
     <chapter id="status-menu">
       <title>Status Menu</title>

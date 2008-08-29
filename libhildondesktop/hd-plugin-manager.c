@@ -113,6 +113,27 @@ struct _HDPluginManagerPrivate
 
 static guint plugin_manager_signals [LAST_SIGNAL] = { 0 };
 
+/** 
+ * SECTION:hd-plugin-manager
+ * @short_description: Manages plugins defined by configuration files
+ *
+ * A #HDPluginManager manages plugins defined in configuration files.
+ *
+ * The configuration is read from the configuration file specified on creation
+ * of the #HDPluginManager instance.
+ *
+ * To use the #HDPluginManager connect to the #HDPluginManager::plugin-added and
+ * #HDPluginManager::plugin-removed signals. These signals are emitted if a plugin
+ * should be added or removed from the application.
+ *
+ * Calling hd_plugin_manager_run() results in an initial read of the configuration files
+ * in which the #HDPluginManager::plugin-added is emitted for each plugin which
+ * is loaded.
+ *
+ *
+ * 
+ **/
+
 G_DEFINE_TYPE (HDPluginManager, hd_plugin_manager, G_TYPE_OBJECT);
 
 static void
@@ -738,6 +759,7 @@ hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
 
       for (i = 0; priv->plugin_dirs[i] != NULL; i++)
         {
+          g_strstrip (priv->plugin_dirs[i]);
           gnome_vfs_monitor_add (&priv->plugin_dir_monitors[i],
                                  priv->plugin_dirs[i],
                                  GNOME_VFS_MONITOR_DIRECTORY,
@@ -756,6 +778,7 @@ hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
                                          HD_PLUGIN_MANAGER_CONFIG_GROUP, 
                                          HD_DESKTOP_CONFIG_KEY_UI_POLICY,
                                          NULL);
+  g_strstrip (policy_module);
 
   if (policy_module)
     {
@@ -779,6 +802,7 @@ hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
                                                   HD_PLUGIN_MANAGER_CONFIG_GROUP, 
                                                   HD_PLUGIN_MANAGER_CONFIG_KEY_PLUGIN_CONFIGURATION,
                                                   NULL);
+  g_strstrip (plugin_config_filename);
 
   if (plugin_config_filename)
     {
@@ -830,6 +854,7 @@ hd_plugin_manager_plugin_configuration_loaded (HDPluginManager *manager,
 
               /* Get the .desktop file of the plugin */
               desktop_file = g_key_file_get_string (keyfile, groups[i], "X-Desktop-File", NULL);
+              g_strstrip (desktop_file);
               if (desktop_file == NULL)
                 {
                   g_warning ("No X-Desktop-File entry for plugin %s.", groups[i]);
@@ -882,6 +907,8 @@ hd_plugin_manager_plugin_configuration_loaded (HDPluginManager *manager,
       for (i = 0; priv->debug_plugins[i]; i++)
         {
           GList *p;
+
+          g_strstrip (priv->debug_plugins[i]);
 
           for (p = new_plugins; p; )
             {
@@ -999,6 +1026,13 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
                                                          "Plugin configuration key file",
                                                          G_PARAM_READABLE));
 
+  /**
+   *  HDPluginManager::plugin-module-added:
+   *  @manager: a #HDPluginManager.
+   *  @desktop_file: filename of the plugin desktop file.
+   *
+   *  Emitted if a new plugin desktop file is installed.
+   **/
   plugin_manager_signals [PLUGIN_MODULE_ADDED] = g_signal_new ("plugin-module-added",
                                                                G_TYPE_FROM_CLASS (klass),
                                                                G_SIGNAL_RUN_FIRST,
@@ -1008,6 +1042,13 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
                                                                G_TYPE_NONE, 1,
                                                                G_TYPE_STRING);
 
+  /**
+   *  HDPluginManager::plugin-module-removed:
+   *  @manager: a #HDPluginManager.
+   *  @desktop_file: filename of the plugin desktop file.
+   *
+   *  Emitted if a plugin desktop file is removed.
+   **/
   plugin_manager_signals [PLUGIN_MODULE_REMOVED] = g_signal_new ("plugin-module-removed",
                                                                  G_TYPE_FROM_CLASS (klass),
                                                                  G_SIGNAL_RUN_FIRST,
@@ -1017,6 +1058,13 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
                                                                  G_TYPE_NONE, 1,
                                                                  G_TYPE_STRING);
 
+  /**
+   *  HDPluginManager::plugin-added:
+   *  @manager: a #HDPluginManager.
+   *  @plugin: the new plugin.
+   *
+   *  Emitted if a new plugin instance is created (loaded).
+   **/
   plugin_manager_signals [PLUGIN_ADDED] = g_signal_new ("plugin-added",
                                                         G_TYPE_FROM_CLASS (klass),
                                                         G_SIGNAL_RUN_FIRST,
@@ -1026,6 +1074,13 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
                                                         G_TYPE_NONE, 1,
                                                         G_TYPE_OBJECT);
 
+  /**
+   *  HDPluginManager::plugin-removed:
+   *  @manager: a #HDPluginManager.
+   *  @plugin: the plugin.
+   *
+   *  Emitted if a plugin instance is removed.
+   **/
   plugin_manager_signals [PLUGIN_REMOVED] = g_signal_new ("plugin-removed",
                                                           G_TYPE_FROM_CLASS (klass),
                                                           G_SIGNAL_RUN_LAST,
@@ -1036,6 +1091,13 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
                                                           G_TYPE_NONE, 1,
                                                           G_TYPE_OBJECT);
 
+  /**
+   *  HDPluginManager::configuration-loaded:
+   *  @manager: a #HDPluginManager.
+   *  @key_file: the plugin manager configuration #GKeyFile.
+   *
+   *  Emitted if the plugin manager configuration file is loaded.
+   **/
   plugin_manager_signals [CONFIGURATION_LOADED] = g_signal_new ("configuration-loaded",
                                                                 G_TYPE_FROM_CLASS (klass),
                                                                 G_SIGNAL_RUN_LAST,
@@ -1045,6 +1107,14 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
                                                                 g_cclosure_marshal_VOID__POINTER,
                                                                 G_TYPE_NONE, 1,
                                                                 G_TYPE_POINTER);
+
+  /**
+   *  HDPluginManager::plugin-configuration-loaded:
+   *  @manager: a #HDPluginManager.
+   *  @key_file: the plugin configuration #GKeyFile.
+   *
+   *  Emitted if the plugin configuration file is loaded.
+   **/
   plugin_manager_signals [PLUGIN_CONFIGURATION_LOADED] = g_signal_new ("plugin-configuration-loaded",
                                                                        G_TYPE_FROM_CLASS (klass),
                                                                        G_SIGNAL_RUN_LAST,
@@ -1056,6 +1126,15 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
                                                                        G_TYPE_POINTER);
 }
 
+/**
+ * hd_plugin_manager_new:
+ * @config_file: a HDConfigFile which specify the configuration file.
+ * @safe_mode_file: the filename of a safe mode file.
+ *
+ * This function creates a new #HDPluginManager instance.
+ *
+ * Returns: a new #HDPluginManager instance.
+ **/
 HDPluginManager *
 hd_plugin_manager_new (HDConfigFile *config_file,
                        const gchar  *safe_mode_file)
@@ -1068,6 +1147,15 @@ hd_plugin_manager_new (HDConfigFile *config_file,
   return manager;
 }
 
+/**
+ * hd_plugin_manager_run:
+ * @manager: a #HDPluginManager
+ *
+ * This function should be called after the callback signals
+ * are connected to @manager. It does an initial read of the configuration
+ * files, loads the plugins according to the configuration and emits the
+ * appropiate callback signals.
+ **/
 void
 hd_plugin_manager_run (HDPluginManager *manager)
 {
@@ -1121,6 +1209,16 @@ hd_plugin_manager_get_all_plugin_paths (HDPluginManager *manager)
   return plugin_paths;
 }
 
+/**
+ * hd_plugin_manager_get_plugin_config_key_file:
+ * @manager: a #HDPluginManager
+ *
+ * This function can be used in the HDPluginManager::plugin-added and
+ * HDPluginManager::plugin-configuration-loaded to get a reference
+ * of the plugin configuration key file.
+ *
+ * Returns: a reference to the plugin configuration key file. It is owned by the manager and must not be freed.
+ **/
 GKeyFile *
 hd_plugin_manager_get_plugin_config_key_file (HDPluginManager *manager)
 {
@@ -1129,6 +1227,17 @@ hd_plugin_manager_get_plugin_config_key_file (HDPluginManager *manager)
   return priv->plugin_config_key_file;
 }
 
+/**
+ * hd_plugin_manager_set_load_priority_func:
+ * @manager: a #HDPluginManager
+ * @load_priority_func: a #HDLoadPriorityFunc which should be used to calculate the load priority of a plugin
+ * @data: data which is passed to @load_priority_func
+ * @destroy: function to call when @data should be destroyed
+ *
+ * This function allows it to specify a function which calculates the priority in which plugins
+ * are loaded. The lower the unsigned integer returned by @load_priority_func is the earlier
+ * the plugin is loaded.
+ **/
 void
 hd_plugin_manager_set_load_priority_func (HDPluginManager    *manager,
                                           HDLoadPriorityFunc  load_priority_func,
