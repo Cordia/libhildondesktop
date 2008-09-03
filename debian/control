@@ -11,6 +11,11 @@ Architecture: any
 Depends: libhildondesktop1 (= ${Source-Version}), libhildon1-dev (>= 2.1.0), libosso-gnomevfs2-dev, libdbus-1-dev (>= 1.0.2)
 Description: Hildon Desktop libraries development files
 
+Package: libhildondesktop1-doc
+Section: doc
+Architecture: all
+Description: Hildon Desktop library documentation
+
 Package: libhildondesktop1
 Section: libs
 Architecture: any

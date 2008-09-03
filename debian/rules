@@ -36,8 +36,10 @@ endif
 
 ifeq (,$(findstring nodocs,$(DEB_BUILD_OPTIONS)))
 ENABLE_GTK_DOC = --enable-gtk-doc
+INST_EX = ''
 else
 ENABLE_GTK_DOC = --disable-gtk-doc
+INST_EX = '--exclude=usr/share/gtk-doc'
 endif
 
 config.status: configure
@@ -97,7 +99,7 @@ binary-arch: build install
 	dh_installchangelogs 
 #	dh_installexamples
 	dh_installdocs
-	dh_install --sourcedir=debian/build -v
+	dh_install --sourcedir=debian/build -v $(INST_EX)
 #	dh_installmenu
 #	dh_installdebconf	
 #	dh_installlogrotate
