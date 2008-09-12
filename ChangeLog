@@ -1,5 +1,20 @@
 2008-09-12  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* libhildondesktop/Makefile.am: Add hd-heartbeat.[ch].
+
+	* libhildondesktop/hd-heartbeat.c 
+	  (hd_heartbeat_source_new, hd_heartbeat_add,
+	   hd_heartbeat_add_full):
+	* libhildondesktop/hd-heartbeat.h: Extract the heartbeat code from
+	HDStatusPluginItem to make it easier to use it from the
+	HDHomePluginItem.
+
+	* libhildondesktop/hd-status-plugin-item.c
+	  (hd_status_plugin_item_heartbeat_signal_add): Use
+	  hd_heartbeat_add_full and refactor heartbeat code into own file.
+
+2008-09-12  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* configure.ac: Increase version. Add
 	hildonnotificationdesktopentrydir variable. Add notification plugin
 	example.
