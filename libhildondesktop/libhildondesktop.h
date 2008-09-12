@@ -33,8 +33,12 @@
 /* Notification API */
 #include <libhildondesktop/hd-notification-plugin.h>
 
+/* Home API */
+#include <libhildondesktop/hd-home-plugin-item.h>
+
 /* Other API */
 #include <libhildondesktop/hd-config-file.h>
+#include <libhildondesktop/hd-heartbeat.h>
 #include <libhildondesktop/hd-plugin-loader-default.h>
 #include <libhildondesktop/hd-plugin-loader-factory.h>
 #include <libhildondesktop/hd-plugin-loader.h>

@@ -1,1 +1,1 @@
-SUBDIRS = notification status-menu
+SUBDIRS = home notification status-menu

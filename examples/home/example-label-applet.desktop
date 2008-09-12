@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Example Label Home Applet
+Comment=An example Home Applet
+Type=default
+X-Path=example-label-home-applet.so

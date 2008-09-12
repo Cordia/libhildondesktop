@@ -1,5 +1,30 @@
 2008-09-12  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* debian/libhildondesktop1-examples.install: Install example home
+	applet .desktop file.
+
+	* configure.ac:
+	* examples/Makefile.am:
+	* examples/home/Makefile.am:
+	* examples/home/example-label-applet.desktop:
+	* examples/home/example-label-home-applet.c:
+	* examples/home/example-label-home-applet.h: Add example home applet
+	plugin.
+
+	* libhildondesktop/Makefile.am: Add hd-home-plugin-item.[ch]
+
+	* libhildondesktop/hd-home-plugin-item.c:
+	* libhildondesktop/hd-home-plugin-item.h: Add home applet plugin API.
+
+	* libhildondesktop/hd-status-plugin-item.c
+	  (hd_status_plugin_item_get_dl_filename): Call
+	  hd_plugin_item_get_dl_filename instead of another implementation.
+
+	* libhildondesktop/libhildondesktop.h: Add hd-home-plugin-item.h and
+	hd-heartbeat.h.
+
+2008-09-12  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* libhildondesktop/Makefile.am: Add hd-heartbeat.[ch].
 
 	* libhildondesktop/hd-heartbeat.c 

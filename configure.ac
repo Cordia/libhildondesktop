@@ -152,6 +152,7 @@ Makefile				\
 doc/Makefile				\
 doc/version.xml				\
 examples/Makefile			\
+examples/home/Makefile			\
 examples/notification/Makefile		\
 examples/status-menu/Makefile		\
 libhildondesktop/Makefile		\

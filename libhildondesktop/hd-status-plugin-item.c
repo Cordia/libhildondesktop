@@ -332,18 +332,9 @@ hd_status_plugin_item_set_status_area_widget (HDStatusPluginItem *item,
 const gchar *
 hd_status_plugin_item_get_dl_filename (HDStatusPluginItem *item)
 {
-  static GQuark dl_filename_quark = 0;
-  GType type;
-
   g_return_val_if_fail (HD_IS_STATUS_PLUGIN_ITEM (item), NULL);
 
-  /* Create hd-plugin-module-dl-filename quark */
-  if (G_UNLIKELY (!dl_filename_quark))
-    dl_filename_quark = g_quark_from_static_string (HD_PLUGIN_MODULE_DL_FILENAME);
-
-  /* The dl filename is stored in the type data */
-  type = G_TYPE_FROM_INSTANCE (item);
-  return g_type_get_qdata (type, dl_filename_quark);
+  return hd_plugin_item_get_dl_filename (HD_PLUGIN_ITEM (item));
 }
 
 /**
