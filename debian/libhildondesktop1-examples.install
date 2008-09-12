@@ -1,3 +1,4 @@
 usr/lib/hildon-desktop/*.so
+usr/share/applications/hildon-notification/*.desktop
 usr/share/applications/hildon-status-menu/*.desktop
 usr/share/hildon-desktop/example-*.png

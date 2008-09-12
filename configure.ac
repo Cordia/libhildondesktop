@@ -1,4 +1,4 @@
-AC_INIT([libhildondesktop], [2.1.3], [], [libhildondesktop])
+AC_INIT([libhildondesktop], [2.1.4], [], [libhildondesktop])
 AC_CANONICAL_SYSTEM
 
 AM_CONFIG_HEADER(config.h)
@@ -112,6 +112,7 @@ AC_CHECK_LIB([iphb], [iphb_open])
 hildondesktoplibdir="${libdir}/hildon-desktop"
                   
 hildonhomedesktopentrydir="${datadir}/applications/hildon-home"
+hildonnotificationdesktopentrydir="${datadir}/applications/hildon-notification"
 hildonstatusmenudesktopentrydir="${datadir}/applications/hildon-status-menu"
 
 hildondesktopconfdir=${sysconfdir}/hildon-desktop
@@ -121,6 +122,8 @@ AC_SUBST(hildondesktopconfdir)
 # Expand nested variables
 eval "hildonhomedesktopentrydir=$hildonhomedesktopentrydir"
 AC_SUBST(hildonhomedesktopentrydir)
+
+AC_SUBST(hildonnotificationdesktopentrydir)
 
 # Expand nested variables
 # eval "hildonstatusmenudesktopentrydir=$hildonstatusmenudesktopentrydir"
@@ -149,6 +152,7 @@ Makefile				\
 doc/Makefile				\
 doc/version.xml				\
 examples/Makefile			\
+examples/notification/Makefile		\
 examples/status-menu/Makefile		\
 libhildondesktop/Makefile		\
 libhildondesktop/libhildondesktop.pc	\

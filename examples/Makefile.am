@@ -1,1 +1,1 @@
-SUBDIRS = status-menu
+SUBDIRS = notification status-menu

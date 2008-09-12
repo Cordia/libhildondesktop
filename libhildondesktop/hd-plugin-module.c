@@ -240,9 +240,16 @@ hd_plugin_module_new_object (HDPluginModule *module,
   g_return_val_if_fail (HD_IS_PLUGIN_MODULE (module), NULL);
 
   if (module->priv->gtypes != NULL)
-    return g_object_new ((GType) GPOINTER_TO_INT (module->priv->gtypes->data),
-                         "plugin-id", plugin_id,
-                         NULL);
+    {
+      GType type = GPOINTER_TO_INT (module->priv->gtypes->data);
+
+      if (g_type_is_a (type, HD_TYPE_PLUGIN_ITEM))
+        return g_object_new (type,
+                             "plugin-id", plugin_id,
+                             NULL);
+      else
+        return g_object_new (type, NULL);
+    }
 
   return NULL;
 }
@@ -262,11 +269,13 @@ hd_plugin_module_add_type (HDPluginModule *module,
       return;
     }
 
+#if 0
   if (!g_type_is_a (type, HD_TYPE_PLUGIN_ITEM))
     {
       g_warning ("The plugin type must implement the HDPluginItem interface.");
       return;
     }
+#endif
 
   /* Create hd-plugin-module-dl-filename quark */
   if (G_UNLIKELY (!dl_filename_quark))

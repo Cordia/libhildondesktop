@@ -180,3 +180,18 @@ HD_TYPE_PLUGIN_LOADER_FACTORY
 HDPluginLoaderFactoryClass
 HDPluginLoaderFactoryPrivate
 </SECTION>
+
+<SECTION>
+<FILE>hd-notification-plugin</FILE>
+<TITLE>HDNotificationPlugin</TITLE>
+HDNotificationPlugin
+HDNotificationPluginIface
+hd_notification_plugin_close
+hd_notification_plugin_notify
+<SUBSECTION Standard>
+hd_notification_plugin_get_type
+HD_IS_NOTIFICATION_PLUGIN
+HD_NOTIFICATION_PLUGIN
+HD_NOTIFICATION_PLUGIN_GET_IFACE
+HD_TYPE_NOTIFICATION_PLUGIN
+</SECTION>

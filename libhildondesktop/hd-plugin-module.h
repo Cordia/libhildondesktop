@@ -133,9 +133,6 @@ HD_PLUGIN_MODULE_SYMBOLS_CODE (t_n, CODE_LOAD, CODE_UNLOAD)
 #define HD_DEFINE_PLUGIN_MODULE(TN, t_n, T_P)			\
 HD_DEFINE_PLUGIN_MODULE_EXTENDED (TN, t_n, T_P, {}, {}, {})
 
-#define HD_DEFINE_PLUGIN_MODULE_WITH_CODE(TN, t_n, T_P, CODE)  	\
-HD_DEFINE_PLUGIN_MODULE_EXTENDED (TN, t_n, T_P, CODE, {}, {})
-
 #define HD_DYNAMIC_IMPLEMENT_INTERFACE(TYPE_IFACE, iface_init)  \
 {                                                               \
   const GInterfaceInfo g_implement_interface_info =             \

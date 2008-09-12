@@ -1,3 +1,40 @@
+2008-09-12  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* configure.ac: Increase version. Add
+	hildonnotificationdesktopentrydir variable. Add notification plugin
+	example.
+
+	* debian/libhildondesktop1-examples.install: Add notification plugin
+	example.
+
+	* doc/libhildondesktop-docs.xml: Add HDNotificationPlugin doc.
+	* doc/libhildondesktop-sections.txt: Add HDNotificationPlugin doc.
+
+	* examples/Makefile.am: Add notification plugin example.
+
+	* examples/notification/Makefile.am: 
+	* examples/notification/example-notification-plugin.c:
+	* examples/notification/example-notification-plugin.h:
+	* examples/notification/example-notification.desktop: Add notification plugin example.
+
+	* libhildondesktop/Makefile.am: Add HDNotificationPlugin.
+
+	* libhildondesktop/hd-notification-plugin.c:
+	* libhildondesktop/hd-notification-plugin.h: Add HDNotificationPlugin.
+	
+	* libhildondesktop/hd-plugin-module.c (hd_plugin_module_new_object):
+	  Only set the "plugin-id" property if the plugin is a HDPluginItem.
+	  (hd_plugin_module_add_type): Add support for non HDPluginItem
+	  plugins.
+
+	* libhildondesktop/hd-plugin-module.h: Remove not working
+	HD_DEFINE_PLUGIN_WITH_CODE.
+
+	* libhildondesktop/libhildondesktop.h: Add hd-notification-plugin.h.
+
+	* libhildondesktop/libhildondesktop.pc.in: Add
+	hildonnotificationdesktopentrydir variable.
+
 2008-09-03  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Released 2.1.2

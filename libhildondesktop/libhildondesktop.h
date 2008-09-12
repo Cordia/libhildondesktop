@@ -30,6 +30,9 @@
 #include <libhildondesktop/hd-status-menu-item.h>
 #include <libhildondesktop/hd-status-plugin-item.h>
 
+/* Notification API */
+#include <libhildondesktop/hd-notification-plugin.h>
+
 /* Other API */
 #include <libhildondesktop/hd-config-file.h>
 #include <libhildondesktop/hd-plugin-loader-default.h>

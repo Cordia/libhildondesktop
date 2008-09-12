@@ -23,6 +23,10 @@
       <xi:include href="xml/hd-status-plugin-item.xml"/>
       <xi:include href="xml/hd-status-menu-item.xml"/>
     </chapter>
+    <chapter id="notification">
+      <title>Notifications</title>
+      <xi:include href="xml/hd-notification-plugin.xml"/>
+    </chapter>
   </part>
 
   <part id="hildon-desktop-api">
