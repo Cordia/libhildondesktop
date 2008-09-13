@@ -38,12 +38,18 @@ typedef struct _HDPluginItemIface HDPluginItemIface;
 struct _HDPluginItemIface
 {
   GTypeInterface parent;
+
+  void (*load_desktop_file) (HDPluginItem *item,
+                             GKeyFile     *key_file);
 };
 
-GType        hd_plugin_item_get_type        (void);
+GType        hd_plugin_item_get_type          (void);
 
-gchar       *hd_plugin_item_get_plugin_id   (HDPluginItem *item);
-const gchar *hd_plugin_item_get_dl_filename (HDPluginItem *item);
+gchar       *hd_plugin_item_get_plugin_id     (HDPluginItem *item);
+const gchar *hd_plugin_item_get_dl_filename   (HDPluginItem *item);
+
+void         hd_plugin_item_load_desktop_file (HDPluginItem *item,
+                                               GKeyFile     *key_file);
 
 G_END_DECLS
 

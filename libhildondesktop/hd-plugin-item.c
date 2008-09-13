@@ -116,3 +116,18 @@ hd_plugin_item_get_dl_filename (HDPluginItem *item)
   type = G_TYPE_FROM_INSTANCE (item);
   return g_type_get_qdata (type, dl_filename_quark);
 }
+
+void
+hd_plugin_item_load_desktop_file (HDPluginItem *item,
+                                  GKeyFile     *key_file)
+{
+  HDPluginItemIface *iface;
+
+  g_return_if_fail (HD_IS_PLUGIN_ITEM (item));
+  
+  iface = HD_PLUGIN_ITEM_GET_IFACE (item);
+
+  if (iface->load_desktop_file)
+    iface->load_desktop_file (item, key_file);
+}
+

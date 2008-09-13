@@ -105,6 +105,10 @@ hd_plugin_loader_default_open_module (HDPluginLoaderDefault  *loader,
   object = hd_plugin_module_new_object (module,
                                         plugin_id);
 
+  /* Load plugin data from keyfile if supported */
+  if (HD_IS_PLUGIN_ITEM (object))
+    hd_plugin_item_load_desktop_file (HD_PLUGIN_ITEM (object), keyfile);
+
   g_type_module_unuse (G_TYPE_MODULE (module));
 
   g_free (module_path);

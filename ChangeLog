@@ -1,3 +1,17 @@
+2008-09-13  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* libhildondesktop/hd-plugin-item.c
+	  (hd_plugin_item_load_desktop_file): Add support to load data from a
+	  .desktop file.
+	* libhildondesktop/hd-plugin-item.h (load_desktop_file): Add virtual
+	load_desktop_file function which can be overridden to read additional
+	data from the .desktop file.
+
+	* libhildondesktop/hd-plugin-loader-default.c
+	  (hd_plugin_loader_default_open_module): Call
+	  hd_plugin_item_load_desktop_file if the loaded plugin is a
+	  HDPluginItem.
+
 2008-09-12  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* debian/libhildondesktop1-examples.install: Install example home
