@@ -231,7 +231,7 @@ hd_plugin_loader_factory_new ()
   return factory;
 }
 
-HDPluginItem *
+GObject *
 hd_plugin_loader_factory_create (HDPluginLoaderFactory  *factory,
                                  const gchar            *plugin_id,
                                  const gchar            *module_id,
@@ -241,7 +241,7 @@ hd_plugin_loader_factory_create (HDPluginLoaderFactory  *factory,
   HDPluginLoader *loader = NULL;
   GKeyFile *keyfile;
   gchar *type;
-  HDPluginItem *plugin;
+  GObject *plugin;
   GError *local_error = NULL;
 
   g_return_val_if_fail (module_id != NULL, NULL);

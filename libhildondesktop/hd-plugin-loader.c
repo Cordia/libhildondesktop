@@ -48,7 +48,7 @@ hd_plugin_loader_error_quark (void)
   return g_quark_from_static_string ("hd-plugin-loader-error-quark");
 }
 
-HDPluginItem *
+GObject *
 hd_plugin_loader_load (HDPluginLoader  *loader,
                        const gchar     *plugin_id,
                        GKeyFile        *keyfile,

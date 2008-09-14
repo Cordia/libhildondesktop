@@ -64,20 +64,20 @@ struct _HDPluginLoaderClass
 {
   GObjectClass parent_class;
 
-  HDPluginItem *(* load) (HDPluginLoader  *loader,
-                          const gchar     *plugin_id,
-                          GKeyFile        *keyfile,
-                          GError         **error);
+  GObject *(* load) (HDPluginLoader  *loader,
+                     const gchar     *plugin_id,
+                     GKeyFile        *keyfile,
+                     GError         **error);
 };
 
-GType         hd_plugin_loader_get_type    (void);
+GType    hd_plugin_loader_get_type    (void);
 
-GQuark        hd_plugin_loader_error_quark (void);
+GQuark   hd_plugin_loader_error_quark (void);
 
-HDPluginItem *hd_plugin_loader_load        (HDPluginLoader  *loader,
-                                            const gchar     *plugin_id,
-                                            GKeyFile        *keyfile,
-                                            GError         **error);
+GObject *hd_plugin_loader_load        (HDPluginLoader  *loader,
+                                       const gchar     *plugin_id,
+                                       GKeyFile        *keyfile,
+                                       GError         **error);
 
 G_END_DECLS
 

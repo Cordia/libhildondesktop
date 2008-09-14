@@ -34,6 +34,7 @@
 #include "hd-config.h"
 #include "hd-plugin-loader.h"
 #include "hd-plugin-loader-factory.h"
+#include "hd-stamp-file.h"
 #include "hd-ui-policy.h"
 
 #include "hd-plugin-manager.h"
@@ -67,7 +68,6 @@ enum
 {
   PROP_0,
   PROP_CONF_FILE,
-  PROP_SAFE_MODE_FILE,
   PROP_PLUGIN_CONFIG_KEY_FILE,
 };
 
@@ -89,7 +89,6 @@ struct _HDPluginManagerPrivate
   GList                  *plugins;
 
   HDConfigFile           *config_file;
-  gchar                  *safe_mode_file;
 
   HDConfigFile           *plugin_config_file;
   GKeyFile               *plugin_config_key_file;
@@ -97,8 +96,6 @@ struct _HDPluginManagerPrivate
   HDLoadPriorityFunc      load_priority_func;
   gpointer                load_priority_data;
   GDestroyNotify          load_priority_destroy;
-
-  gboolean                safe_mode;
 
   gchar                 **plugin_dirs;
   GnomeVFSMonitorHandle **plugin_dir_monitors;
@@ -242,7 +239,7 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
   HDPluginManagerPrivate *priv;
   HDPluginInfo *info;
   GList *p;
-  HDPluginItem *plugin;
+  GObject *plugin;
   GError *error = NULL;
   gchar *desktop_file_to_load;
 
@@ -256,7 +253,7 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
     {
       desktop_file_to_load = hd_ui_policy_get_filtered_plugin (priv->policy,
                                                                desktop_file,
-                                                               priv->safe_mode);
+                                                               hd_stamp_file_get_safe_mode ());
 
       if (!desktop_file_to_load)
         return FALSE;
@@ -285,8 +282,8 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
       if (priv->policy)
         {
           desktop_file_to_load = hd_ui_policy_get_default_plugin (priv->policy,
-                                                               desktop_file,
-                                                               priv->safe_mode);
+                                                                  desktop_file,
+                                                                  hd_stamp_file_get_safe_mode ());
 
           if (desktop_file_to_load && g_file_test (desktop_file_to_load, G_FILE_TEST_EXISTS))
             {
@@ -302,9 +299,9 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
             {
               g_error_free (error);
 
-              plugin = (HDPluginItem *) hd_ui_policy_get_failure_plugin (priv->policy,
+              plugin = hd_ui_policy_get_failure_plugin (priv->policy,
                                                         desktop_file,
-                                                        priv->safe_mode);
+                                                        hd_stamp_file_get_safe_mode ());
             }
         }
     }
@@ -330,46 +327,6 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
 }
 
 static void
-hd_plugin_manager_safe_mode_init (HDPluginManager *manager)
-{
-  const gchar *dev_mode = g_getenv ("SBOX_PRELOAD");
-  HDPluginManagerPrivate *priv;
-
-  priv = HD_PLUGIN_MANAGER (manager)->priv;
-
-  priv->safe_mode = FALSE;
-
-  if (!dev_mode && priv->safe_mode_file)
-    {
-      /* 
-       * Check for safe mode. The stamp file is created here and
-       * Removed in main after gtk_main by g_object_unref in a call to finalize
-       * function of this gobject in case of clean non-crash exit 
-       * Added by Karoliina <karoliina.t.salminen@nokia.com> 31.7.2007 
-       */
-      if (g_file_test (priv->safe_mode_file, G_FILE_TEST_EXISTS)) 
-        {
-          /* Enters safe mode */
-          g_warning ("The program did not exit properly on the previous "
-                     "session. All plugins will be disabled.");
-
-          priv->safe_mode = TRUE;
-        } 
-      else 
-        {
-          gchar *stamp_dir = g_path_get_dirname (priv->safe_mode_file);
-
-          /* Hildon Desktop enters normal mode and creates the stamp to track crashes */
-          g_mkdir_with_parents (stamp_dir, 0755);
-
-          g_file_set_contents (priv->safe_mode_file, "1", 1, NULL);
-
-          priv->safe_mode = FALSE;
-        }
-    }
-}
-
-static void
 hd_plugin_manager_init (HDPluginManager *manager)
 {
   manager->priv = HD_PLUGIN_MANAGER_GET_PRIVATE (manager);
@@ -387,7 +344,7 @@ hd_plugin_manager_plugin_module_added (HDPluginManager *manager,
 
   priv = HD_PLUGIN_MANAGER (manager)->priv;
 
-  if (priv->load_new_plugins && !priv->safe_mode)
+  if (priv->load_new_plugins && !hd_stamp_file_get_safe_mode ())
     {
       gchar *plugin_id;
 
@@ -453,9 +410,6 @@ hd_plugin_manager_finalize (GObject *object)
       g_object_unref (priv->config_file);
       priv->config_file = NULL;
     }
-
-  g_free (priv->safe_mode_file);
-  priv->safe_mode_file = NULL;
 
   if (priv->plugin_dirs != NULL)
     {
@@ -964,11 +918,6 @@ hd_plugin_manager_set_property (GObject      *object,
                                  object, G_CONNECT_SWAPPED);
       break;
 
-    case PROP_SAFE_MODE_FILE:
-      g_free (priv->safe_mode_file);
-      priv->safe_mode_file = g_value_dup_string (value);
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -984,10 +933,6 @@ hd_plugin_manager_get_property (GObject      *object,
 
   switch (prop_id)
     {
-    case PROP_SAFE_MODE_FILE:
-      g_value_set_string (value, priv->safe_mode_file);
-      break;
-
     case PROP_PLUGIN_CONFIG_KEY_FILE:
       g_value_set_pointer (value, priv->plugin_config_key_file);
       break;
@@ -1022,13 +967,6 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
                                                         "Configuration file",
                                                         HD_TYPE_CONFIG_FILE,
                                                         G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
-  g_object_class_install_property (g_object_class,
-                                   PROP_SAFE_MODE_FILE,
-                                   g_param_spec_string ("safe-mode-file",
-                                                        "safe-mode-file",
-                                                        "Safe mode stamp file",
-                                                        NULL,
-                                                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
   g_object_class_install_property (g_object_class,
                                    PROP_PLUGIN_CONFIG_KEY_FILE,
@@ -1140,19 +1078,16 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
 /**
  * hd_plugin_manager_new:
  * @config_file: a HDConfigFile which specify the configuration file.
- * @safe_mode_file: the filename of a safe mode file.
  *
  * This function creates a new #HDPluginManager instance.
  *
  * Returns: a new #HDPluginManager instance.
  **/
 HDPluginManager *
-hd_plugin_manager_new (HDConfigFile *config_file,
-                       const gchar  *safe_mode_file)
+hd_plugin_manager_new (HDConfigFile *config_file)
 {
   HDPluginManager *manager = g_object_new (HD_TYPE_PLUGIN_MANAGER,
                                            "conf-file", config_file,
-                                           "safe-mode-file", safe_mode_file,
                                            NULL);
 
   return manager;
@@ -1175,8 +1110,6 @@ hd_plugin_manager_run (HDPluginManager *manager)
   g_return_if_fail (HD_IS_PLUGIN_MANAGER (manager));
  
   priv = manager->priv;
-
-  hd_plugin_manager_safe_mode_init (manager);
 
   hd_plugin_manager_load_configuration (manager);
 }

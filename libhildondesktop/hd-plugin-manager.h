@@ -73,8 +73,7 @@ struct _HDPluginManagerClass
 
 GType            hd_plugin_manager_get_type                   (void);
 
-HDPluginManager *hd_plugin_manager_new                        (HDConfigFile       *config_file,
-                                                               const gchar        *safe_mode_file);
+HDPluginManager *hd_plugin_manager_new                        (HDConfigFile       *config_file);
 
 void             hd_plugin_manager_run                        (HDPluginManager    *manager);
 

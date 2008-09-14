@@ -63,7 +63,7 @@ GType           hd_plugin_module_get_type   (void);
 
 HDPluginModule *hd_plugin_module_new        (const gchar    *path);
 
-HDPluginItem   *hd_plugin_module_new_object (HDPluginModule *module,
+GObject        *hd_plugin_module_new_object (HDPluginModule *module,
                                              const gchar    *plugin_id);
 
 void            hd_plugin_module_add_type   (HDPluginModule *module,

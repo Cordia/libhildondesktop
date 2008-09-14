@@ -1,3 +1,39 @@
+2008-09-15  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* libhildondesktop/hd-plugin-loader-default.c
+	  (hd_plugin_loader_default_open_module,
+	  hd_plugin_loader_default_load): Change plugin type to GObject.
+	* libhildondesktop/hd-plugin-loader-factory.c
+	  (hd_plugin_loader_factory_new, hd_plugin_loader_factory_create):
+	  Change plugin type to GObject.
+
+	* libhildondesktop/hd-plugin-loader-factory.h: Change plugin type to
+	GObject.
+
+	* libhildondesktop/hd-plugin-loader.c: Change plugin type to GObject.
+	* libhildondesktop/hd-plugin-loader.h: Change plugin type to GObject.
+
+	* libhildondesktop/hd-plugin-module.c (hd_plugin_module_new): Change
+	plugin type to GObject.
+	* libhildondesktop/hd-plugin-module.h: Change plugin type to GObjct.
+
+	* libhildondesktop/hd-plugin-manager.c
+	  (hd_plugin_manager_load_plugin): Change plugin type to GObject.
+	  (hd_plugin_manager_plugin_module_added, hd_plugin_manager_class_init,
+	  hd_plugin_manager_new): Move stamp file support to
+	  hd-stamp-file[ch].
+
+	* libhildondesktop/hd-plugin-manager.h: Move stamp file support to
+	hd-stamp-file[ch].
+
+	* libhildondesktop/Makefile.am: Add hd-stamp-file.[ch].
+
+	* libhildondesktop/hd-stamp-file.c:
+	* libhildondesktop/hd-stamp-file.h: Add stamp file support from
+	HDPluginManager and hildon-status-menu.c.
+
+	* libhildondesktop/libhildondesktop.h: Add hd-stamp-file.h
+
 2008-09-13  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* libhildondesktop/hd-plugin-item.c

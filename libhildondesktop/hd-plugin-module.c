@@ -233,7 +233,7 @@ hd_plugin_module_new (const gchar *path)
   return plugin;
 }
 
-HDPluginItem *
+GObject *
 hd_plugin_module_new_object (HDPluginModule *module,
                              const gchar    *plugin_id)
 {

@@ -41,7 +41,7 @@ struct _HDPluginLoaderDefaultPrivate
   GHashTable *registry;
 };
 
-static HDPluginItem * 
+static GObject * 
 hd_plugin_loader_default_open_module (HDPluginLoaderDefault  *loader,
                                       const gchar            *plugin_id,
                                       GKeyFile               *keyfile,
@@ -49,7 +49,7 @@ hd_plugin_loader_default_open_module (HDPluginLoaderDefault  *loader,
 {
   HDPluginLoaderDefaultPrivate *priv;
   HDPluginModule *module; 
-  HDPluginItem *object;
+  GObject *object;
   GError *keyfile_error = NULL;
   gchar *module_file = NULL;
   gchar *module_path = NULL;
@@ -116,13 +116,13 @@ hd_plugin_loader_default_open_module (HDPluginLoaderDefault  *loader,
   return object;
 }
 
-static HDPluginItem *
+static GObject *
 hd_plugin_loader_default_load (HDPluginLoader  *loader,
                                const gchar     *plugin_id,
                                GKeyFile        *keyfile,
                                GError         **error)
 {
-  HDPluginItem *object = NULL;
+  GObject *object = NULL;
   GError *local_error = NULL;
 
   g_return_val_if_fail (loader, NULL);
