@@ -119,15 +119,12 @@ hildondesktopconfdir=${sysconfdir}/hildon-desktop
 AC_SUBST(hildondesktoplibdir)
 AC_SUBST(hildondesktopconfdir)
 
-# Expand nested variables
-eval "hildonhomedesktopentrydir=$hildonhomedesktopentrydir"
+AC_SUBST(hildonstatusmenudesktopentrydir)
 AC_SUBST(hildonhomedesktopentrydir)
-
 AC_SUBST(hildonnotificationdesktopentrydir)
 
 # Expand nested variables
 # eval "hildonstatusmenudesktopentrydir=$hildonstatusmenudesktopentrydir"
-AC_SUBST(hildonstatusmenudesktopentrydir)
 
 hildondesktopbackgroundsdir=${datadir}/backgrounds
 AC_SUBST(hildondesktopbackgroundsdir)

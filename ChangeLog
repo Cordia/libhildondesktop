@@ -1,5 +1,12 @@
 2008-09-15  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* configure.ac: Fix hildonhomedesktopentrydir expansion.
+
+	* libhildondesktop/libhildondesktop.pc.in: Add
+	hildonhomedesktopentrydir vairable.
+
+2008-09-15  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* libhildondesktop/hd-plugin-loader-default.c
 	  (hd_plugin_loader_default_open_module,
 	  hd_plugin_loader_default_load): Change plugin type to GObject.
