@@ -1,5 +1,9 @@
 2008-09-24  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* debian/changelog: Released 2.1.4
+
+2008-09-24  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* libhildondesktop/hd-plugin-manager.c
 	  (hd_plugin_manager_plugin_configuration_loaded): Only load safe set
 	  of plugins if in safe mode after a crash.
