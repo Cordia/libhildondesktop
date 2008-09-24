@@ -24,6 +24,7 @@
 #define __HD_NOTIFICATION_PLUGIN_H__
 
 #include <glib-object.h>
+#include <libhildondesktop/hd-notification.h>
 
 G_BEGIN_DECLS
 
@@ -50,32 +51,13 @@ struct _HDNotificationPluginIface {
 
     /*< public >*/
     void (*notify) (HDNotificationPlugin  *plugin,
-                    const gchar           *app_name,
-                    guint                  id,
-                    const gchar           *icon,
-                    const gchar           *summary,
-                    const gchar           *body,
-                    gchar                **actions,
-                    GHashTable            *hints,
-                    gint                   timeout);
-
-    void (*close)  (HDNotificationPlugin  *plugin,
-                    guint                  id);
+                    HDNotification        *notification);
 };
 
 GType hd_notification_plugin_get_type (void);
 
-void hd_notification_plugin_notify (HDNotificationPlugin  *plugin,
-                                    const gchar           *app_name,
-                                    guint                  id,
-                                    const gchar           *icon,
-                                    const gchar           *summary,
-                                    const gchar           *body,
-                                    gchar                **actions,
-                                    GHashTable            *hints,
-                                    gint                   timeout);
-void hd_notification_plugin_close  (HDNotificationPlugin  *plugin,
-                                    guint                  id);
+void hd_notification_plugin_notify (HDNotificationPlugin *plugin,
+                                    HDNotification       *notification);
 
 G_END_DECLS
 

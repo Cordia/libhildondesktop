@@ -21,6 +21,7 @@ libhildondesktop_@API_VERSION_MAJOR@_la_SOURCES = \
 	hd-config-file.c							\
 	hd-heartbeat.c								\
 	hd-home-plugin-item.c							\
+	hd-notification.c							\
 	hd-notification-plugin.c						\
 	hd-plugin-item.c							\
 	hd-plugin-loader-default.c						\
@@ -45,6 +46,7 @@ libhildondesktop_@API_VERSION_MAJOR@_public_headers = \
 	hd-config-file.h							\
 	hd-heartbeat.h								\
 	hd-home-plugin-item.h							\
+	hd-notification.h							\
 	hd-notification-plugin.h						\
 	hd-plugin-item.h							\
 	hd-plugin-loader-default.h						\

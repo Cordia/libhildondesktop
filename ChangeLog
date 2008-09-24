@@ -1,3 +1,32 @@
+2008-09-24  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* libhildondesktop/hd-notification.c:
+	* libhildondesktop/hd-notification.h: Add HDNotification class.
+
+	* libhildondesktop/hd-notification-plugin.c
+	  (hd_notification_plugin_notify):
+	* libhildondesktop/hd-notification-plugin.h: Use HDNotification.
+	Remove ::closed signal.
+
+	* examples/notification/example-notification-plugin.c: Use the updated
+	notification plugin API.
+
+	* libhildondesktop/Makefile.am: Add hd-notification.[ch].
+
+	* libhildondesktop/libhildondesktop.h: Add hd-notification.h
+
+	* doc/libhildondesktop-docs.xml: Add documentation for HDNotification
+	and HDHomePluginItem.
+
+	* doc/libhildondesktop-sections.txt: Add documentation for
+	HDNotification and HDHomePluginItem.
+
+	* doc/libhildondesktop.types: Add missing types.
+
+	* libhildondesktop/hd-plugin-manager.c
+	  (hd_plugin_manager_configuration_loaded): Don't call g_strstrip with
+	  a NULL argument.
+
 2008-09-15  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* configure.ac: Fix hildonhomedesktopentrydir expansion.

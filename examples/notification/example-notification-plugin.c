@@ -46,33 +46,33 @@ G_DEFINE_DYNAMIC_TYPE_EXTENDED (ExampleNotificationPlugin, example_notification_
 HD_PLUGIN_MODULE_SYMBOLS (example_notification_plugin);
 
 static void
-example_notification_plugin_notify (HDNotificationPlugin  *plugin,
-                                    const gchar           *app_name,
-                                    guint                  id,
-                                    const gchar           *icon,
-                                    const gchar           *summary,
-                                    const gchar           *body,
-                                    gchar                **actions,
-                                    GHashTable            *hints,
-                                    gint                   timeout)
+example_notification_plugin_notification_closed (HDNotification *notification,
+                                                 HDNotificationPlugin *plugin)
 {
-  g_debug ("ExampleNotificationPlugin::notify (%s, %u, %s, %s, %s, %d)",
-           app_name, id, icon, summary, body, timeout);
+  g_debug ("ExampleNotificationPlugin::close");
+  g_debug ("  ID: %u", hd_notification_get_id (notification));
 }
 
 static void
-example_notification_plugin_close (HDNotificationPlugin *plugin,
-                                   guint                 id)
+example_notification_plugin_notify (HDNotificationPlugin  *plugin,
+                                    HDNotification        *notification)
 {
-  g_debug ("ExampleNotificationPlugin::close (%u)",
-           id);
+  g_debug ("ExampleNotificationPlugin::notify");
+  g_debug ("  ID: %u", hd_notification_get_id (notification));
+  g_debug ("  Icon: %s", hd_notification_get_icon (notification));
+  g_debug ("  Summary: %s", hd_notification_get_summary (notification));
+  g_debug ("  Body: %s", hd_notification_get_body (notification));
+  g_debug ("  Category: %s", hd_notification_get_category (notification));
+
+  g_signal_connect_object (notification, "closed",
+                           G_CALLBACK (example_notification_plugin_notification_closed),
+                           plugin, 0);
 }
 
 static void
 example_notification_plugin_notification_plugin_iface_init (HDNotificationPluginIface *iface)
 {
   iface->notify = example_notification_plugin_notify;
-  iface->close = example_notification_plugin_close;
 }
 
 static void

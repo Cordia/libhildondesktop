@@ -35,7 +35,7 @@
  * The #HDNotificationPluginIface::notify() function of the plugin is called for each incoming notification, 
  * except for notifications that are internal to or only handled by the desktop code.
  *
- * The #HDNotificationPluginIface::close() function is called to close a notification.
+ * See #HDNotification for more information about the notifications.
  **/
 
 static void
@@ -65,53 +65,15 @@ hd_notification_plugin_get_type (void)
 /**
  * hd_notification_plugin_notify:
  * @plugin: a #HDNotificationPlugin
- * @app_name: an optional string, can be used for debugging and logging messages
- * @id: the id of the notification
- * @icon: the file name of icon to show
- * @summary: a summary string of the notification
- * @body: the message body of the notification
- * @actions: an array of label/actions strings (not used?)
- * @hints: a hash table with additional hints
- * @timeout: a timeout after which the notification is hidden.
+ * @notification: the #HDNotification which was raised
  *
  * Calls the #HDNotificationPluginIface::notify() fucntion.
  *
  **/
 void
 hd_notification_plugin_notify (HDNotificationPlugin  *plugin,
-                               const gchar           *app_name,
-                               guint                  id,
-                               const gchar           *icon,
-                               const gchar           *summary,
-                               const gchar           *body,
-                               gchar                **actions,
-                               GHashTable            *hints,
-                               gint                   timeout)
+                               HDNotification        *notification)
 {
   HD_NOTIFICATION_PLUGIN_GET_IFACE (plugin)->notify (plugin,
-                                                     app_name,
-                                                     id,
-                                                     icon,
-                                                     summary,
-                                                     body,
-                                                     actions,
-                                                     hints,
-                                                     timeout);
+                                                     notification);
 }
-
-/**
- * hd_notification_plugin_close:
- * @plugin: a #HDNotificationPlugin
- * @id: the id of the notification
- *
- * Calls the #HDNotificationPluginIface::close() fucntion.
- *
- **/
-void
-hd_notification_plugin_close (HDNotificationPlugin  *plugin,
-                              guint                  id)
-{
-  HD_NOTIFICATION_PLUGIN_GET_IFACE (plugin)->close (plugin,
-                                                    id);
-}
-

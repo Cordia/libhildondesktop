@@ -743,10 +743,9 @@ hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
                                          HD_PLUGIN_MANAGER_CONFIG_GROUP, 
                                          HD_DESKTOP_CONFIG_KEY_UI_POLICY,
                                          NULL);
-  g_strstrip (policy_module);
-
   if (policy_module)
     {
+      g_strstrip (policy_module);
       gchar *policy_module_path = g_build_filename (HD_UI_POLICY_MODULES_PATH,
                                                     policy_module,
                                                     NULL);
@@ -767,11 +766,11 @@ hd_plugin_manager_configuration_loaded (HDPluginManager *manager,
                                                   HD_PLUGIN_MANAGER_CONFIG_GROUP, 
                                                   HD_PLUGIN_MANAGER_CONFIG_KEY_PLUGIN_CONFIGURATION,
                                                   NULL);
-  g_strstrip (plugin_config_filename);
-
   if (plugin_config_filename)
     {
       gchar *system_conf_dir, *user_conf_dir;
+
+      g_strstrip (plugin_config_filename);
 
       /* Get config file directories */
       g_object_get (G_OBJECT (priv->config_file),

@@ -25,7 +25,12 @@
     </chapter>
     <chapter id="notification">
       <title>Notifications</title>
+      <xi:include href="xml/hd-notification.xml"/>
       <xi:include href="xml/hd-notification-plugin.xml"/>
+    </chapter>
+    <chapter id="home">
+      <title>Home Applets</title>
+      <xi:include href="xml/hd-home-plugin-item.xml"/>
     </chapter>
   </part>
 

@@ -1,6 +1,10 @@
 #include <libhildondesktop/libhildondesktop.h>
 
 hd_config_file_get_type
+hd_home_plugin_item_get_type
+hd_notification_plugin_get_type
+hd_notification_get_type
+hd_plugin_item_get_type
 hd_plugin_loader_default_get_type
 hd_plugin_loader_factory_get_type
 hd_plugin_loader_get_type
