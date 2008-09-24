@@ -838,7 +838,7 @@ hd_plugin_manager_plugin_configuration_loaded (HDPluginManager *manager,
 
   /* Load all plugins in the X-Plugin-Dirs directories 
    * if X-Load-All-Plugins is true */
-  if (priv->load_all_plugins)
+  if (priv->load_all_plugins && !hd_stamp_file_get_safe_mode ())
     {
       GList *all_plugins, *p;
 

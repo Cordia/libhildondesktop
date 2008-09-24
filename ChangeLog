@@ -1,5 +1,14 @@
 2008-09-24  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* libhildondesktop/hd-plugin-manager.c
+	  (hd_plugin_manager_plugin_configuration_loaded): Only load safe set
+	  of plugins if in safe mode after a crash.
+
+	* libhildondesktop/hd-stamp-file.c (hd_stamp_file_init): Warn if stamp
+	file could not be created.
+
+2008-09-24  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* libhildondesktop/hd-notification.c:
 	* libhildondesktop/hd-notification.h: Add HDNotification class.
 

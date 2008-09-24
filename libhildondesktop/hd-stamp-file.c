@@ -62,13 +62,21 @@ hd_stamp_file_init (const gchar *stamp_file)
         } 
       else 
         {
+          GError *error = NULL;
+
           /* Hildon Desktop enters normal mode and creates the stamp to track crashes */
           gchar *stamp_dir = g_path_get_dirname (stamp_file);
-
+          g_debug ("stamp_dir = %s", stamp_dir);
           g_mkdir_with_parents (stamp_dir, 0755);
           g_free (stamp_dir);
 
-          g_file_set_contents (stamp_file, "1", 1, NULL);
+          g_file_set_contents (stamp_file, "1", 1, &error);
+
+          if (error)
+            {
+              g_warning ("Couldn't create stamp file. %s", error->message);
+              g_error_free (error);
+            }
 
           hd_stamp_file_safe_mode = FALSE;
         }
