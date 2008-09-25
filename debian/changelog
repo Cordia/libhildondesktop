@@ -1,6 +1,6 @@
 libhildondesktop (2.1.4) unstable; urgency=low
 
-  * Added home applet plugin support.
+  * Added home applet plugin support. Fixes: NB#88755
   * Added notification plugin support.
 
  -- Jan Arne Petersen <jpetersen@openismus.com>  Wed, 24 Sep 2008 15:24:59 +0200
