@@ -1,5 +1,10 @@
 2008-10-16  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* debian/rules: Add call of autogen.sh to makebuilddir to generate
+	the configure scripts.
+
+2008-10-16  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* configure.ac:
 	* debian/changelog: Prepare 2.1.5 release.
 

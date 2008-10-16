@@ -15,3 +15,6 @@ ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
 endif
 
 DEB_CONFIGURE_EXTRA_FLAGS := --enable-gtk-doc
+
+makebuilddir::
+	AUTOGEN_SUBDIR_MODE=1 NOCONFIGURE=yes ./autogen.sh
