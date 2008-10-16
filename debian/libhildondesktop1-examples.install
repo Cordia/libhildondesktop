@@ -1,5 +1,5 @@
-usr/lib/hildon-desktop/*.so
-usr/share/applications/hildon-home/*.desktop
-usr/share/applications/hildon-notification/*.desktop
-usr/share/applications/hildon-status-menu/*.desktop
-usr/share/hildon-desktop/example-*.png
+debian/tmp/usr/lib/hildon-desktop/*.so
+debian/tmp/usr/share/applications/hildon-home/*.desktop
+debian/tmp/usr/share/applications/hildon-notification/*.desktop
+debian/tmp/usr/share/applications/hildon-status-menu/*.desktop
+debian/tmp/usr/share/hildon-desktop/example-*.png

@@ -1,3 +1,12 @@
+libhildondesktop (2.1.5) unstable; urgency=low
+
+  * Implement X Window properties required by hildon-desktop to handle
+    applets.
+
+  * Switch the build system to use cdbs. Fixes: NB#88321
+
+ -- Jan Arne Petersen <jpetersen@openismus.com>  Sat, 11 Oct 2008 22:30:12 +0200
+
 libhildondesktop (2.1.4) unstable; urgency=low
 
   * Added home applet plugin support. Fixes: NB#88755
