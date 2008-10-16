@@ -49,7 +49,7 @@
 #define HD_HOME_PLUGIN_ITEM_GET_PRIVATE(object) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((object), HD_TYPE_HOME_PLUGIN_ITEM, HDHomePluginItemPrivate))
 
-static void hd_home_plugin_item_init_plugin_item (gpointer g_iface);
+static void hd_home_plugin_item_init_plugin_item (HDPluginItemIface *iface);
 
 enum
 {
@@ -74,9 +74,77 @@ G_DEFINE_ABSTRACT_TYPE_WITH_CODE (HDHomePluginItem, hd_home_plugin_item, GTK_TYP
                                                          hd_home_plugin_item_init_plugin_item));
 
 static void
-hd_home_plugin_item_init_plugin_item (gpointer g_iface)
+hd_home_plugin_item_load_desktop_file (HDPluginItem *item,
+                                       GKeyFile     *key_file)
 {
-  /* don't do anything */
+  HDHomePluginItemPrivate *priv = HD_HOME_PLUGIN_ITEM (item)->priv;
+  gint *default_position, *default_size;
+  gsize length;
+  GError *error = NULL;
+
+  /* Display on all views */
+  priv->display_on_all_views = g_key_file_get_boolean (key_file,
+                                                       "Desktop Entry",
+                                                       "X-Display-On-All-Views",
+                                                       NULL);
+
+  /* Default view */
+  priv->default_view = g_key_file_get_integer (key_file,
+                                               "Desktop Entry",
+                                               "X-Default-View",
+                                               &error);
+  if (error)
+    {
+      priv->default_view = -1;
+      g_error_free (error);
+      error = NULL;
+    }
+
+  /* Default position */
+  priv->default_geometry.x = -1;
+  priv->default_geometry.y = -1;
+  default_position = g_key_file_get_integer_list (key_file,
+                                                  "Desktop Entry",
+                                                  "X-Default-Position",
+                                                  &length,
+                                                  &error);
+  if (error)
+    {
+      g_error_free (error);
+      error = NULL;
+    }
+  else if (length == 2)
+    {
+      priv->default_geometry.x = default_position[0];
+      priv->default_geometry.y = default_position[1];
+    }
+  g_free (default_position);
+
+  /* Default position */
+  priv->default_geometry.width = -1;
+  priv->default_geometry.height = -1;
+  default_size = g_key_file_get_integer_list (key_file,
+                                              "Desktop Entry",
+                                              "X-Default-Size",
+                                              &length,
+                                              &error);
+  if (error)
+    {
+      g_error_free (error);
+      error = NULL;
+    }
+  else if (length == 2)
+    {
+      priv->default_geometry.width = default_size[0];
+      priv->default_geometry.height = default_size[1];
+    }
+  g_free (default_size);
+}
+
+static void
+hd_home_plugin_item_init_plugin_item (HDPluginItemIface *iface)
+{
+  iface->load_desktop_file = hd_home_plugin_item_load_desktop_file;
 
   return;
 }
@@ -84,8 +152,10 @@ hd_home_plugin_item_init_plugin_item (gpointer g_iface)
 static void
 hd_home_plugin_item_realize (GtkWidget *widget)
 {
+  HDHomePluginItemPrivate *priv = HD_HOME_PLUGIN_ITEM (widget)->priv;
   GdkDisplay *display;
   Atom atom, wm_type;
+  gchar *applet_id;
 
   GTK_WIDGET_CLASS (hd_home_plugin_item_parent_class)->realize (widget);
 
@@ -103,6 +173,61 @@ hd_home_plugin_item_realize (GtkWidget *widget)
                    GDK_WINDOW_XID (widget->window),
                    atom, XA_ATOM, 32, PropModeReplace,
                    (unsigned char *)&wm_type, 1);
+
+  applet_id = hd_plugin_item_get_plugin_id (HD_PLUGIN_ITEM (widget));
+  XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
+                   GDK_WINDOW_XID (widget->window),
+                   gdk_x11_get_xatom_by_name_for_display (display,
+                                                          "_HILDON_APPLET_ID"),
+                   gdk_x11_get_xatom_by_name_for_display (display,
+                                                          "UTF8_STRING"),
+                   8, PropModeReplace,
+                   (guchar *) applet_id, strlen (applet_id));
+  g_free (applet_id);
+
+  /* Set display on all views property */
+  if (priv->display_on_all_views)
+    XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
+                     GDK_WINDOW_XID (widget->window),
+                     gdk_x11_get_xatom_by_name_for_display (display,
+                                                            "_HILDON_APPLET_DISPLAY_ON_ALL_VIEWS"),
+                     XA_CARDINAL, 32, PropModeReplace,
+                     (unsigned char *) &(priv->display_on_all_views), 1);
+  else
+    XDeleteProperty (GDK_WINDOW_XDISPLAY (widget->window),
+                     GDK_WINDOW_XID (widget->window),
+                     gdk_x11_get_xatom_by_name_for_display (display,
+                                                            "_HILDON_APPLET_DISPLAY_ON_ALL_VIEWS"));
+
+  /* Set default view _HILDON_APPLET_DEFAULT_VIEW */
+  if (priv->default_view >= 0)
+    XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
+                     GDK_WINDOW_XID (widget->window),
+                     gdk_x11_get_xatom_by_name_for_display (display,
+                                                            "_HILDON_APPLET_DEFAULT_VIEW"),
+                     XA_CARDINAL, 32, PropModeReplace,
+                     (unsigned char *) &(priv->default_view), 1);
+
+  /* Set default view _HILDON_APPLET_DEFAULT_GEOMETRY */
+  if (priv->default_geometry.x != -1 ||
+      priv->default_geometry.y != -1 ||
+      priv->default_geometry.width != -1 ||
+      priv->default_geometry.height != -1)
+    {
+      gint32 default_geometry[4];
+
+      default_geometry[0] = priv->default_geometry.x;
+      default_geometry[1] = priv->default_geometry.y;
+      default_geometry[2] = priv->default_geometry.width;
+      default_geometry[3] = priv->default_geometry.height;
+
+      XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
+                       GDK_WINDOW_XID (widget->window),
+                       gdk_x11_get_xatom_by_name_for_display (display,
+                                                              "_HILDON_APPLET_DEFAULT_GEOMETRY"),
+                       XA_CARDINAL, 32, PropModeReplace,
+                       (unsigned char *) &default_geometry, 4);
+    }
 }
 
 

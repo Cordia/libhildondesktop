@@ -1,3 +1,12 @@
+2008-10-16  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* libhildondesktop/hd-home-plugin-item.c
+	  (hd_home_plugin_item_load_desktop_file): Load default values from
+	  .desktop file.
+	  (hd_home_plugin_item_init_plugin_item): Implement virtual
+	  load_desktop_file function.
+	  (hd_home_plugin_item_realize): Set X Window properties.
+
 2008-09-24  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* debian/changelog: Released 2.1.4
