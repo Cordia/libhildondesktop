@@ -1,5 +1,10 @@
 2008-10-16  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* configure.ac:
+	* debian/changelog: Prepare 2.1.5 release.
+
+2008-10-16  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* debian/compat: Set compat to 5.
 
 	* debian/control: Requires debhelper (>= 5) and cdbs.

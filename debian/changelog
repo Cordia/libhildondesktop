@@ -5,7 +5,7 @@ libhildondesktop (2.1.5) unstable; urgency=low
 
   * Switch the build system to use cdbs. Fixes: NB#88321
 
- -- Jan Arne Petersen <jpetersen@openismus.com>  Sat, 11 Oct 2008 22:30:12 +0200
+ -- Jan Arne Petersen <jpetersen@openismus.com>  Thu, 16 Oct 2008 11:27:47 +0200
 
 libhildondesktop (2.1.4) unstable; urgency=low
 
