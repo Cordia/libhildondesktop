@@ -40,14 +40,14 @@ typedef struct _HDConfigFilePrivate HDConfigFilePrivate;
 
 struct _HDConfigFile 
 {
-  GObject gobject;
+  GInitiallyUnowned gobject;
 
   HDConfigFilePrivate *priv;
 };
 
 struct _HDConfigFileClass 
 {
-  GObjectClass parent_class;
+  GInitiallyUnownedClass parent_class;
 
   void (* changed) (HDConfigFile *config_file);
 };

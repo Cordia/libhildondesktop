@@ -23,6 +23,7 @@ libhildondesktop_@API_VERSION_MAJOR@_la_SOURCES = \
 	hd-home-plugin-item.c							\
 	hd-notification.c							\
 	hd-notification-plugin.c						\
+	hd-plugin-configuration.c						\
 	hd-plugin-item.c							\
 	hd-plugin-loader-default.c						\
 	hd-plugin-loader-factory.c						\
@@ -48,6 +49,7 @@ libhildondesktop_@API_VERSION_MAJOR@_public_headers = \
 	hd-home-plugin-item.h							\
 	hd-notification.h							\
 	hd-notification-plugin.h						\
+	hd-plugin-configuration.h						\
 	hd-plugin-item.h							\
 	hd-plugin-loader-default.h						\
 	hd-plugin-loader-factory.h						\

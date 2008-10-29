@@ -28,6 +28,7 @@
 #include <glib-object.h>
 
 #include <libhildondesktop/hd-config-file.h>
+#include <libhildondesktop/hd-plugin-configuration.h>
 
 G_BEGIN_DECLS
 
@@ -48,27 +49,19 @@ typedef guint (*HDLoadPriorityFunc) (const gchar *plugin_id,
 
 struct _HDPluginManager 
 {
-  GObject gobject;
+  HDPluginConfiguration parent;
 
   HDPluginManagerPrivate *priv;
 };
 
 struct _HDPluginManagerClass 
 {
-  GObjectClass parent_class;
+  HDPluginConfigurationClass parent_class;
 
-  void (*plugin_module_added)         (HDPluginManager *manager,
-                                       const gchar     *desktop_file);
-  void (*plugin_module_removed)       (HDPluginManager *manager,
-                                       const gchar     *desktop_file);
   void (*plugin_added)                (HDPluginManager *manager,
                                        GObject         *plugin);
   void (*plugin_removed)              (HDPluginManager *manager,
                                        GObject         *plugin);
-  void (*configuration_loaded)        (HDPluginManager *manager,
-                                       GKeyFile        *keyfile);
-  void (*plugin_configuration_loaded) (HDPluginManager *manager,
-                                       GKeyFile        *keyfile);
 };
 
 GType            hd_plugin_manager_get_type                   (void);
@@ -76,8 +69,6 @@ GType            hd_plugin_manager_get_type                   (void);
 HDPluginManager *hd_plugin_manager_new                        (HDConfigFile       *config_file);
 
 void             hd_plugin_manager_run                        (HDPluginManager    *manager);
-
-GList *          hd_plugin_manager_get_all_plugin_paths       (HDPluginManager    *manager);
 
 GKeyFile *       hd_plugin_manager_get_plugin_config_key_file (HDPluginManager    *manager);
 

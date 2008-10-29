@@ -60,7 +60,7 @@ struct _HDConfigFilePrivate
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
-G_DEFINE_TYPE (HDConfigFile, hd_config_file, G_TYPE_OBJECT);
+G_DEFINE_TYPE (HDConfigFile, hd_config_file, G_TYPE_INITIALLY_UNOWNED);
 
 static void
 hd_config_file_monitored_dir_changed (GnomeVFSMonitorHandle    *handle,

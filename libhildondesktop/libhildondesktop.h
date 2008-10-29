@@ -40,6 +40,7 @@
 /* Other API */
 #include <libhildondesktop/hd-config-file.h>
 #include <libhildondesktop/hd-heartbeat.h>
+#include <libhildondesktop/hd-plugin-configuration.h>
 #include <libhildondesktop/hd-plugin-loader-default.h>
 #include <libhildondesktop/hd-plugin-loader-factory.h>
 #include <libhildondesktop/hd-plugin-loader.h>

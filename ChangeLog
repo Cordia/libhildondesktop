@@ -1,3 +1,26 @@
+2008-10-29  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* configure.ac: Increase version to 2.1.6.
+
+	* libhildondesktop/Makefile.am: Add hd-plugin-configuration.[ch] to
+	SOURCES.
+
+	* libhildondesktop/hd-config-file.c:
+	* libhildondesktop/hd-config-file.h: Use GInitiallyUnowned as
+	parent class.
+
+	* libhildondesktop/hd-plugin-configuration.c:
+	* libhildondesktop/hd-plugin-configuration.h: Create a new base class
+	for HDPluginManager which contains all the plugin configuration
+	related code. This base class can also be used by HDAppletManager in
+	hildon-desktop to manage plugins without loading them.
+
+	* libhildondesktop/hd-plugin-manager.c:
+	* libhildondesktop/hd-plugin-manager.h: Uses the new
+	HDPluginConfiguration base class.
+
+	* libhildondesktop/libhildondesktop.h: Add hd-plugin-configuration.h.
+
 2008-10-16  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* debian/rules: Add call of autogen.sh to makebuilddir to generate
