@@ -1,3 +1,28 @@
+2008-10-30  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* debian/changelog: Prepare for 2.1.6 release.
+
+	* libhildondesktop/hd-config-file.c
+	  (hd_config_file_new_with_defaults): Add new convenience function to
+	  create a HDConfigFile instance with the default directories.
+	  (hd_config_file_load_file): Add support for empty user config files,
+	  i.e. no applet selected.
+	  (hd_config_file_save_file): Add function to atomically store a key
+	  file (atomically).
+	* libhildondesktop/hd-config-file.h: Add new function protoypes.
+
+	* libhildondesktop/hd-plugin-configuration.c: Rename
+	  plugin-configuration to items-configuration.
+	  (hd_plugin_configuration_store_items_key_file): Add function to
+	  store the items key file (atomically).
+
+	* libhildondesktop/hd-plugin-configuration.h: Rename
+	  plugin-configuration to items-configuration. Add new function
+	  protoypes.
+
+	* libhildondesktop/hd-plugin-manager.c: Update to
+	HDPluginConfiguration changes.
+
 2008-10-29  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* configure.ac: Increase version to 2.1.6.

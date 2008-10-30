@@ -28,8 +28,12 @@
 #include <libgnomevfs/gnome-vfs.h>
 
 #include <string.h>
+#include <stdio.h>
 
 #include "hd-config-file.h"
+
+/* use config dir (~/.config/hildon-desktop) */
+#define HD_DESKTOP_USER_CONFIG_PATH "hildon-desktop"
 
 #define HD_CONFIG_FILE_GET_PRIVATE(object) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((object), HD_TYPE_CONFIG_FILE, HDConfigFilePrivate))
@@ -263,6 +267,28 @@ hd_config_file_new (const gchar *system_conf_dir,
                        NULL);
 }
 
+HDConfigFile *
+hd_config_file_new_with_defaults (const gchar *filename)
+{
+  HDConfigFile *config_file;
+  gchar *user_conf_dir;
+
+  /* Default user config dir (~/.config/hildon-desktop) */
+  user_conf_dir = g_build_filename (g_get_user_config_dir (),
+                                    HD_DESKTOP_USER_CONFIG_PATH,
+                                    NULL);
+
+  config_file = g_object_new (HD_TYPE_CONFIG_FILE,
+                              "system-conf-dir", HD_DESKTOP_CONFIG_PATH,
+                              "user-conf-dir", user_conf_dir,
+                              "filename", filename,
+                              NULL);
+
+  g_free (user_conf_dir);
+
+  return config_file;
+}
+
 GKeyFile *
 hd_config_file_load_file (HDConfigFile *config_file,
                           gboolean      force_system_config)
@@ -277,24 +303,44 @@ hd_config_file_load_file (HDConfigFile *config_file,
 
   if (priv->user_conf_dir && priv->filename && !force_system_config)
     {
-      filename = g_build_filename (priv->user_conf_dir, priv->filename, NULL);
-      if (g_file_test (filename, G_FILE_TEST_EXISTS))
-        {
-          GError *error = NULL;
+      GError *error = NULL;
 
-          if (g_key_file_load_from_file (key_file,
-                                         filename,
-                                         G_KEY_FILE_NONE,
-                                         &error))
-            {
-              g_free (filename);
-              return key_file;
-            }
-          else
-            {
-              g_warning ("Couldn't read configuration file: %s. Error: %s", filename, error->message);
-              g_error_free (error);
-            }
+      filename = g_build_filename (priv->user_conf_dir, priv->filename, NULL);
+
+      /* Try to read key file */
+      if (g_key_file_load_from_file (key_file,
+                                     filename,
+                                     G_KEY_FILE_NONE,
+                                     &error))
+        {
+          g_free (filename);
+          return key_file;
+        }
+      else if (g_error_matches (error,
+                                G_KEY_FILE_ERROR,
+                                G_KEY_FILE_ERROR_PARSE))
+        {
+          g_debug ("User configuration file `%s' is treated as empty. %s",
+                   filename,
+                   error->message);
+          g_free (filename);
+          return key_file;
+        }
+      else if (g_error_matches (error,
+                                G_KEY_FILE_ERROR,
+                                G_KEY_FILE_ERROR_NOT_FOUND))
+        {
+          g_debug ("User configuration file `%s' not found. %s",
+                   filename,
+                   error->message);
+          g_error_free (error);
+        }
+      else
+        {
+          g_debug ("Could not read user configuration file `%s'. %s",
+                   filename,
+                   error->message);
+          g_error_free (error);
         }
       g_free (filename);
     }
@@ -326,5 +372,94 @@ hd_config_file_load_file (HDConfigFile *config_file,
   g_key_file_free (key_file);
 
   return NULL;
+}
+
+gboolean
+hd_config_file_save_file (HDConfigFile *config_file,
+                          GKeyFile     *key_file)
+{
+  HDConfigFilePrivate *priv;
+  gchar *tmpl, *tmpl_filename, *real_filename;
+  gint fd;
+  gchar *data;
+  gsize length;
+  GError *error = NULL;
+
+  priv = config_file->priv;
+
+  if (!priv->user_conf_dir || !priv->filename)
+    {
+      g_warning ("Cannot save file: no user conf dir or filename set");
+      return FALSE;
+    }
+
+  data = g_key_file_to_data (key_file, &length, &error);
+  if (!data)
+    {
+      g_warning ("Cannot save file: %s", error->message);
+      g_error_free (error);
+      return FALSE;
+    }
+
+  if (g_mkdir_with_parents (priv->user_conf_dir,
+                            S_IRWXU |
+                            S_IRGRP | S_IXGRP |
+                            S_IROTH | S_IXOTH) == -1)
+    {
+      g_warning ("Cannot save file: Cannot mkdir \"%s\"", priv->user_conf_dir);
+      g_free (data);
+      return FALSE;
+    }
+
+  tmpl_filename = g_build_filename (priv->user_conf_dir, priv->filename, NULL);
+  tmpl = g_strdup_printf ("%sXXXXXX", tmpl_filename);
+  g_free (tmpl_filename);
+  fd = g_mkstemp (tmpl);
+  if (fd == -1)
+    {
+      g_warning ("Cannot save file: Cannot mkstemp \"%s\"", tmpl);
+      g_free (tmpl);
+      g_free (data);
+      return FALSE;
+    }
+
+  if (write (fd, data, length) == -1)
+    {
+      g_warning ("Cannot save file: Failed to write to file.");
+      g_free (tmpl);
+      g_free (data);
+      close (fd);
+      return FALSE;
+    }
+
+  g_free (data);
+
+  if (fsync (fd) == -1)
+    {
+      g_warning ("Cannot save file: Failed to sync file.");
+      g_free (tmpl);
+      close (fd);
+      return FALSE;
+    }
+
+  if (close (fd) == -1)
+    {
+      g_warning ("Cannot save file: Failed to close file.");
+      g_free (tmpl);
+      return FALSE;
+    }
+
+  real_filename = g_build_filename (priv->user_conf_dir, priv->filename, NULL);
+  if (rename (tmpl, real_filename) == -1)
+    {
+      g_warning ("Cannot save file: Failed to rename file.");
+      g_free (tmpl);
+      g_free (real_filename);
+      return FALSE;
+    }
+
+  g_free (tmpl);
+  g_free (real_filename);
+  return TRUE;
 }
 

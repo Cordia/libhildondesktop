@@ -1,3 +1,10 @@
+libhildondesktop (2.1.6~unreleased) unstable; urgency=low
+
+  * Add API to manage plugins without loading them (HDPluginConfiguration).
+  * Improve HDConfigFile API.
+
+ -- Jan Arne Petersen <jpetersen@openismus.com>  Wed, 29 Oct 2008 15:55:32 +0100
+
 libhildondesktop (2.1.5) unstable; urgency=low
 
   * Implement X Window properties required by hildon-desktop to handle

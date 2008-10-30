@@ -53,25 +53,26 @@ struct _HDPluginConfigurationClass
 {
   GObjectClass parent_class;
 
-  void (*plugin_module_added)         (HDPluginConfiguration *configuration,
-                                       const gchar     *desktop_file);
-  void (*plugin_module_removed)       (HDPluginConfiguration *configuration,
-                                       const gchar     *desktop_file);
-  void (*configuration_loaded)        (HDPluginConfiguration *configuration,
-                                       GKeyFile        *keyfile);
-  void (*plugin_configuration_loaded) (HDPluginConfiguration *configuration,
-                                       GKeyFile        *keyfile);
+  void (*plugin_module_added)        (HDPluginConfiguration *configuration,
+                                      const gchar           *desktop_file);
+  void (*plugin_module_removed)      (HDPluginConfiguration *configuration,
+                                      const gchar           *desktop_file);
+  void (*configuration_loaded)       (HDPluginConfiguration *configuration,
+                                      GKeyFile              *key_file);
+  void (*items_configuration_loaded) (HDPluginConfiguration *configuration,
+                                      GKeyFile              *key_file);
 };
 
-GType                  hd_plugin_configuration_get_type                   (void);
+GType                  hd_plugin_configuration_get_type             (void);
 
-HDPluginConfiguration *hd_plugin_configuration_new                        (HDConfigFile             *config_file);
+HDPluginConfiguration *hd_plugin_configuration_new                  (HDConfigFile             *config_file);
 
-void                   hd_plugin_configuration_run                        (HDPluginConfiguration    *configuration);
+void                   hd_plugin_configuration_run                  (HDPluginConfiguration    *configuration);
 
-gchar **               hd_plugin_configuration_get_all_plugin_paths       (HDPluginConfiguration    *configuration);
+gchar **               hd_plugin_configuration_get_all_plugin_paths (HDPluginConfiguration    *configuration);
 
-GKeyFile *             hd_plugin_configuration_get_plugin_config_key_file (HDPluginConfiguration    *configuration);
+GKeyFile *             hd_plugin_configuration_get_items_key_file   (HDPluginConfiguration    *configuration);
+gboolean               hd_plugin_configuration_store_items_key_file (HDPluginConfiguration    *configuration);
 
 G_END_DECLS
 

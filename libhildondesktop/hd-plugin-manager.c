@@ -587,7 +587,7 @@ hd_plugin_manager_configuration_loaded (HDPluginConfiguration *configuration,
 }
 
 static void
-hd_plugin_manager_plugin_configuration_loaded (HDPluginConfiguration *configuration,
+hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configuration,
                                                GKeyFile              *keyfile)
 {
   HDPluginManager *manager = HD_PLUGIN_MANAGER (configuration);
@@ -709,7 +709,7 @@ hd_plugin_manager_class_init (HDPluginManagerClass *klass)
   plugin_configuration_class->plugin_module_added = hd_plugin_manager_plugin_module_added;
   plugin_configuration_class->plugin_module_removed = hd_plugin_manager_plugin_module_removed;
   plugin_configuration_class->configuration_loaded = hd_plugin_manager_configuration_loaded;
-  plugin_configuration_class->plugin_configuration_loaded = hd_plugin_manager_plugin_configuration_loaded;
+  plugin_configuration_class->items_configuration_loaded = hd_plugin_manager_items_configuration_loaded;
 
   g_object_class->finalize = hd_plugin_manager_finalize;
 
@@ -798,7 +798,7 @@ hd_plugin_manager_run (HDPluginManager *manager)
 GKeyFile *
 hd_plugin_manager_get_plugin_config_key_file (HDPluginManager *manager)
 {
-  return hd_plugin_configuration_get_plugin_config_key_file (HD_PLUGIN_CONFIGURATION (manager));
+  return hd_plugin_configuration_get_items_key_file (HD_PLUGIN_CONFIGURATION (manager));
 }
 
 /**

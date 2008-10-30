@@ -55,7 +55,7 @@ enum
   PLUGIN_MODULE_ADDED,
   PLUGIN_MODULE_REMOVED,
   CONFIGURATION_LOADED,
-  PLUGIN_CONFIGURATION_LOADED,
+  ITEMS_CONFIGURATION_LOADED,
   LAST_SIGNAL
 };
 
@@ -63,8 +63,8 @@ struct _HDPluginConfigurationPrivate
 {
   HDConfigFile           *config_file;
 
-  HDConfigFile           *plugin_config_file;
-  GKeyFile               *plugin_config_key_file;
+  HDConfigFile           *items_config_file;
+  GKeyFile               *items_key_file;
 
   gchar                 **plugin_dirs;
   GnomeVFSMonitorHandle **plugin_dir_monitors;
@@ -222,32 +222,32 @@ hd_plugin_configuration_load_plugin_configuration (HDPluginConfiguration *config
   HDPluginConfigurationPrivate *priv = configuration->priv;
 
   /* Free old plugin configuration */
-  if (priv->plugin_config_key_file)
+  if (priv->items_key_file)
     {
-      g_key_file_free (priv->plugin_config_key_file);
-      priv->plugin_config_key_file = NULL;
+      g_key_file_free (priv->items_key_file);
+      priv->items_key_file = NULL;
     }
 
   /* Only load plugin configuration if avaiable */
-  if (priv->plugin_config_file)
+  if (priv->items_config_file)
     {
       /* Load plugin configuration */
-      priv->plugin_config_key_file = hd_config_file_load_file (priv->plugin_config_file, FALSE);
+      priv->items_key_file = hd_config_file_load_file (priv->items_config_file, FALSE);
 
-      if (!priv->plugin_config_key_file)
+      if (!priv->items_key_file)
         g_warning ("Error loading plugin configuration file");
     }
 
   /* Use empty keyfile if not set */
-  if (!priv->plugin_config_key_file)
-    priv->plugin_config_key_file = g_key_file_new ();
+  if (!priv->items_key_file)
+    priv->items_key_file = g_key_file_new ();
 
   g_object_notify (G_OBJECT (configuration), "plugin-config-key-file");
 
   g_signal_emit (configuration,
-                 plugin_configuration_signals[PLUGIN_CONFIGURATION_LOADED],
+                 plugin_configuration_signals[ITEMS_CONFIGURATION_LOADED],
                  0,
-                 priv->plugin_config_key_file);
+                 priv->items_key_file);
 }
 
 static void
@@ -257,7 +257,7 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
   HDPluginConfigurationPrivate *priv = configuration->priv;
   GError *error = NULL;
   gsize n_plugin_dir;
-  gchar *plugin_config_filename;
+  gchar *items_config_filename;
 
   /* free old configuration */
   if (priv->plugin_dirs != NULL)
@@ -273,10 +273,10 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
       g_strfreev (priv->plugin_dirs);
       priv->plugin_dirs = NULL;
     }
-  if (priv->plugin_config_file)
+  if (priv->items_config_file)
     {
-      g_object_unref (priv->plugin_config_file);
-      priv->plugin_config_file = NULL;      
+      g_object_unref (priv->items_config_file);
+      priv->items_config_file = NULL;      
     }
 
   /* Load configuration ([X-PluginConfiguration] group) */
@@ -320,15 +320,15 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
         }
     }
 
-  plugin_config_filename = g_key_file_get_string (keyfile, 
+  items_config_filename = g_key_file_get_string (keyfile, 
                                                   HD_PLUGIN_CONFIGURATION_CONFIG_GROUP, 
                                                   HD_PLUGIN_CONFIGURATION_CONFIG_KEY_PLUGIN_CONFIGURATION,
                                                   NULL);
-  if (plugin_config_filename)
+  if (items_config_filename)
     {
       gchar *system_conf_dir, *user_conf_dir;
 
-      g_strstrip (plugin_config_filename);
+      g_strstrip (items_config_filename);
 
       /* Get config file directories */
       g_object_get (G_OBJECT (priv->config_file),
@@ -336,10 +336,10 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
                     "user-conf-dir", &user_conf_dir,
                     NULL);
 
-      priv->plugin_config_file = hd_config_file_new (system_conf_dir,
+      priv->items_config_file = hd_config_file_new (system_conf_dir,
                                                      user_conf_dir,
-                                                     plugin_config_filename);
-      g_signal_connect_object (priv->plugin_config_file, "changed",
+                                                     items_config_filename);
+      g_signal_connect_object (priv->items_config_file, "changed",
                                G_CALLBACK (hd_plugin_configuration_load_plugin_configuration),
                                configuration, G_CONNECT_SWAPPED);
     }
@@ -348,8 +348,8 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
 }
 
 static void
-hd_plugin_configuration_plugin_configuration_loaded (HDPluginConfiguration *configuration,
-                                                     GKeyFile        *keyfile)
+hd_plugin_configuration_items_configuration_loaded (HDPluginConfiguration *configuration,
+                                                    GKeyFile        *keyfile)
 {
 }
 
@@ -388,7 +388,7 @@ hd_plugin_configuration_get_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_PLUGIN_CONFIG_KEY_FILE:
-      g_value_set_pointer (value, priv->plugin_config_key_file);
+      g_value_set_pointer (value, priv->items_key_file);
       break;
 
     default:
@@ -404,7 +404,7 @@ hd_plugin_configuration_class_init (HDPluginConfigurationClass *klass)
   klass->plugin_module_added = hd_plugin_configuration_plugin_module_added;
   klass->plugin_module_removed = hd_plugin_configuration_plugin_module_removed;
   klass->configuration_loaded = hd_plugin_configuration_configuration_loaded;
-  klass->plugin_configuration_loaded = hd_plugin_configuration_plugin_configuration_loaded;
+  klass->items_configuration_loaded = hd_plugin_configuration_items_configuration_loaded;
 
   g_object_class->finalize = hd_plugin_configuration_finalize;
   g_object_class->get_property = hd_plugin_configuration_get_property;
@@ -483,15 +483,15 @@ hd_plugin_configuration_class_init (HDPluginConfigurationClass *klass)
    *
    *  Emitted if the plugin configuration file is loaded.
    **/
-  plugin_configuration_signals [PLUGIN_CONFIGURATION_LOADED] = g_signal_new ("plugin-configuration-loaded",
-                                                                             G_TYPE_FROM_CLASS (klass),
-                                                                             G_SIGNAL_RUN_LAST,
-                                                                             G_STRUCT_OFFSET (HDPluginConfigurationClass,
-                                                                                              plugin_configuration_loaded),
-                                                                             NULL, NULL,
-                                                                             g_cclosure_marshal_VOID__POINTER,
-                                                                             G_TYPE_NONE, 1,
-                                                                             G_TYPE_POINTER);
+  plugin_configuration_signals [ITEMS_CONFIGURATION_LOADED] = g_signal_new ("items-configuration-loaded",
+                                                                            G_TYPE_FROM_CLASS (klass),
+                                                                            G_SIGNAL_RUN_LAST,
+                                                                            G_STRUCT_OFFSET (HDPluginConfigurationClass,
+                                                                                             items_configuration_loaded),
+                                                                            NULL, NULL,
+                                                                            g_cclosure_marshal_VOID__POINTER,
+                                                                            G_TYPE_NONE, 1,
+                                                                            G_TYPE_POINTER);
 }
 
 /**
@@ -576,7 +576,7 @@ hd_plugin_configuration_get_all_plugin_paths (HDPluginConfiguration *configurati
 }
 
 /**
- * hd_plugin_configuration_get_plugin_config_key_file:
+ * hd_plugin_configuration_get_items_key_file:
  * @configuration: a #HDPluginConfiguration
  *
  * This function can be used in the HDPluginConfiguration::plugin-added and
@@ -586,10 +586,22 @@ hd_plugin_configuration_get_all_plugin_paths (HDPluginConfiguration *configurati
  * Returns: a reference to the plugin configuration key file. It is owned by the configuration and must not be freed.
  **/
 GKeyFile *
-hd_plugin_configuration_get_plugin_config_key_file (HDPluginConfiguration *configuration)
+hd_plugin_configuration_get_items_key_file (HDPluginConfiguration *configuration)
 {
   HDPluginConfigurationPrivate *priv = configuration->priv;
 
-  return priv->plugin_config_key_file;
+  return priv->items_key_file;
 }
 
+gboolean
+hd_plugin_configuration_store_items_key_file (HDPluginConfiguration *configuration)
+{
+  HDPluginConfigurationPrivate *priv = configuration->priv;
+
+  g_return_val_if_fail (HD_IS_PLUGIN_CONFIGURATION (configuration), FALSE);
+
+  if (priv->items_config_file)
+    return hd_config_file_save_file (priv->items_config_file, priv->items_key_file);
+
+  return FALSE;
+}

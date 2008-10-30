@@ -52,14 +52,17 @@ struct _HDConfigFileClass
   void (* changed) (HDConfigFile *config_file);
 };
 
-GType         hd_config_file_get_type  (void);
+GType         hd_config_file_get_type          (void);
 
-HDConfigFile *hd_config_file_new       (const gchar  *system_conf_dir,
-                                        const gchar  *user_conf_dir,
-                                        const gchar  *filename);
+HDConfigFile *hd_config_file_new               (const gchar  *system_conf_dir,
+                                                const gchar  *user_conf_dir,
+                                                const gchar  *filename);
+HDConfigFile *hd_config_file_new_with_defaults (const gchar  *filename);
 
-GKeyFile     *hd_config_file_load_file (HDConfigFile *config_file,
-                                        gboolean      force_system_config);
+GKeyFile     *hd_config_file_load_file         (HDConfigFile *config_file,
+                                                gboolean      force_system_config);
+gboolean      hd_config_file_save_file         (HDConfigFile *config_file,
+                                                GKeyFile     *key_file);
 
 G_END_DECLS
 
