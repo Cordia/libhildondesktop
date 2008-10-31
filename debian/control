@@ -3,12 +3,12 @@ Section: x11
 Priority: optional
 Maintainer: Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 Build-Depends: debhelper (>= 5), cdbs, pkg-config, libhildon1-dev (>= 2.1.0), libosso-gnomevfs2-dev, libdbus-1-dev (>= 1.0.2), libiphb-dev, gtk-doc-tools
-Standards-Version: 3.6.0
+Standards-Version: 3.8.0
 
 Package: libhildondesktop1-dev
-Section: devel
+Section: libdevel
 Architecture: any
-Depends: libhildondesktop1 (= ${Source-Version}), libhildon1-dev (>= 2.1.0), libosso-gnomevfs2-dev, libdbus-1-dev (>= 1.0.2)
+Depends: libhildondesktop1 (= ${binary:Version}), libhildon1-dev (>= 2.1.0), libosso-gnomevfs2-dev, libdbus-1-dev (>= 1.0.2)
 Description: Hildon Desktop libraries development files
 
 Package: libhildondesktop1-doc
@@ -25,7 +25,8 @@ Description: Hildon Desktop libraries
 Package: libhildondesktop1-dbg
 Section: libdevel
 Architecture: any
-Depends: libhildondesktop1 (= ${Source-Version})
+Priority: extra
+Depends: libhildondesktop1 (= ${binary:Version})
 Description: Debug symbols for Hildon Desktop libraries
 
 Package: libhildondesktop1-examples

@@ -1,5 +1,10 @@
 2008-10-31  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* debian/control:
+	* debian/rules: Fix lintian warnings.
+
+2008-10-31  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* debian/changelog: Release 2.1.6
 
 2008-10-30  Jan Arne Petersen  <jpetersen@openismus.com>
