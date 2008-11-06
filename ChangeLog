@@ -1,3 +1,9 @@
+2008-11-06  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* libhildondesktop/hd-plugin-manager.c
+	(hd_plugin_manager_load_plugin): Fix crash if applet could not be
+	loaded.
+
 2008-10-31  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* debian/control:

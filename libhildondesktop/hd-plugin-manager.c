@@ -214,12 +214,10 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
                                             plugin_id,
                                             desktop_file_to_load,
                                             &error);
-  g_free (desktop_file_to_load);
-
   if (!plugin)
     {
-      g_warning ("Error loading plugin: %s", error->message);
-      g_error_free (error);
+      g_warning ("Error loading plugin: %s", desktop_file_to_load);
+      g_free (desktop_file_to_load);
 
       if (priv->policy)
         {
@@ -239,13 +237,15 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
 
           if (!plugin)
             {
-              g_error_free (error);
-
               plugin = hd_ui_policy_get_failure_plugin (priv->policy,
                                                         desktop_file,
                                                         hd_stamp_file_get_safe_mode ());
             }
         }
+    }
+  else
+    {
+      g_free (desktop_file_to_load);
     }
 
   if (!plugin)
