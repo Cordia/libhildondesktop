@@ -30,6 +30,7 @@ libhildondesktop_@API_VERSION_MAJOR@_la_SOURCES = \
 	hd-plugin-loader.c							\
 	hd-plugin-manager.c							\
 	hd-plugin-module.c							\
+	hd-shortcuts.c								\
 	hd-stamp-file.c								\
 	hd-status-menu-item.c							\
 	hd-status-plugin-item.c							\
@@ -56,6 +57,7 @@ libhildondesktop_@API_VERSION_MAJOR@_public_headers = \
 	hd-plugin-loader.h							\
 	hd-plugin-manager.h							\
 	hd-plugin-module.h							\
+	hd-shortcuts.h								\
 	hd-stamp-file.h								\
 	hd-status-menu-item.h							\
 	hd-status-plugin-item.h							\

@@ -1,3 +1,19 @@
+2008-11-11  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* libhildondesktop/hd-home-plugin-item.c
+	  (create_applet_id): Add a function to generate an unique ID which
+	  can be used as gconf key.
+	  (hd_home_plugin_item_realize): Set _HILDON_APPLET_ID to ID generated
+	  by the create_applet_id function.
+
+	* libhildondesktop/hd-shortcuts.c:
+	* libhildondesktop/hd-shortcuts.h: Moved from hildon-home (made more
+	generic by Xavier Claessens <xavier.claessens@collabora.co.uk>). Fixes
+	NB#90553.
+
+	* libhildondesktop/libhildondesktop.h: Add hd-shortcuts.h.
+	* libhildondesktop/Makefile.am: Add hd-shortcuts.[ch].
+
 2008-11-06  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* libhildondesktop/hd-plugin-manager.c

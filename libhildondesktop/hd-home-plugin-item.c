@@ -149,6 +149,46 @@ hd_home_plugin_item_init_plugin_item (HDPluginItemIface *iface)
   return;
 }
 
+static gchar *
+create_applet_id (HDHomePluginItem *item)
+{
+  const gchar *type_name = G_OBJECT_TYPE_NAME (item);
+  gchar *plugin_id = hd_plugin_item_get_plugin_id (HD_PLUGIN_ITEM (item));
+  GString *applet_id;
+  gchar *p;
+
+  applet_id = g_string_sized_new (strlen (type_name) + 1 + (strlen (plugin_id) * 2));
+
+  g_string_append (applet_id, type_name);
+  g_string_append_c (applet_id, ':');
+
+  /* Add plugin_id (replace "/" by "_" and "_" by "__") */
+  for (p = plugin_id; *p != '\0'; p++)
+    {
+      if (*p == '_')
+        {
+          g_string_append_c (applet_id, '_');
+          g_string_append_c (applet_id, '_');
+        }
+      else if (*p == '-')
+        {
+          g_string_append_c (applet_id, '-');
+          g_string_append_c (applet_id, '-');
+        }
+      else if (*p == '/')
+        g_string_append_c (applet_id, '_');
+      else if (*p == '#')
+        g_string_append_c (applet_id, '-');
+      else
+        g_string_append_c (applet_id, *p);
+    }
+  g_string_append_c (applet_id, '\0');
+
+  g_free (plugin_id);
+
+  return g_string_free (applet_id, FALSE);
+}
+
 static void
 hd_home_plugin_item_realize (GtkWidget *widget)
 {
@@ -174,7 +214,7 @@ hd_home_plugin_item_realize (GtkWidget *widget)
                    atom, XA_ATOM, 32, PropModeReplace,
                    (unsigned char *)&wm_type, 1);
 
-  applet_id = hd_plugin_item_get_plugin_id (HD_PLUGIN_ITEM (widget));
+  applet_id = create_applet_id (HD_HOME_PLUGIN_ITEM (widget));
   XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
                    GDK_WINDOW_XID (widget->window),
                    gdk_x11_get_xatom_by_name_for_display (display,

@@ -36,6 +36,7 @@
 
 /* Home API */
 #include <libhildondesktop/hd-home-plugin-item.h>
+#include <libhildondesktop/hd-shortcuts.h>
 
 /* Other API */
 #include <libhildondesktop/hd-config-file.h>
