@@ -1,3 +1,9 @@
+libhildondesktop (2.1.7~unreleased) unstable; urgency=low
+
+  * Add Generic API to load/unload a list of applets (shortcuts). Fixes: NB#90553.
+
+ -- Jan Arne Petersen <jpetersen@openismus.com>  Tue, 11 Nov 2008 13:33:33 +0100
+
 libhildondesktop (2.1.6) unstable; urgency=low
 
   * Add API to manage plugins without loading them (HDPluginConfiguration).

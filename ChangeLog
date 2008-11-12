@@ -1,5 +1,11 @@
 2008-11-11  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* configure.ac: Increase version to 2.1.7.
+
+	* debian/changelog: Add 2.1.7~unreleased entry.
+
+2008-11-11  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* libhildondesktop/hd-home-plugin-item.c
 	  (create_applet_id): Add a function to generate an unique ID which
 	  can be used as gconf key.
