@@ -1,3 +1,9 @@
+libhildondesktop (2.1.8~unreleased) unstable; urgency=low
+
+  * Simplify applet id for customizations.
+
+ -- Jan Arne Petersen <jpetersen@openismus.com>  Tue, 18 Nov 2008 12:26:49 +0100
+
 libhildondesktop (2.1.7) unstable; urgency=low
 
   * Add Generic API to load/unload a list of applets (shortcuts).

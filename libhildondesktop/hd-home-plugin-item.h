@@ -74,6 +74,8 @@ struct _HDHomePluginItem
 struct _HDHomePluginItemClass
 {
   GtkWindowClass parent;
+
+  gchar * (*get_applet_id) (HDHomePluginItem *item);
 };
 
 GType            hd_home_plugin_item_resize_type_get_type   (void);
@@ -98,6 +100,8 @@ guint            hd_home_plugin_item_heartbeat_signal_add   (HDHomePluginItem   
                                                              GSourceFunc                  source_func,
                                                              gpointer                     data,
                                                              GDestroyNotify               destroy);
+
+gchar           *hd_home_plugin_item_get_applet_id          (HDHomePluginItem            *item);
 
 G_END_DECLS
 

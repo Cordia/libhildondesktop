@@ -149,46 +149,6 @@ hd_home_plugin_item_init_plugin_item (HDPluginItemIface *iface)
   return;
 }
 
-static gchar *
-create_applet_id (HDHomePluginItem *item)
-{
-  const gchar *type_name = G_OBJECT_TYPE_NAME (item);
-  gchar *plugin_id = hd_plugin_item_get_plugin_id (HD_PLUGIN_ITEM (item));
-  GString *applet_id;
-  gchar *p;
-
-  applet_id = g_string_sized_new (strlen (type_name) + 1 + (strlen (plugin_id) * 2));
-
-  g_string_append (applet_id, type_name);
-  g_string_append_c (applet_id, ':');
-
-  /* Add plugin_id (replace "/" by "_" and "_" by "__") */
-  for (p = plugin_id; *p != '\0'; p++)
-    {
-      if (*p == '_')
-        {
-          g_string_append_c (applet_id, '_');
-          g_string_append_c (applet_id, '_');
-        }
-      else if (*p == '-')
-        {
-          g_string_append_c (applet_id, '-');
-          g_string_append_c (applet_id, '-');
-        }
-      else if (*p == '/')
-        g_string_append_c (applet_id, '_');
-      else if (*p == '#')
-        g_string_append_c (applet_id, '-');
-      else
-        g_string_append_c (applet_id, *p);
-    }
-  g_string_append_c (applet_id, '\0');
-
-  g_free (plugin_id);
-
-  return g_string_free (applet_id, FALSE);
-}
-
 static void
 hd_home_plugin_item_realize (GtkWidget *widget)
 {
@@ -214,7 +174,7 @@ hd_home_plugin_item_realize (GtkWidget *widget)
                    atom, XA_ATOM, 32, PropModeReplace,
                    (unsigned char *)&wm_type, 1);
 
-  applet_id = create_applet_id (HD_HOME_PLUGIN_ITEM (widget));
+  applet_id = hd_home_plugin_item_get_applet_id (HD_HOME_PLUGIN_ITEM (widget));
   XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
                    GDK_WINDOW_XID (widget->window),
                    gdk_x11_get_xatom_by_name_for_display (display,
@@ -340,11 +300,38 @@ hd_home_plugin_item_set_property (GObject      *object,
     }
 }
 
+static gchar *
+hd_home_plugin_item_get_applet_id_real (HDHomePluginItem *item)
+{
+  gchar *plugin_id, *p;
+
+  plugin_id = hd_plugin_item_get_plugin_id (HD_PLUGIN_ITEM (item));
+
+  /* replace "/" and "#" by "_" */
+  for (p = plugin_id; *p != '\0'; p++)
+    {
+      if (*p == '/')
+        {
+          g_warning ("Plugin id for applets should not contain '/'");
+          *p = '_';
+        }
+      else if (*p == '#')
+        {
+          g_warning ("Plugin id for applets should not contain '#'");
+          *p = '_';
+        }
+    }
+
+  return plugin_id;
+}
+
 static void
 hd_home_plugin_item_class_init (HDHomePluginItemClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  klass->get_applet_id = hd_home_plugin_item_get_applet_id_real;
 
   widget_class->realize = hd_home_plugin_item_realize;
 
@@ -549,3 +536,19 @@ hd_home_plugin_item_heartbeat_signal_add (HDHomePluginItem *item,
                                 destroy);
 }
 
+gchar *
+hd_home_plugin_item_get_applet_id (HDHomePluginItem *item)
+{
+  HDHomePluginItemClass *klass;
+
+  g_return_val_if_fail (HD_IS_HOME_PLUGIN_ITEM (item), NULL);
+  
+  klass = HD_HOME_PLUGIN_ITEM_GET_CLASS (item);
+
+  if (klass->get_applet_id)
+    return klass->get_applet_id (item);
+
+  g_warning ("No get_applet_id vfunction in %s", G_OBJECT_TYPE_NAME (item));
+
+  return hd_home_plugin_item_get_applet_id_real (item);
+}

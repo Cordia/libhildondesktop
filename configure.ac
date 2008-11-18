@@ -1,4 +1,4 @@
-AC_INIT([libhildondesktop], [2.1.7], [], [libhildondesktop])
+AC_INIT([libhildondesktop], [2.1.8], [], [libhildondesktop])
 AC_CANONICAL_SYSTEM
 
 AM_CONFIG_HEADER(config.h)

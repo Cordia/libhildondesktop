@@ -1,3 +1,18 @@
+2008-11-18  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* configure.ac: Increase version to 2.1.8
+
+	* debian/changelog: Add entry for 2.1.8
+
+	* libhildondesktop/hd-home-plugin-item.c
+	  (hd_home_plugin_item_get_applet_id_real,
+	  hd_home_plugin_item_class_init,
+	  hd_home_plugin_item_get_applet_id): Add virtual function to get the
+	  applet id. By default use the plugin id.
+
+	* libhildondesktop/hd-home-plugin-item.h (get_applet_id): Add virtual
+	function to get the applet id.
+
 2008-11-17  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.7
