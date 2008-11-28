@@ -109,7 +109,10 @@ delete_event_cb (GtkWidget   *shortcut,
   g_slist_foreach (list, (GFunc) g_free, NULL);
   g_slist_free (list);
 
-  return FALSE;
+  /* Do not destroy the widget here, it will be destroyed after syncing the lists */
+  gtk_widget_hide (shortcut);
+
+  return TRUE;
 }
 
 /* Compare lists new and old and move elements unique in old

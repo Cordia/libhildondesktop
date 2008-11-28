@@ -43,7 +43,7 @@
 #define MODULE_GET_INSTANCE_SYMBOL "hd_plugin_loader_module_get_instance"
 
 #define HD_PLUGIN_LOADER_FACTORY_GET_PRIVATE(object) \
-        (G_TYPE_INSTANCE_GET_PRIVATE ((object), HD_TYPE_PLUGIN_LOADER_FACTORY, HDPluginLoaderFactoryPrivate))
+  (G_TYPE_INSTANCE_GET_PRIVATE ((object), HD_TYPE_PLUGIN_LOADER_FACTORY, HDPluginLoaderFactoryPrivate))
 
 G_DEFINE_TYPE (HDPluginLoaderFactory, hd_plugin_loader_factory, G_TYPE_OBJECT);
 
@@ -52,7 +52,7 @@ struct _HDPluginLoaderFactoryPrivate
   GHashTable            *registry;
   GHashTable            *modules;
   GnomeVFSMonitorHandle *monitor;
-  
+
   gchar 	  *(*load_module)   (void);
   HDPluginLoader  *(*get_instance)  (void);
 };
@@ -69,13 +69,13 @@ hd_plugin_loader_factory_dir_changed (GnomeVFSMonitorHandle *handle,
                                       HDPluginLoaderFactory *factory)
 {
   if (!callback_pending) 
-  {
-    callback_pending = 1;
+    {
+      callback_pending = 1;
 
-    g_timeout_add (500,
-                  (GSourceFunc) hd_plugin_loader_factory_load_modules, 
-                  factory);
-  }
+      g_timeout_add (500,
+                     (GSourceFunc) hd_plugin_loader_factory_load_modules, 
+                     factory);
+    }
 }
 
 static gboolean
@@ -85,7 +85,7 @@ hd_plugin_loader_factory_remove_module (gpointer key,
 {
   return TRUE;
 }
-        
+
 static void 
 hd_plugin_loader_factory_load_modules (HDPluginLoaderFactory *factory)
 {
@@ -103,54 +103,54 @@ hd_plugin_loader_factory_load_modules (HDPluginLoaderFactory *factory)
 
   if (factory->priv->monitor)
     gnome_vfs_monitor_cancel (factory->priv->monitor);
-  
+
   if (error != NULL)
-  { 
-    g_error_free (error);
+    { 
+      g_error_free (error);
 
-    gnome_vfs_monitor_add (&factory->priv->monitor, 
-                           HD_DESKTOP_MODULE_PATH,
-                           GNOME_VFS_MONITOR_DIRECTORY,
-                           (GnomeVFSMonitorCallback) hd_plugin_loader_factory_dir_changed,
-                           factory);
+      gnome_vfs_monitor_add (&factory->priv->monitor, 
+                             HD_DESKTOP_MODULE_PATH,
+                             GNOME_VFS_MONITOR_DIRECTORY,
+                             (GnomeVFSMonitorCallback) hd_plugin_loader_factory_dir_changed,
+                             factory);
 
-   callback_pending = 0;
-    
-    return;
-  }
+      callback_pending = 0;
+
+      return;
+    }
 
   while ((name = g_dir_read_name (path_modules)) != NULL)
-  {
-    if (g_str_has_suffix (name,".so"))
     {
-      GModule *module;
-      gchar *libpath = g_build_filename (HD_PLUGIN_LOADER_MODULES_PATH, name, NULL);
+      if (g_str_has_suffix (name,".so"))
+        {
+          GModule *module;
+          gchar *libpath = g_build_filename (HD_PLUGIN_LOADER_MODULES_PATH, name, NULL);
 
-      module = g_module_open (libpath, G_MODULE_BIND_LAZY);
+          module = g_module_open (libpath, G_MODULE_BIND_LAZY);
 
-      if (module != NULL)
-      {
-        if (g_module_symbol (module,
-			     MODULE_LOAD_SYMBOL,
-			     (void *) &factory->priv->load_module))
-	{
-	  g_hash_table_insert (factory->priv->modules,
-			       g_strdup (factory->priv->load_module ()),
-			       module);
-	}
-	else
-	{
-	  g_warning (g_module_error ());
-  	  g_module_close (module);
-	}	  
-      }
-      else
-      {
-	g_warning (g_module_error ());
-      }
-    } 
-  }
-   
+          if (module != NULL)
+            {
+              if (g_module_symbol (module,
+                                   MODULE_LOAD_SYMBOL,
+                                   (void *) &factory->priv->load_module))
+                {
+                  g_hash_table_insert (factory->priv->modules,
+                                       g_strdup (factory->priv->load_module ()),
+                                       module);
+                }
+              else
+                {
+                  g_warning (g_module_error ());
+                  g_module_close (module);
+                }	  
+            }
+          else
+            {
+              g_warning (g_module_error ());
+            }
+        } 
+    }
+
   g_dir_close (path_modules);
 
   gnome_vfs_monitor_add (&factory->priv->monitor, 
@@ -158,7 +158,7 @@ hd_plugin_loader_factory_load_modules (HDPluginLoaderFactory *factory)
                          GNOME_VFS_MONITOR_DIRECTORY,
                          (GnomeVFSMonitorCallback) hd_plugin_loader_factory_dir_changed,
                          factory);
-  
+
   callback_pending = 0;
 }
 
@@ -169,18 +169,18 @@ hd_plugin_loader_factory_init (HDPluginLoaderFactory *factory)
 
   factory->priv->registry =
     g_hash_table_new_full (g_str_hash, 
-	  		   g_str_equal,
-			   (GDestroyNotify) g_free,
-			   (GDestroyNotify) g_object_unref);
-  
+                           g_str_equal,
+                           (GDestroyNotify) g_free,
+                           (GDestroyNotify) g_object_unref);
+
   factory->priv->modules  = 
     g_hash_table_new_full (g_str_hash, 
-	  		   g_str_equal,
-			   (GDestroyNotify) g_free,
-			   (GDestroyNotify) g_module_close);
+                           g_str_equal,
+                           (GDestroyNotify) g_free,
+                           (GDestroyNotify) g_module_close);
 
   factory->priv->monitor = NULL;
-  
+
   hd_plugin_loader_factory_load_modules (factory);
 }
 
@@ -193,22 +193,22 @@ hd_plugin_loader_factory_finalize (GObject *object)
   g_return_if_fail (HD_IS_PLUGIN_LOADER_FACTORY (object));
 
   priv = HD_PLUGIN_LOADER_FACTORY (object)->priv;
- 
+
   if (priv->registry != NULL) 
-  {
-    g_hash_table_destroy (priv->registry);
-  }
+    {
+      g_hash_table_destroy (priv->registry);
+    }
 
   if (priv->modules != NULL) 
-  {
-    g_hash_table_destroy (priv->modules);
-  }
+    {
+      g_hash_table_destroy (priv->modules);
+    }
 
   if (priv->monitor != NULL) 
-  {
-    gnome_vfs_monitor_cancel (priv->monitor);
-    priv->monitor = NULL;
-  }
+    {
+      gnome_vfs_monitor_cancel (priv->monitor);
+      priv->monitor = NULL;
+    }
 
   G_OBJECT_CLASS (hd_plugin_loader_factory_parent_class)->finalize (object);
 }
@@ -217,9 +217,9 @@ static void
 hd_plugin_loader_factory_class_init (HDPluginLoaderFactoryClass *class)
 {
   GObjectClass *g_object_class = (GObjectClass *) class;
-  
+
   g_object_class->finalize = hd_plugin_loader_factory_finalize;
- 
+
   g_type_class_add_private (g_object_class, sizeof (HDPluginLoaderFactoryPrivate));
 }
 
@@ -240,8 +240,8 @@ hd_plugin_loader_factory_create (HDPluginLoaderFactory  *factory,
   HDPluginLoaderFactoryPrivate *priv;
   HDPluginLoader *loader = NULL;
   GKeyFile *keyfile;
-  gchar *type;
-  GObject *plugin;
+  gchar *type = NULL;
+  GObject *plugin = NULL;
   GError *local_error = NULL;
 
   g_return_val_if_fail (module_id != NULL, NULL);
@@ -258,12 +258,11 @@ hd_plugin_loader_factory_create (HDPluginLoaderFactory  *factory,
                              &local_error);
 
   if (local_error)
-  {
-    g_warning ("Error loading plugin desktop file: %s", local_error->message);
-    g_error_free (local_error);
-
-    return NULL;
-  }
+    {
+      g_warning ("Error loading plugin desktop file: %s", local_error->message);
+      g_error_free (local_error);
+      goto cleanup;
+    }
 
   type = g_key_file_get_string (keyfile,
                                 HD_PLUGIN_CONFIG_GROUP,
@@ -272,50 +271,52 @@ hd_plugin_loader_factory_create (HDPluginLoaderFactory  *factory,
   g_strstrip (type);
 
   if (local_error)
-  {
-    g_warning ("Error reading plugin desktop file: %s", local_error->message);
-    g_error_free (local_error);
-    return NULL;
-  }
+    {
+      g_warning ("Error reading plugin desktop file: %s", local_error->message);
+      g_error_free (local_error);
+      goto cleanup;
+    }
 
   loader = (HDPluginLoader *) g_hash_table_lookup (priv->registry, type);
 
   if (!loader) 
-  {
-    /* Create instance of plugin loader and add to registry for 
-       later use */
-    if (!g_ascii_strcasecmp (type, HD_PLUGIN_LOADER_TYPE_DEFAULT)) 
     {
-      loader = g_object_new (HD_TYPE_PLUGIN_LOADER_DEFAULT, NULL);
-    }
-    else
-    {
-      GModule *module = g_hash_table_lookup (priv->modules, type);
-
-      if (module)
-      {
-        if (g_module_symbol (module,
-			     MODULE_GET_INSTANCE_SYMBOL,
-			     (void *) &factory->priv->get_instance))
+      /* Create instance of plugin loader and add to registry for 
+         later use */
+      if (!g_ascii_strcasecmp (type, HD_PLUGIN_LOADER_TYPE_DEFAULT)) 
         {
-	  loader = priv->get_instance ();
-	  
-	  priv->get_instance = NULL;
-	}
-	else
-	{
-	  g_warning ("%s: module invalid, discarding it for future use", __FILE__);
-	  g_hash_table_remove (priv->modules, type);
-	}
-      }
+          loader = g_object_new (HD_TYPE_PLUGIN_LOADER_DEFAULT, NULL);
+        }
       else
-      {
-	g_warning ("Unknown Plugin Loader type: %s", type);
-      }
-    }
+        {
+          GModule *module = g_hash_table_lookup (priv->modules, type);
 
-    g_hash_table_insert (priv->registry, g_strdup (type), loader);
-  }
+          if (module)
+            {
+              if (g_module_symbol (module,
+                                   MODULE_GET_INSTANCE_SYMBOL,
+                                   (void *) &factory->priv->get_instance))
+                {
+                  loader = priv->get_instance ();
+
+                  priv->get_instance = NULL;
+                }
+              else
+                {
+                  g_warning ("%s: module invalid, discarding it for future use", __FILE__);
+                  g_hash_table_remove (priv->modules, type);
+                  goto cleanup;
+                }
+            }
+          else
+            {
+              g_warning ("Unknown Plugin Loader type: %s", type);
+              goto cleanup;
+            }
+        }
+
+      g_hash_table_insert (priv->registry, g_strdup (type), loader);
+    }
 
   plugin = hd_plugin_loader_load (loader,
                                   plugin_id,
@@ -325,6 +326,7 @@ hd_plugin_loader_factory_create (HDPluginLoaderFactory  *factory,
   if (local_error != NULL)
     g_propagate_error (error, local_error);
 
+cleanup:
   g_free (type);
 
   return plugin;

@@ -1,3 +1,12 @@
+2008-11-28  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* libhildondesktop/hd-plugin-loader-factory.c
+	  (hd_plugin_loader_factory_create): Do not try to load a plugin from
+	  an unknown loader.
+
+	* libhildondesktop/hd-shortcuts.c (delete_event_cb): Do not destroy
+	  widget here (it is destroyed after the lists are synced).
+
 2008-11-25  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.8
