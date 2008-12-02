@@ -1,3 +1,9 @@
+libhildondesktop (2.1.9~unreleased) unstable; urgency=low
+
+  * unreleased
+
+ -- Jan Arne Petersen <jpetersen@openismus.com>  Tue,  2 Dec 2008 10:07:56 +0200
+
 libhildondesktop (2.1.8) unstable; urgency=low
 
   * Simplify applet id for customizations.
