@@ -1,8 +1,14 @@
-libhildondesktop (2.1.9~unreleased) unstable; urgency=low
+libhildondesktop (2.1.9) unstable; urgency=low
 
-  * unreleased
+  Jan Arne:
+  * libhildondesktop/hd-plugin-loader-factory.c
+    (hd_plugin_loader_factory_create): Do not try to load a plugin from
+    an unknown loader.
 
- -- Jan Arne Petersen <jpetersen@openismus.com>  Tue,  2 Dec 2008 10:07:56 +0200
+  * libhildondesktop/hd-shortcuts.c (delete_event_cb): Do not destroy
+    widget here (it is destroyed after the lists are synced).
+
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Wed, 03 Dec 2008 13:47:18 +0200
 
 libhildondesktop (2.1.8) unstable; urgency=low
 
