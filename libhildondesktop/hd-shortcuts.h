@@ -55,6 +55,10 @@ GType hd_shortcuts_get_type (void);
 
 HDShortcuts *hd_shortcuts_new (const gchar *gconf_key, GType shortcut_type);
 
+void hd_shortcuts_add_bookmark_shortcut (const gchar *url,
+                                         const gchar *label,
+                                         const gchar *icon);
+
 G_END_DECLS
 
 #endif
