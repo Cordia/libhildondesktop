@@ -1,6 +1,6 @@
 libhildondesktop (2.1.10~unreleased) unstable; urgency=low
 
-  * unreleased
+  * Add function to create bookmark shortcuts. Fixes NB#94814
 
  -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Wed,  3 Dec 2008 13:52:34 +0200
 
