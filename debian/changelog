@@ -1,4 +1,4 @@
-libhildondesktop (2.1.10~unreleased) unstable; urgency=low
+libhildondesktop (2.1.10) unstable; urgency=low
 
   * Add function to create bookmark shortcuts. Fixes NB#94814
 
