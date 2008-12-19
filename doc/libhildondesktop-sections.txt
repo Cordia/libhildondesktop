@@ -90,7 +90,9 @@ HDPluginModulePrivate
 <TITLE>HDConfigFile</TITLE>
 HDConfigFile
 hd_config_file_new
+hd_config_file_new_with_defaults
 hd_config_file_load_file
+hd_config_file_save_file
 <SUBSECTION Standard>
 hd_config_file_get_type
 HD_CONFIG_FILE

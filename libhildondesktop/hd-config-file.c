@@ -86,34 +86,50 @@ hd_config_file_monitored_dir_changed (GnomeVFSMonitorHandle    *handle,
   g_free (basename);
 }
 
-static GObject *
-hd_config_file_constructor (GType                  type,
-                            guint                  n_construct_params,
-                            GObjectConstructParam *construct_params)
+static void
+hd_config_file_constructed (GObject *object)
 {
-  GObject *obj;
-  HDConfigFilePrivate *priv;
-
-  obj = G_OBJECT_CLASS (hd_config_file_parent_class)->constructor (type,
-                                                                   n_construct_params,
-                                                                   construct_params);
-
-  priv = HD_CONFIG_FILE (obj)->priv;
+  HDConfigFilePrivate *priv = HD_CONFIG_FILE (object)->priv;
 
   if (priv->system_conf_dir != NULL)
     gnome_vfs_monitor_add (&priv->system_conf_monitor,
                            priv->system_conf_dir,
                            GNOME_VFS_MONITOR_DIRECTORY,
                            (GnomeVFSMonitorCallback) hd_config_file_monitored_dir_changed,
-                           obj);
+                           object);
   if (priv->user_conf_dir != NULL)
-    gnome_vfs_monitor_add (&priv->user_conf_monitor,
-                           priv->user_conf_dir,
-                           GNOME_VFS_MONITOR_DIRECTORY,
-                           (GnomeVFSMonitorCallback) hd_config_file_monitored_dir_changed,
-                           obj);
+    {
+      GnomeVFSResult result;
 
-  return obj;
+      /* Try to create the user config dir if it not exist yet */
+      if (!g_mkdir_with_parents (priv->user_conf_dir,
+                                 S_IRWXU |
+                                 S_IRGRP | S_IXGRP |
+                                 S_IROTH | S_IXOTH))
+        {
+          /* There exist an user config dir, try to monitor */
+          result = gnome_vfs_monitor_add (&priv->user_conf_monitor,
+                                          priv->user_conf_dir,
+                                          GNOME_VFS_MONITOR_DIRECTORY,
+                                          (GnomeVFSMonitorCallback) hd_config_file_monitored_dir_changed,
+                                          object);
+
+          if (result == GNOME_VFS_OK)
+            g_debug ("Started to monitor '%s'.", priv->user_conf_dir);
+          else
+            g_warning ("Could not monitor '%s'. %s",
+                       priv->user_conf_dir,
+                       gnome_vfs_result_to_string (result));
+        }
+      else
+        {
+          /* User config dir could not be created */
+          result = gnome_vfs_result_from_errno ();
+          g_warning ("Could not mkdir '%s', %s",
+                     priv->user_conf_dir,
+                     gnome_vfs_result_to_string (result));
+        }
+    }
 }
 
 static void
@@ -211,7 +227,7 @@ hd_config_file_class_init (HDConfigFileClass *klass)
 {
   GObjectClass *g_object_class = (GObjectClass *) klass;
 
-  g_object_class->constructor = hd_config_file_constructor;
+  g_object_class->constructed = hd_config_file_constructed;
   g_object_class->finalize = hd_config_file_finalize;
   g_object_class->get_property = hd_config_file_get_property;
   g_object_class->set_property = hd_config_file_set_property;
@@ -289,6 +305,17 @@ hd_config_file_new_with_defaults (const gchar *filename)
   return config_file;
 }
 
+/**
+ * hd_config_file_load_file:
+ * @config_file: a #HDConfigFile.
+ * @force_system_config: %TRUE if the user config file should not be loaded
+ *
+ * Creates a new #GKeyFile and loads from config file. If available and 
+ * @force_system_config is %FALSE the user config file is used, else 
+ * the system config file is used
+ *
+ * Returns: a new #GKeyFile. Should be freed with g_key_file_free.
+ **/
 GKeyFile *
 hd_config_file_load_file (HDConfigFile *config_file,
                           gboolean      force_system_config)
@@ -374,6 +401,15 @@ hd_config_file_load_file (HDConfigFile *config_file,
   return NULL;
 }
 
+/**
+ * hd_config_file_save_file:
+ * @config_file: a #HDConfigFile.
+ * @key_file: a #GKeyFile which should be stored.
+ *
+ * Atomically store @key_file to the user config file.
+ *
+ * Returns: %TRUE if the file could be stored successful, %FALSE otherwise.
+ **/
 gboolean
 hd_config_file_save_file (HDConfigFile *config_file,
                           GKeyFile     *key_file)
@@ -393,6 +429,7 @@ hd_config_file_save_file (HDConfigFile *config_file,
       return FALSE;
     }
 
+  /* Get the data which should be written */
   data = g_key_file_to_data (key_file, &length, &error);
   if (!data)
     {
@@ -401,6 +438,7 @@ hd_config_file_save_file (HDConfigFile *config_file,
       return FALSE;
     }
 
+  /* Check if user config dir exists or try to create it */
   if (g_mkdir_with_parents (priv->user_conf_dir,
                             S_IRWXU |
                             S_IRGRP | S_IXGRP |
@@ -411,6 +449,7 @@ hd_config_file_save_file (HDConfigFile *config_file,
       return FALSE;
     }
 
+  /* Create a temporary file */
   tmpl_filename = g_build_filename (priv->user_conf_dir, priv->filename, NULL);
   tmpl = g_strdup_printf ("%sXXXXXX", tmpl_filename);
   g_free (tmpl_filename);
@@ -423,6 +462,7 @@ hd_config_file_save_file (HDConfigFile *config_file,
       return FALSE;
     }
 
+  /* Write data to temporary file */
   if (write (fd, data, length) == -1)
     {
       g_warning ("Cannot save file: Failed to write to file.");
@@ -434,6 +474,7 @@ hd_config_file_save_file (HDConfigFile *config_file,
 
   g_free (data);
 
+  /* Sync the file content to disc */
   if (fsync (fd) == -1)
     {
       g_warning ("Cannot save file: Failed to sync file.");
@@ -449,6 +490,7 @@ hd_config_file_save_file (HDConfigFile *config_file,
       return FALSE;
     }
 
+  /* Move the temporary file to the real file and overwrite it */
   real_filename = g_build_filename (priv->user_conf_dir, priv->filename, NULL);
   if (rename (tmpl, real_filename) == -1)
     {

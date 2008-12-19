@@ -1,6 +1,7 @@
 libhildondesktop (2.1.11~unreleased) unstable; urgency=low
 
-  * unreleased
+  * Try to create user config directory if it does not exist yet, before it is
+    monitored. Fixes NB#92206.
 
  -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 15 Dec 2008 15:53:28 +0200
 
