@@ -1,9 +1,9 @@
-libhildondesktop (2.1.11~unreleased) unstable; urgency=low
+libhildondesktop (2.1.11) unstable; urgency=low
 
   * Try to create user config directory if it does not exist yet, before it is
-    monitored. Fixes NB#92206.
+    monitored. Fixes: NB#92206.
 
- -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 15 Dec 2008 15:53:28 +0200
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 29 Dec 2008 15:31:42 +0200
 
 libhildondesktop (2.1.10) unstable; urgency=low
 
