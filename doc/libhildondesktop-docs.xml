@@ -31,6 +31,7 @@
     <chapter id="home">
       <title>Home Applets</title>
       <xi:include href="xml/hd-home-plugin-item.xml"/>
+      <xi:include href="xml/hd-shortcuts.xml"/>
     </chapter>
   </part>
 

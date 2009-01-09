@@ -252,4 +252,22 @@ HDHomePluginItemClass
 HDHomePluginItemPrivate
 </SECTION>
 
+<SECTION>
+<FILE>hd-shortcuts</FILE>
+<TITLE>HDShortcuts</TITLE>
+HDShortcuts
+hd_shortcuts_new
+hd_shortcuts_add_bookmark_shortcut
+<SUBSECTION Standard>
+hd_shortcuts_get_type
+HD_SHORTCUTS
+HD_SHORTCUTS_CLASS
+HD_SHORTCUTS_GET_CLASS
+HD_IS_SHORTCUTS
+HD_IS_SHORTCUTS_CLASS
+HD_TYPE_SHORTCUTS
+<SUBSECTION Private>
+HDShortcutsClass
+HDShortcutsPrivate
+</SECTION>
 

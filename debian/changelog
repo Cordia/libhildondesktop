@@ -1,3 +1,9 @@
+libhildondesktop (2.1.12~unreleased) unstable; urgency=low
+
+  * Does not require an icon to be defined for a bookmark shortcut. Fixes NB#97385
+
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Fri,  9 Jan 2009 12:01:44 +0100
+
 libhildondesktop (2.1.11) unstable; urgency=low
 
   * Try to create user config directory if it does not exist yet, before it is

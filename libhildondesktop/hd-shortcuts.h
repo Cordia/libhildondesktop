@@ -39,6 +39,10 @@ typedef struct _HDShortcuts        HDShortcuts;
 typedef struct _HDShortcutsClass   HDShortcutsClass;
 typedef struct _HDShortcutsPrivate HDShortcutsPrivate;
 
+/** HDShortcuts:
+ *
+ * A helper class to create instances of shortcuts from a GConf key.
+ */
 struct _HDShortcuts
 {
   GObject parent;

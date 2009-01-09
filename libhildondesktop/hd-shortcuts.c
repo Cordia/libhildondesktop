@@ -32,6 +32,17 @@
 
 #include "hd-shortcuts.h"
 
+/** 
+ * SECTION:hd-shortcuts
+ * @short_description: Utils for Home shortcuts.
+ *
+ * Home shortcuts are a special kind of Home applets #HDShortcuts can be used
+ * to create such shortcuts based on a GConf key.
+ *
+ * hd_shortcuts_add_bookmark_shortcut() can be used to create a bookmark shortcut.
+ *
+ **/
+
 /* Gconf key for the bookmark shortcuts */
 #define BOOKMARK_SHORTCUTS_GCONF_KEY "/apps/osso/hildon-home/bookmark-shortcuts"
 
@@ -390,6 +401,17 @@ hd_shortcuts_init (HDShortcuts *shortcuts)
                                                     (GDestroyNotify) gtk_widget_destroy);
 }
 
+/**
+ * hd_shortcuts_new:
+ * @gconf_key: the GConf key where the shortcuts are stored
+ * @shortcut_type: the #GType of the shortcut instances
+ *
+ * Creates a #HDShortcuts instance which handles the creation of instances
+ * of a subclass @shortcut_type of #HDHomePluginItem based on a GConf key @gconf_key.
+ *
+ * Returns: a new #HDShortcuts instance.
+ *
+ **/
 HDShortcuts *
 hd_shortcuts_new (const gchar *gconf_key, GType shortcut_type)
 {
@@ -402,6 +424,18 @@ hd_shortcuts_new (const gchar *gconf_key, GType shortcut_type)
                        NULL);
 }
 
+/**
+ * hd_shortcuts_add_bookmark_shortcut:
+ * @url: the URL of the bookmark
+ * @label: the title of the bookmark
+ * @icon: the optional icon of the bookmark
+ *
+ * Creates a new bookmark shortcut with @url, @label and
+ * optional @icon.
+ *
+ * @icon should be the path to a 160x96 sized image file in
+ * ~/.bookmarks/shortcut-thumbnails.
+ **/
 void
 hd_shortcuts_add_bookmark_shortcut (const gchar *url,
                                     const gchar *label,
@@ -413,6 +447,9 @@ hd_shortcuts_add_bookmark_shortcut (const gchar *url,
   gchar *key;
   GSList *list;
   GError *error = NULL;
+
+  g_return_if_fail (url != NULL);
+  g_return_if_fail (label != NULL);
 
   client = gconf_client_get_default ();
 
@@ -457,35 +494,39 @@ hd_shortcuts_add_bookmark_shortcut (const gchar *url,
     }
   g_free (key);
 
-  key = g_strdup_printf (BOOKMARKS_GCONF_KEY_ICON, id);
-  gconf_client_set_string (client,
-                           key,
-                           icon,
-                           &error);
-  if (error)
+  /* Store icon if available */
+  if (icon)
     {
-      g_warning ("Could not store icon for bookmark %s into GConf: %s.",
-                 id,
-                 error->message);
-      g_error_free (error);
-      error = NULL;
-    }
-  g_free (key);
+      key = g_strdup_printf (BOOKMARKS_GCONF_KEY_ICON, id);
+      gconf_client_set_string (client,
+                               key,
+                               icon,
+                               &error);
+      if (error)
+        {
+          g_warning ("Could not store icon for bookmark %s into GConf: %s.",
+                     id,
+                     error->message);
+          g_error_free (error);
+          error = NULL;
+        }
+      g_free (key);
 
-  key = g_strdup_printf (BOOKMARKS_GCONF_KEY_URL, id);
-  gconf_client_set_string (client,
-                           key,
-                           url,
-                           &error);
-  if (error)
-    {
-      g_warning ("Could not store URL for bookmark %s into GConf: %s.",
-                 id,
-                 error->message);
-      g_error_free (error);
-      error = NULL;
+      key = g_strdup_printf (BOOKMARKS_GCONF_KEY_URL, id);
+      gconf_client_set_string (client,
+                               key,
+                               url,
+                               &error);
+      if (error)
+        {
+          g_warning ("Could not store URL for bookmark %s into GConf: %s.",
+                     id,
+                     error->message);
+          g_error_free (error);
+          error = NULL;
+        }
+      g_free (key);
     }
-  g_free (key);
 
   /* Append the new bookmark to bookmark shortcut list */
   list = g_slist_append (list, id);
