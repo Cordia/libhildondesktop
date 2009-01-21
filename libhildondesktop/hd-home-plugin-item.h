@@ -36,6 +36,24 @@ G_BEGIN_DECLS
 #define HD_IS_HOME_PLUGIN_ITEM_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), HD_TYPE_HOME_PLUGIN_ITEM))
 #define HD_HOME_PLUGIN_ITEM_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), HD_TYPE_HOME_PLUGIN_ITEM, HDHomePluginItemClass))
 
+/**
+ * HDHomePluginItemResizeType:
+ * @HD_HOME_PLUGIN_ITEM_RESIZE_NONE: cannot be resized.
+ * @HD_HOME_PLUGIN_ITEM_RESIZE_HORIZONTAL: can only be resized horizontally
+ * @HD_HOME_PLUGIN_ITEM_RESIZE_VERTICAL: can only be resized vertically
+ * @HD_HOME_PLUGIN_ITEM_RESIZE_BOTH: can be resized both horizontally and vertically
+ *
+ * Deprecated. Applets cannot be resized.
+ *
+ **/
+typedef enum
+{
+  HD_HOME_PLUGIN_ITEM_RESIZE_NONE,
+  HD_HOME_PLUGIN_ITEM_RESIZE_VERTICAL,
+  HD_HOME_PLUGIN_ITEM_RESIZE_HORIZONTAL,
+  HD_HOME_PLUGIN_ITEM_RESIZE_BOTH
+} HDHomePluginItemResizeType;
+
 typedef struct _HDHomePluginItem        HDHomePluginItem;
 typedef struct _HDHomePluginItemClass   HDHomePluginItemClass;
 typedef struct _HDHomePluginItemPrivate HDHomePluginItemPrivate;
@@ -84,6 +102,11 @@ gchar           *hd_home_plugin_item_get_applet_id          (HDHomePluginItem   
 
 void             hd_home_plugin_item_set_settings           (HDHomePluginItem            *item,
                                                              gboolean                     settings);
+
+/* Deprecated */
+__attribute__((__deprecated__))
+void             hd_home_plugin_item_set_resize_type        (HDHomePluginItem            *item,
+                                                             HDHomePluginItemResizeType   resize_type);
 
 G_END_DECLS
 

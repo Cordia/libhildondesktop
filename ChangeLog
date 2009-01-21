@@ -1,5 +1,18 @@
 2009-01-21  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* libhildondesktop/hd-home-plugin-item.c
+	  (hd_home_plugin_item_set_settings,
+	  hd_home_plugin_item_set_resize_type):
+	* libhildondesktop/hd-home-plugin-item.h
+	  (HD_HOME_PLUGIN_ITEM_GET_CLASS, HD_HOME_PLUGIN_ITEM_RESIZE_NONE,
+	  HD_HOME_PLUGIN_ITEM_RESIZE_VERTICAL,
+	  HD_HOME_PLUGIN_ITEM_RESIZE_HORIZONTAL,
+	  HD_HOME_PLUGIN_ITEM_RESIZE_BOTH, HDHomePluginItemResizeType,
+	  show_settings): Mark hd_home_plugin_item_set_resize_type as
+	  deprecated.
+
+2009-01-21  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* doc/libhildondesktop-sections.txt: Add documentation.
 
 	* libhildondesktop/hd-home-plugin-item.c

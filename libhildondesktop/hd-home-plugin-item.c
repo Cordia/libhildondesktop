@@ -540,3 +540,17 @@ hd_home_plugin_item_set_settings (HDHomePluginItem *item,
                                                                 "_HILDON_APPLET_SETTINGS"));
     }
 }
+
+/**
+ * hd_home_plugin_item_set_resize_type:
+ * @item: A #HDHomePluginItem
+ * @resize_type: a resize type.
+ *
+ * Deprectaed. Applets are not resizeable.
+ **/
+void
+hd_home_plugin_item_set_resize_type (HDHomePluginItem           *item,
+                                     HDHomePluginItemResizeType  resize_type)
+{
+  /* Deprecated */
+}
