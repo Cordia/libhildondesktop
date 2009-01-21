@@ -1,3 +1,18 @@
+2009-01-21  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* doc/libhildondesktop-sections.txt: Add documentation.
+
+	* libhildondesktop/hd-home-plugin-item.c
+	  (hd_home_plugin_item_client_event, hd_home_plugin_item_realize,
+	  hd_home_plugin_item_set_property, hd_home_plugin_item_class_init,
+	  hd_home_plugin_item_heartbeat_signal_add,
+	  hd_home_plugin_item_get_applet_id,
+	  hd_home_plugin_item_set_settings): Add support for settings in Home
+	  applets.
+	* libhildondesktop/hd-home-plugin-item.h (parent, get_applet_id,
+	  show_settings): Update API to support settings. Removed API for
+	  resizeable applets.
+
 2009-01-13  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.12

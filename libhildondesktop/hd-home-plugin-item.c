@@ -55,17 +55,23 @@ enum
 {
   PROP_0,
   PROP_PLUGIN_ID,
-  PROP_RESIZE_TYPE,
+  PROP_SETTINGS,
 };
+
+enum
+{
+  SHOW_SETTINGS,
+  LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0, };
 
 struct _HDHomePluginItemPrivate
 {
   gchar                      *plugin_id;
 
-  HDHomePluginItemResizeType  resize_type;
+  gboolean                    settings;
 
-  GtkAllocation               default_geometry;     /* default geometry, loaded from .desktop */
-  guint                       default_view;         /* default view, loaded from .desktop */
   gboolean                    display_on_all_views; /* display on all views, loaded from .desktop */
 };
 
@@ -78,67 +84,12 @@ hd_home_plugin_item_load_desktop_file (HDPluginItem *item,
                                        GKeyFile     *key_file)
 {
   HDHomePluginItemPrivate *priv = HD_HOME_PLUGIN_ITEM (item)->priv;
-  gint *default_position, *default_size;
-  gsize length;
-  GError *error = NULL;
 
   /* Display on all views */
   priv->display_on_all_views = g_key_file_get_boolean (key_file,
                                                        "Desktop Entry",
                                                        "X-Display-On-All-Views",
                                                        NULL);
-
-  /* Default view */
-  priv->default_view = g_key_file_get_integer (key_file,
-                                               "Desktop Entry",
-                                               "X-Default-View",
-                                               &error);
-  if (error)
-    {
-      priv->default_view = -1;
-      g_error_free (error);
-      error = NULL;
-    }
-
-  /* Default position */
-  priv->default_geometry.x = -1;
-  priv->default_geometry.y = -1;
-  default_position = g_key_file_get_integer_list (key_file,
-                                                  "Desktop Entry",
-                                                  "X-Default-Position",
-                                                  &length,
-                                                  &error);
-  if (error)
-    {
-      g_error_free (error);
-      error = NULL;
-    }
-  else if (length == 2)
-    {
-      priv->default_geometry.x = default_position[0];
-      priv->default_geometry.y = default_position[1];
-    }
-  g_free (default_position);
-
-  /* Default position */
-  priv->default_geometry.width = -1;
-  priv->default_geometry.height = -1;
-  default_size = g_key_file_get_integer_list (key_file,
-                                              "Desktop Entry",
-                                              "X-Default-Size",
-                                              &length,
-                                              &error);
-  if (error)
-    {
-      g_error_free (error);
-      error = NULL;
-    }
-  else if (length == 2)
-    {
-      priv->default_geometry.width = default_size[0];
-      priv->default_geometry.height = default_size[1];
-    }
-  g_free (default_size);
 }
 
 static void
@@ -147,6 +98,25 @@ hd_home_plugin_item_init_plugin_item (HDPluginItemIface *iface)
   iface->load_desktop_file = hd_home_plugin_item_load_desktop_file;
 
   return;
+}
+
+static gboolean
+hd_home_plugin_item_client_event (GtkWidget      *widget,
+                                  GdkEventClient *event)
+{
+  static GdkAtom show_settings_atom = GDK_NONE;
+  
+  if (show_settings_atom == GDK_NONE)
+    show_settings_atom = gdk_atom_intern_static_string ("_HILDON_APPLET_SHOW_SETTINGS");
+
+  if (event->message_type == show_settings_atom)
+    {
+      g_signal_emit (widget, signals[SHOW_SETTINGS], 0);
+
+      return TRUE;
+    }
+
+  return FALSE;
 }
 
 static void
@@ -185,6 +155,20 @@ hd_home_plugin_item_realize (GtkWidget *widget)
                    (guchar *) applet_id, strlen (applet_id));
   g_free (applet_id);
 
+  /* Set or remove settings property */
+  if (priv->settings)
+    XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
+                     GDK_WINDOW_XID (widget->window),
+                     gdk_x11_get_xatom_by_name_for_display (display,
+                                                            "_HILDON_APPLET_SETTINGS"),
+                     XA_CARDINAL, 32, PropModeReplace,
+                     (unsigned char *) &(priv->display_on_all_views), 1);
+  else
+    XDeleteProperty (GDK_WINDOW_XDISPLAY (widget->window),
+                     GDK_WINDOW_XID (widget->window),
+                     gdk_x11_get_xatom_by_name_for_display (display,
+                                                            "_HILDON_APPLET_SETTINGS"));
+
   /* Set display on all views property */
   if (priv->display_on_all_views)
     XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
@@ -198,38 +182,7 @@ hd_home_plugin_item_realize (GtkWidget *widget)
                      GDK_WINDOW_XID (widget->window),
                      gdk_x11_get_xatom_by_name_for_display (display,
                                                             "_HILDON_APPLET_DISPLAY_ON_ALL_VIEWS"));
-
-  /* Set default view _HILDON_APPLET_DEFAULT_VIEW */
-  if (priv->default_view >= 0)
-    XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
-                     GDK_WINDOW_XID (widget->window),
-                     gdk_x11_get_xatom_by_name_for_display (display,
-                                                            "_HILDON_APPLET_DEFAULT_VIEW"),
-                     XA_CARDINAL, 32, PropModeReplace,
-                     (unsigned char *) &(priv->default_view), 1);
-
-  /* Set default view _HILDON_APPLET_DEFAULT_GEOMETRY */
-  if (priv->default_geometry.x != -1 ||
-      priv->default_geometry.y != -1 ||
-      priv->default_geometry.width != -1 ||
-      priv->default_geometry.height != -1)
-    {
-      gint32 default_geometry[4];
-
-      default_geometry[0] = priv->default_geometry.x;
-      default_geometry[1] = priv->default_geometry.y;
-      default_geometry[2] = priv->default_geometry.width;
-      default_geometry[3] = priv->default_geometry.height;
-
-      XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
-                       GDK_WINDOW_XID (widget->window),
-                       gdk_x11_get_xatom_by_name_for_display (display,
-                                                              "_HILDON_APPLET_DEFAULT_GEOMETRY"),
-                       XA_CARDINAL, 32, PropModeReplace,
-                       (unsigned char *) &default_geometry, 4);
-    }
 }
-
 
 static void
 hd_home_plugin_item_dispose (GObject *object)
@@ -266,10 +219,6 @@ hd_home_plugin_item_get_property (GObject      *object,
       g_value_set_string (value, priv->plugin_id);
       break;
 
-    case PROP_RESIZE_TYPE:
-      g_value_set_enum (value, priv->resize_type);
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -290,9 +239,9 @@ hd_home_plugin_item_set_property (GObject      *object,
       priv->plugin_id = g_value_dup_string (value);
       break;
 
-    case PROP_RESIZE_TYPE:
-      hd_home_plugin_item_set_resize_type (HD_HOME_PLUGIN_ITEM (object),
-                                           g_value_get_enum (value));
+    case PROP_SETTINGS:
+      hd_home_plugin_item_set_settings (HD_HOME_PLUGIN_ITEM (object),
+                                        g_value_get_boolean (value));
       break;
 
     default:
@@ -333,6 +282,7 @@ hd_home_plugin_item_class_init (HDHomePluginItemClass *klass)
 
   klass->get_applet_id = hd_home_plugin_item_get_applet_id_real;
 
+  widget_class->client_event = hd_home_plugin_item_client_event;
   widget_class->realize = hd_home_plugin_item_realize;
 
   object_class->dispose = hd_home_plugin_item_dispose;
@@ -345,13 +295,22 @@ hd_home_plugin_item_class_init (HDHomePluginItemClass *klass)
                                     "plugin-id");
 
   g_object_class_install_property (object_class,
-                                   PROP_RESIZE_TYPE,
-                                   g_param_spec_enum ("resize-type",
-                                                      "Resize Type",
-                                                      "The resize type of the Home applet",
-                                                      HD_TYPE_HOME_PLUGIN_ITEM_RESIZE_TYPE,
-                                                      HD_HOME_PLUGIN_ITEM_RESIZE_NONE,
-                                                      G_PARAM_READWRITE));
+                                   PROP_SETTINGS,
+                                   g_param_spec_boolean ("settings",
+                                                         "Settings",
+                                                         "If the applet should show a settings button in the layout mode",
+                                                         FALSE,
+                                                         G_PARAM_WRITABLE));
+
+  signals[SHOW_SETTINGS] = g_signal_new ("show-settings",
+                                         HD_TYPE_HOME_PLUGIN_ITEM,
+                                         G_SIGNAL_RUN_LAST,
+                                         G_STRUCT_OFFSET (HDHomePluginItemClass, show_settings),
+                                         NULL,
+                                         NULL,
+                                         g_cclosure_marshal_VOID__VOID,
+                                         G_TYPE_NONE,
+                                         0);
 
   g_type_class_add_private (klass, sizeof (HDHomePluginItemPrivate));
 }
@@ -360,33 +319,6 @@ static void
 hd_home_plugin_item_init (HDHomePluginItem *item)
 {
   item->priv = HD_HOME_PLUGIN_ITEM_GET_PRIVATE (item);  
-}
-
-GType
-hd_home_plugin_item_resize_type_get_type (void)
-{
-  static GType etype = 0;
-  if (G_UNLIKELY(etype == 0)) {
-      static const GEnumValue values[] = {
-            { HD_HOME_PLUGIN_ITEM_RESIZE_NONE, "HD_HOME_PLUGIN_ITEM_RESIZE_NONE", "none" },
-            { HD_HOME_PLUGIN_ITEM_RESIZE_VERTICAL, "HD_HOME_PLUGIN_ITEM_RESIZE_VERTICAL", "vertical" },
-            { HD_HOME_PLUGIN_ITEM_RESIZE_HORIZONTAL, "HD_HOME_PLUGIN_ITEM_RESIZE_HORIZONTAL", "horizontal" },
-            { HD_HOME_PLUGIN_ITEM_RESIZE_BOTH, "HD_HOME_PLUGIN_ITEM_RESIZE_BOTH", "both" },
-            { 0, NULL, NULL }
-      };
-      etype = g_enum_register_static (g_intern_static_string ("HDHomePluginItemResizeType"), values);
-  }
-  return etype;
-}
-
-void
-hd_home_plugin_item_set_resize_type (HDHomePluginItem           *item,
-                                     HDHomePluginItemResizeType  resize_type)
-{
-  g_return_if_fail (HD_IS_HOME_PLUGIN_ITEM (item));
-
-  item->priv->resize_type = resize_type;
-  g_object_notify (G_OBJECT (item), "resize-type");
 }
 
 /**
@@ -536,6 +468,16 @@ hd_home_plugin_item_heartbeat_signal_add (HDHomePluginItem *item,
                                 destroy);
 }
 
+/**
+ * hd_home_plugin_item_get_applet_id:
+ * @item: A #HDHomePluginItem
+ *
+ * Returns the applet id which is used to identify the applet in
+ * the Hildon Desktop.
+ *
+ * Returns: The applet id. Free it when not longer used.
+ *
+ **/
 gchar *
 hd_home_plugin_item_get_applet_id (HDHomePluginItem *item)
 {
@@ -551,4 +493,50 @@ hd_home_plugin_item_get_applet_id (HDHomePluginItem *item)
   g_warning ("No get_applet_id vfunction in %s", G_OBJECT_TYPE_NAME (item));
 
   return hd_home_plugin_item_get_applet_id_real (item);
+}
+
+/**
+ * hd_home_plugin_item_set_settings:
+ * @item: A #HDHomePluginItem
+ * @settings: Whether the applet supports settings
+ *
+ * Sets whether the applet should show a settings button in layout mode.
+ *
+ * The applet should connect to the #HDHomePluginItem::show-settings signal
+ * to get notified when it should show the settings dialog.
+ *
+ **/
+void
+hd_home_plugin_item_set_settings (HDHomePluginItem *item,
+                                  gboolean          settings)
+{
+  HDHomePluginItemPrivate *priv;
+
+  g_return_if_fail (HD_IS_HOME_PLUGIN_ITEM (item));
+
+  priv = item->priv;
+
+  priv->settings = settings;
+
+  if (GTK_WIDGET_REALIZED (item))
+    {
+      GtkWidget *widget = GTK_WIDGET (item);
+      GdkDisplay *display;
+
+      display = gdk_drawable_get_display (widget->window);
+
+      /* Set or remove settings property from the window */
+      if (priv->settings)
+        XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
+                         GDK_WINDOW_XID (widget->window),
+                         gdk_x11_get_xatom_by_name_for_display (display,
+                                                                "_HILDON_APPLET_SETTINGS"),
+                         XA_CARDINAL, 32, PropModeReplace,
+                         (unsigned char *) &(priv->display_on_all_views), 1);
+      else
+        XDeleteProperty (GDK_WINDOW_XDISPLAY (widget->window),
+                         GDK_WINDOW_XID (widget->window),
+                         gdk_x11_get_xatom_by_name_for_display (display,
+                                                                "_HILDON_APPLET_SETTINGS"));
+    }
 }

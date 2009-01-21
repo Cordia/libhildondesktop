@@ -36,26 +36,6 @@ G_BEGIN_DECLS
 #define HD_IS_HOME_PLUGIN_ITEM_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), HD_TYPE_HOME_PLUGIN_ITEM))
 #define HD_HOME_PLUGIN_ITEM_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), HD_TYPE_HOME_PLUGIN_ITEM, HDHomePluginItemClass))
 
-#define HD_TYPE_HOME_PLUGIN_ITEM_RESIZE_TYPE (hd_home_plugin_item_resize_type_get_type ())
-
-/**
- * HDHomePluginItemResizeType:
- * @HD_HOME_PLUGIN_ITEM_RESIZE_NONE: cannot be resized.
- * @HD_HOME_PLUGIN_ITEM_RESIZE_HORIZONTAL: can only be resized horizontally
- * @HD_HOME_PLUGIN_ITEM_RESIZE_VERTICAL: can only be resized vertically
- * @HD_HOME_PLUGIN_ITEM_RESIZE_BOTH: can be resized both horizontally and vertically
- *
- * Enum values used to specify how a HDHomePluginItem can be resized.
- *
- **/
-typedef enum
-{
-  HD_HOME_PLUGIN_ITEM_RESIZE_NONE,
-  HD_HOME_PLUGIN_ITEM_RESIZE_VERTICAL,
-  HD_HOME_PLUGIN_ITEM_RESIZE_HORIZONTAL,
-  HD_HOME_PLUGIN_ITEM_RESIZE_BOTH
-} HDHomePluginItemResizeType;
-
 typedef struct _HDHomePluginItem        HDHomePluginItem;
 typedef struct _HDHomePluginItemClass   HDHomePluginItemClass;
 typedef struct _HDHomePluginItemPrivate HDHomePluginItemPrivate;
@@ -75,15 +55,14 @@ struct _HDHomePluginItemClass
 {
   GtkWindowClass parent;
 
-  gchar * (*get_applet_id) (HDHomePluginItem *item);
+  /* virtual functions */
+  gchar *(*get_applet_id) (HDHomePluginItem *item);
+
+  /* signals */
+  void   (*show_settings) (HDHomePluginItem *item);
 };
 
-GType            hd_home_plugin_item_resize_type_get_type   (void);
-
 GType            hd_home_plugin_item_get_type               (void);
-
-void             hd_home_plugin_item_set_resize_type        (HDHomePluginItem            *item,
-                                                             HDHomePluginItemResizeType   resize_type);
 
 const gchar     *hd_home_plugin_item_get_dl_filename        (HDHomePluginItem            *item);
 
@@ -102,6 +81,9 @@ guint            hd_home_plugin_item_heartbeat_signal_add   (HDHomePluginItem   
                                                              GDestroyNotify               destroy);
 
 gchar           *hd_home_plugin_item_get_applet_id          (HDHomePluginItem            *item);
+
+void             hd_home_plugin_item_set_settings           (HDHomePluginItem            *item,
+                                                             gboolean                     settings);
 
 G_END_DECLS
 
