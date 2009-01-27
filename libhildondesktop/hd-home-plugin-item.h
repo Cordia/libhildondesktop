@@ -75,9 +75,6 @@ struct _HDHomePluginItemClass
 
   /* virtual functions */
   gchar *(*get_applet_id) (HDHomePluginItem *item);
-
-  /* signals */
-  void   (*show_settings) (HDHomePluginItem *item);
 };
 
 GType            hd_home_plugin_item_get_type               (void);

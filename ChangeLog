@@ -1,3 +1,10 @@
+2009-01-27  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* libhildondesktop/hd-home-plugin-item.c
+	  (hd_home_plugin_item_class_init):
+	* libhildondesktop/hd-home-plugin-item.h: Revert changes to class
+	  structure to preserve old ABI.
+
 2009-01-26  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.13

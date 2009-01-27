@@ -305,7 +305,7 @@ hd_home_plugin_item_class_init (HDHomePluginItemClass *klass)
   signals[SHOW_SETTINGS] = g_signal_new ("show-settings",
                                          HD_TYPE_HOME_PLUGIN_ITEM,
                                          G_SIGNAL_RUN_LAST,
-                                         G_STRUCT_OFFSET (HDHomePluginItemClass, show_settings),
+                                         0, /* No class method to not break ABI */
                                          NULL,
                                          NULL,
                                          g_cclosure_marshal_VOID__VOID,
