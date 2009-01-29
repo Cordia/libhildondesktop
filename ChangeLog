@@ -1,5 +1,10 @@
 2009-01-29  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* libhildondesktop/hd-plugin-configuration.c
+	  (hd_plugin_configuration_configuration_loaded): Fix memory leak.
+
+2009-01-29  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* doc/libhildondesktop.types:
 	* libhildondesktop/Makefile.am:
 	* libhildondesktop/libhildondesktop.h:

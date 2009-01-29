@@ -335,6 +335,9 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
       g_signal_connect_object (priv->items_config_file, "changed",
                                G_CALLBACK (hd_plugin_configuration_load_plugin_configuration),
                                configuration, G_CONNECT_SWAPPED);
+
+      g_free (system_conf_dir);
+      g_free (user_conf_dir);
     }
   g_free (items_config_filename);
 
