@@ -1,5 +1,23 @@
 2009-01-29  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* doc/libhildondesktop.types:
+	* libhildondesktop/Makefile.am:
+	* libhildondesktop/libhildondesktop.h:
+	* libhildondesktop/hd-ui-policy.c (deleted):
+	* libhildondesktop/hd-ui-policy.h (deleted): Remove unused HDUiPolicy.
+
+	* libhildondesktop/hd-plugin-configuration.c
+	  (hd_plugin_configuration_finalize,
+	  hd_plugin_configuration_configuration_loaded):
+	* libhildondesktop/hd-plugin-loader-factory.c
+	  (hd_plugin_loader_factory_create):
+	* libhildondesktop/hd-plugin-manager.c (hd_plugin_manager_load_plugin,
+	  hd_plugin_manager_configuration_loaded,
+	  hd_plugin_manager_items_configuration_loaded): Fix some memory
+	  leaks.
+
+2009-01-29  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* debian/libhildondesktop1-examples.install:
 	* examples/status-menu/Makefile.am:
 	* examples/status-menu/example-plugin.c:

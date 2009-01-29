@@ -174,22 +174,19 @@ hd_plugin_configuration_finalize (GObject *object)
   priv = HD_PLUGIN_CONFIGURATION (object)->priv;
 
   if (priv->config_file)
-    {
-      g_object_unref (priv->config_file);
-      priv->config_file = NULL;
-    }
+    priv->config_file = (g_object_unref (priv->config_file), NULL);
 
   if (priv->plugin_dirs != NULL)
     {
       guint i;
+
       for (i = 0; priv->plugin_dirs[i] != NULL; i++)
         {
           gnome_vfs_monitor_cancel (priv->plugin_dir_monitors[i]);
         }
-      g_free (priv->plugin_dir_monitors);
-      priv->plugin_dir_monitors = NULL;
-      g_strfreev (priv->plugin_dirs);
-      priv->plugin_dirs = NULL;
+      
+      priv->plugin_dir_monitors = (g_free (priv->plugin_dir_monitors), NULL);
+      priv->plugin_dirs = (g_strfreev (priv->plugin_dirs), NULL);
     }
 
   G_OBJECT_CLASS (hd_plugin_configuration_parent_class)->finalize (object);
@@ -268,16 +265,12 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
         {
           gnome_vfs_monitor_cancel (priv->plugin_dir_monitors[i]);
         }
-      g_free (priv->plugin_dir_monitors);
-      priv->plugin_dir_monitors = NULL;
-      g_strfreev (priv->plugin_dirs);
-      priv->plugin_dirs = NULL;
+
+      priv->plugin_dir_monitors = (g_free (priv->plugin_dir_monitors), NULL);
+      priv->plugin_dirs = (g_strfreev (priv->plugin_dirs), NULL);
     }
   if (priv->items_config_file)
-    {
-      g_object_unref (priv->items_config_file);
-      priv->items_config_file = NULL;      
-    }
+    priv->items_config_file = (g_object_unref (priv->items_config_file), NULL);
 
   /* Load configuration ([X-PluginConfiguration] group) */
   if (!g_key_file_has_group (keyfile, HD_PLUGIN_CONFIGURATION_CONFIG_GROUP))
@@ -321,9 +314,9 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
     }
 
   items_config_filename = g_key_file_get_string (keyfile, 
-                                                  HD_PLUGIN_CONFIGURATION_CONFIG_GROUP, 
-                                                  HD_PLUGIN_CONFIGURATION_CONFIG_KEY_PLUGIN_CONFIGURATION,
-                                                  NULL);
+                                                 HD_PLUGIN_CONFIGURATION_CONFIG_GROUP, 
+                                                 HD_PLUGIN_CONFIGURATION_CONFIG_KEY_PLUGIN_CONFIGURATION,
+                                                 NULL);
   if (items_config_filename)
     {
       gchar *system_conf_dir, *user_conf_dir;
@@ -337,12 +330,13 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
                     NULL);
 
       priv->items_config_file = hd_config_file_new (system_conf_dir,
-                                                     user_conf_dir,
-                                                     items_config_filename);
+                                                    user_conf_dir,
+                                                    items_config_filename);
       g_signal_connect_object (priv->items_config_file, "changed",
                                G_CALLBACK (hd_plugin_configuration_load_plugin_configuration),
                                configuration, G_CONNECT_SWAPPED);
     }
+  g_free (items_config_filename);
 
   hd_plugin_configuration_load_plugin_configuration (configuration);
 }

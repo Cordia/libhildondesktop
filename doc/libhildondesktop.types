@@ -14,4 +14,3 @@ hd_plugin_module_get_type
 hd_shortcuts_get_type
 hd_status_menu_item_get_type
 hd_status_plugin_item_get_type
-hd_ui_policy_get_type

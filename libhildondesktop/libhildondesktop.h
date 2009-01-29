@@ -47,6 +47,5 @@
 #include <libhildondesktop/hd-plugin-loader.h>
 #include <libhildondesktop/hd-plugin-manager.h>
 #include <libhildondesktop/hd-stamp-file.h>
-#include <libhildondesktop/hd-ui-policy.h>
 
 #endif /*__LIBHILDONDESKTOP_H__*/

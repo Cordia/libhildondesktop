@@ -35,7 +35,6 @@
 #include "hd-plugin-loader.h"
 #include "hd-plugin-loader-factory.h"
 #include "hd-stamp-file.h"
-#include "hd-ui-policy.h"
 
 #include "hd-plugin-manager.h"
 
@@ -82,8 +81,6 @@ struct _HDPluginManagerPrivate
 
   gboolean                load_new_plugins;
   gboolean                load_all_plugins;
-
-  HDUIPolicy             *policy;
 
   gchar                 **debug_plugins;
 };
@@ -183,7 +180,6 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
   GList *p;
   GObject *plugin;
   GError *error = NULL;
-  gchar *desktop_file_to_load;
 
   g_return_val_if_fail (HD_IS_PLUGIN_MANAGER (manager), FALSE);
   g_return_val_if_fail (desktop_file != NULL, FALSE);
@@ -191,65 +187,29 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
 
   priv = HD_PLUGIN_MANAGER (manager)->priv;
 
-  if (priv->policy)
-    {
-      desktop_file_to_load = hd_ui_policy_get_filtered_plugin (priv->policy,
-                                                               desktop_file,
-                                                               hd_stamp_file_get_safe_mode ());
-
-      if (!desktop_file_to_load)
-        return FALSE;
-    }
-  else
-    desktop_file_to_load = g_strdup (desktop_file);
-
-  if (!g_file_test (desktop_file_to_load, G_FILE_TEST_EXISTS))
+  if (!g_file_test (desktop_file, G_FILE_TEST_EXISTS))
     {
       g_warning ("Plugin desktop file not found, ignoring plugin");
-      g_free (desktop_file_to_load);
       return FALSE;
     }
 
   plugin = hd_plugin_loader_factory_create (HD_PLUGIN_LOADER_FACTORY (manager->priv->factory), 
                                             plugin_id,
-                                            desktop_file_to_load,
+                                            desktop_file,
                                             &error);
   if (!plugin)
     {
-      g_warning ("Error loading plugin: %s", desktop_file_to_load);
-      g_free (desktop_file_to_load);
-
-      if (priv->policy)
+      if (error)
         {
-          desktop_file_to_load = hd_ui_policy_get_default_plugin (priv->policy,
-                                                                  desktop_file,
-                                                                  hd_stamp_file_get_safe_mode ());
-
-          if (desktop_file_to_load && g_file_test (desktop_file_to_load, G_FILE_TEST_EXISTS))
-            {
-              plugin = hd_plugin_loader_factory_create (HD_PLUGIN_LOADER_FACTORY (manager->priv->factory), 
-                                                        plugin_id,
-                                                        desktop_file_to_load,
-                                                        &error);
-            }
-
-          g_free (desktop_file_to_load);
-
-          if (!plugin)
-            {
-              plugin = hd_ui_policy_get_failure_plugin (priv->policy,
-                                                        desktop_file,
-                                                        hd_stamp_file_get_safe_mode ());
-            }
+          g_warning ("Error loading plugin: %s. %s", desktop_file, error->message);
+          g_error_free (error);
         }
+      else
+        {
+        g_warning ("Error loading plugin: %s", desktop_file);
+        }
+      return FALSE;
     }
-  else
-    {
-      g_free (desktop_file_to_load);
-    }
-
-  if (!plugin)
-    return FALSE;
 
   info = hd_plugin_info_new (plugin_id,
                              desktop_file,
@@ -352,13 +312,6 @@ hd_plugin_manager_finalize (GObject *object)
 
   g_strfreev (priv->debug_plugins);
   priv->debug_plugins = NULL;
-
-  if (priv->policy)
-    {
-      g_object_unref (priv->policy);
-      priv->policy = NULL;
-    }
-
 
   if (priv->load_priority_data && priv->load_priority_destroy)
     {
@@ -525,15 +478,9 @@ hd_plugin_manager_configuration_loaded (HDPluginConfiguration *configuration,
                                         GKeyFile              *keyfile)
 {
   HDPluginManagerPrivate *priv = HD_PLUGIN_MANAGER (configuration)->priv;
-  gchar *policy_module;
 
   g_strfreev (priv->debug_plugins);
   priv->debug_plugins = NULL;
-  if (priv->policy)
-    {
-      g_object_unref (priv->policy);
-      priv->policy = NULL;
-    }
 
   /* Load configuration ([X-PluginManager] group) */
   if (!g_key_file_has_group (keyfile, HD_PLUGIN_MANAGER_CONFIG_GROUP))
@@ -558,29 +505,6 @@ hd_plugin_manager_configuration_loaded (HDPluginConfiguration *configuration,
                                                     HD_PLUGIN_MANAGER_CONFIG_KEY_DEBUG_PLUGINS,
                                                     NULL,
                                                     NULL);
-
-  policy_module = g_key_file_get_string (keyfile, 
-                                         HD_PLUGIN_MANAGER_CONFIG_GROUP, 
-                                         HD_DESKTOP_CONFIG_KEY_UI_POLICY,
-                                         NULL);
-  if (policy_module)
-    {
-      g_strstrip (policy_module);
-      gchar *policy_module_path = g_build_filename (HD_UI_POLICY_MODULES_PATH,
-                                                    policy_module,
-                                                    NULL);
-
-      if (g_file_test (policy_module_path, G_FILE_TEST_EXISTS))
-        {
-          priv->policy = hd_ui_policy_new (policy_module_path);
-        }
-      else
-        {
-          g_warning ("Container's UI policy module doesn't exist. Not applying policy then.");
-        }
-
-      g_free (policy_module_path);
-    }
 
   HD_PLUGIN_CONFIGURATION_CLASS (hd_plugin_manager_parent_class)->configuration_loaded (configuration,
                                                                                         keyfile);
@@ -630,8 +554,10 @@ hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configurati
               new_plugins = g_list_prepend (new_plugins, hd_plugin_info_new (groups[i],
                                                                              desktop_file,
                                                                              priority));
+              g_free (desktop_file);
             }
         }
+      g_strfreev (groups);
     }
 
   /* Load all plugins in the X-Plugin-Dirs directories 

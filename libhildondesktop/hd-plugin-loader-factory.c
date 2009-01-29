@@ -327,6 +327,7 @@ hd_plugin_loader_factory_create (HDPluginLoaderFactory  *factory,
     g_propagate_error (error, local_error);
 
 cleanup:
+  g_key_file_free (keyfile);
   g_free (type);
 
   return plugin;
