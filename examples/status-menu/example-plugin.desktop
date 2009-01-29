@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Example Plugin
+Comment=Description of the Example Plugin
+Type=default
+X-Path=example-plugin.so

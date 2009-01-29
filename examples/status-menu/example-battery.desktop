@@ -1,5 +1,0 @@
-[Desktop Entry]
-Name=Example Battery
-Comment=An example Status Area item
-Type=default
-X-Path=example-battery-status-area-item.so

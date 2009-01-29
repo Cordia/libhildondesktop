@@ -1,5 +1,0 @@
-[Desktop Entry]
-Name=Example Volume
-Comment=An example Status Menu item with a Hildon Touch Seek Bar
-Type=default
-X-Path=example-volume-status-menu-item.so

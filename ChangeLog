@@ -1,3 +1,40 @@
+2009-01-29  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* debian/libhildondesktop1-examples.install:
+	* examples/status-menu/Makefile.am:
+	* examples/status-menu/example-plugin.c:
+	* examples/status-menu/example-plugin.desktop:
+	* examples/status-menu/example-plugin.h:
+	* examples/status-menu/example-plugin.desktop (added):
+	* examples/status-menu/example-plugin.c (added):
+	* examples/status-menu/example-plugin.h (added):
+	* examples/status-menu/example-signal-status-area-item.h (deleted):
+	* examples/status-menu/example-icon-status-menu-item.c (deleted):
+	* examples/status-menu/example-clock-status-menu-item.c (deleted):
+	* examples/status-menu/example-icon-status-menu-item.h (deleted):
+	* examples/status-menu/example-status-area-icon-1.png (deleted):
+	* examples/status-menu/example-clock-status-menu-item.h (deleted):
+	* examples/status-menu/example-icon.desktop (deleted):
+	* examples/status-menu/example-status-area-icon-2.png (deleted):
+	* examples/status-menu/example-status-area-icon-3.png (deleted):
+	* examples/status-menu/example-status-area-icon-4.png (deleted):
+	* examples/status-menu/example-clock.desktop (deleted):
+	* examples/status-menu/example-volume-status-menu-item.c (deleted):
+	* examples/status-menu/example-status-area-icon-battery.png (deleted):
+	* examples/status-menu/example-button-status-menu-item.c (deleted):
+	* examples/status-menu/example-icon.png (deleted):
+	* examples/status-menu/example-volume-status-menu-item.h (deleted):
+	* examples/status-menu/example-status-area-icon-signal.png (deleted):
+	* examples/status-menu/example-battery-status-area-item.c (deleted):
+	* examples/status-menu/example-volume.desktop (deleted):
+	* examples/status-menu/example-button-status-menu-item.h (deleted):
+	* examples/status-menu/example-signal-status-area-item.c (deleted):
+	* examples/status-menu/example-battery.desktop (deleted):
+	* examples/status-menu/example-button.desktop (deleted):
+	* examples/status-menu/example-battery-status-area-item.h (deleted):
+	* examples/status-menu/example-signal.desktop (deleted): Do not ship
+	the test status menu plugins but only an "official" example.
+
 2009-01-27  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.14
