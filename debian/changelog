@@ -1,3 +1,9 @@
+libhildondesktop (2.1.15) unstable; urgency=low
+
+  * Jan Arne: memory leak fixes. Cleanups.
+
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Tue,  3 Feb 2009 12:54:09 +0200
+
 libhildondesktop (2.1.14) unstable; urgency=low
 
   * Jan Arne: Revert changes to ABI.

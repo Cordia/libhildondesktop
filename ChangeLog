@@ -1,3 +1,8 @@
+2009-02-03  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
+
+	Release 2.1.15
+	* configure.ac: 2.1.15
+
 2009-01-29  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* libhildondesktop/hd-plugin-configuration.c
