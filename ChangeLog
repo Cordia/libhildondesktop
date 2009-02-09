@@ -1,3 +1,10 @@
+2009-02-09  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* libhildondesktop/hd-shortcuts.c (delete_event_cb, shortcuts_notify,
+	  hd_shortcuts_constructed, hd_shortcuts_add_bookmark_shortcut): Use
+	  g_debug instead of g_warning because it is possible that the keys
+	  are not set at all.
+
 2009-02-03  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.15

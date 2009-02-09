@@ -95,9 +95,8 @@ delete_event_cb (GtkWidget   *shortcut,
   /* Check if there was an error */
   if (error)
     {
-      g_warning ("Could not get list of shortcuts from GConf: %s", error->message);
+      g_debug ("Could not get list of shortcuts from GConf: %s", error->message);
       g_error_free (error);
-      return FALSE;
     }
 
   /* Remove the this shortcut from the list */
@@ -126,7 +125,7 @@ delete_event_cb (GtkWidget   *shortcut,
   /* Check if there was an error */
   if (error)
     {
-      g_warning ("Could not set list of shortcuts from GConf: %s", error->message);
+      g_warning ("Could not store list of shortcuts to GConf: %s", error->message);
       g_error_free (error);
     }
 
@@ -263,13 +262,13 @@ shortcuts_notify (GConfClient *client,
                                 &error);
 
   /* Check if there was an error */
-  if (!error)
-    shortcuts_sync (shortcuts, list);
-  else
+  if (error)
     {
-      g_warning ("Could not get list of task shortcuts from GConf: %s", error->message);
+      g_debug ("Could not get list of task shortcuts from GConf: %s", error->message);
       g_error_free (error);
     }
+
+  shortcuts_sync (shortcuts, list);
 }
 
 static void
@@ -338,13 +337,13 @@ hd_shortcuts_constructed (GObject *object)
                                 &error);
 
   /* Check if there was an error */
-  if (!error)
-    shortcuts_sync (shortcuts, list);
-  else
+  if (error)
     {
-      g_warning ("Could not get list of task shortcuts from GConf: %s", error->message);
+      g_debug ("Could not get list of task shortcuts from GConf: %s", error->message);
       g_error_free (error);
     }
+
+  shortcuts_sync (shortcuts, list);
 }
 
 static void
@@ -461,9 +460,9 @@ hd_shortcuts_add_bookmark_shortcut (const gchar *url,
 
   if (error)
     {
-      g_warning ("Could not get string list from GConf (%s): %s.",
-                 BOOKMARK_SHORTCUTS_GCONF_KEY,
-                 error->message);
+      g_debug ("Could not get string list from GConf (%s): %s.",
+               BOOKMARK_SHORTCUTS_GCONF_KEY,
+               error->message);
       g_error_free (error);
       error = NULL;
     }
@@ -539,7 +538,7 @@ hd_shortcuts_add_bookmark_shortcut (const gchar *url,
                          &error);
   if (error)
     {
-      g_warning ("Could not write string list from GConf (%s): %s.",
+      g_warning ("Could not write string list to GConf (%s): %s.",
                  BOOKMARK_SHORTCUTS_GCONF_KEY,
                  error->message);
       g_error_free (error);
