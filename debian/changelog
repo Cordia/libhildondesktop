@@ -1,3 +1,17 @@
+libhildondesktop (2.1.16) unstable; urgency=low
+
+  Jan Arne:
+  * libhildondesktop/hd-home-plugin-item.c
+    (hd_home_plugin_item_constructed, hd_home_plugin_item_class_init):
+    Set accept-focus to FALSE for Home applets.
+
+  * libhildondesktop/hd-shortcuts.c (delete_event_cb, shortcuts_notify,
+    hd_shortcuts_constructed, hd_shortcuts_add_bookmark_shortcut): Use
+    g_debug instead of g_warning because it is possible that the keys
+    are not set at all.
+
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Tue, 10 Feb 2009 15:11:49 +0200
+
 libhildondesktop (2.1.15) unstable; urgency=low
 
   * Jan Arne: memory leak fixes. Cleanups.
