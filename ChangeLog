@@ -1,3 +1,9 @@
+2009-02-10  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* libhildondesktop/hd-home-plugin-item.c
+	  (hd_home_plugin_item_constructed, hd_home_plugin_item_class_init):
+	  Set accept-focus to FALSE for Home applets.
+
 2009-02-09  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* libhildondesktop/hd-shortcuts.c (delete_event_cb, shortcuts_notify,

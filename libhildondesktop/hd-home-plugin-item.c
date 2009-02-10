@@ -185,6 +185,14 @@ hd_home_plugin_item_realize (GtkWidget *widget)
 }
 
 static void
+hd_home_plugin_item_constructed (GObject *object)
+{
+  G_OBJECT_CLASS (hd_home_plugin_item_parent_class)->constructed (object);
+
+  gtk_window_set_accept_focus (GTK_WINDOW (object), FALSE);
+}
+
+static void
 hd_home_plugin_item_dispose (GObject *object)
 {
   HDHomePluginItemPrivate *priv;
@@ -285,6 +293,7 @@ hd_home_plugin_item_class_init (HDHomePluginItemClass *klass)
   widget_class->client_event = hd_home_plugin_item_client_event;
   widget_class->realize = hd_home_plugin_item_realize;
 
+  object_class->constructed = hd_home_plugin_item_constructed;
   object_class->dispose = hd_home_plugin_item_dispose;
   object_class->finalize = hd_home_plugin_item_finalize;
   object_class->get_property = hd_home_plugin_item_get_property;
