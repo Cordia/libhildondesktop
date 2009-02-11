@@ -1,6 +1,6 @@
 libhildondesktop (2.1.17~unreleased) unstable; urgency=low
 
-  * unreleased
+  * Fix a memory leak detected by Coverity.
 
  -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Wed, 11 Feb 2009 09:20:28 +0200
 

@@ -1,3 +1,9 @@
+2009-02-11  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
+
+	* libhildondesktop/hd-plugin-configuration.c
+	(hd_plugin_configuration_plugin_dir_changed): Fix a memory leak
+	detected by Coverity: free 'uri' before it goes out of scope.
+
 2009-02-10  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.16

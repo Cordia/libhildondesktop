@@ -117,25 +117,33 @@ hd_plugin_configuration_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
       GnomeVFSURI *uri = gnome_vfs_uri_new (info_uri);
       gchar *uri_str;
 
-      uri_str = gnome_vfs_uri_to_string (uri, GNOME_VFS_URI_HIDE_TOPLEVEL_METHOD);
+      uri_str = gnome_vfs_uri_to_string (uri,
+                                         GNOME_VFS_URI_HIDE_TOPLEVEL_METHOD);
 
       g_debug ("plugin-added: %s", uri_str);
 
       /* FIXME: dpkg install involves some renaming */
       hd_plugin_configuration_remove_plugin_module (configuration, uri_str);
 
-      g_signal_emit (configuration, plugin_configuration_signals[PLUGIN_MODULE_ADDED], 0, uri_str);
+      g_signal_emit (configuration,
+                     plugin_configuration_signals[PLUGIN_MODULE_ADDED], 0,
+                     uri_str);
+      gnome_vfs_uri_free (uri);
     }
   else if (event_type == GNOME_VFS_MONITOR_EVENT_DELETED)
     {
       GnomeVFSURI *uri = gnome_vfs_uri_new (info_uri);
       gchar *uri_str;
 
-      uri_str = gnome_vfs_uri_to_string (uri, GNOME_VFS_URI_HIDE_TOPLEVEL_METHOD);
+      uri_str = gnome_vfs_uri_to_string (uri,
+                                         GNOME_VFS_URI_HIDE_TOPLEVEL_METHOD);
 
       g_debug ("plugin-removed: %s", uri_str);
 
-      g_signal_emit (configuration, plugin_configuration_signals[PLUGIN_MODULE_REMOVED], 0, uri_str);
+      g_signal_emit (configuration,
+                     plugin_configuration_signals[PLUGIN_MODULE_REMOVED], 0,
+                     uri_str);
+      gnome_vfs_uri_free (uri);
     }
 }
 
