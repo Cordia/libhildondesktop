@@ -128,7 +128,7 @@ hd_plugin_configuration_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
       g_signal_emit (configuration,
                      plugin_configuration_signals[PLUGIN_MODULE_ADDED], 0,
                      uri_str);
-      gnome_vfs_uri_free (uri);
+      gnome_vfs_uri_unref (uri);
     }
   else if (event_type == GNOME_VFS_MONITOR_EVENT_DELETED)
     {
@@ -143,7 +143,7 @@ hd_plugin_configuration_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
       g_signal_emit (configuration,
                      plugin_configuration_signals[PLUGIN_MODULE_REMOVED], 0,
                      uri_str);
-      gnome_vfs_uri_free (uri);
+      gnome_vfs_uri_unref (uri);
     }
 }
 

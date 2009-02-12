@@ -46,8 +46,51 @@ example_label_home_applet_class_finalize (ExampleLabelHomeAppletClass *klass)
 }
 
 static void
+example_label_home_applet_realize (GtkWidget *widget)
+{
+  GdkScreen *screen;
+
+  screen = gtk_widget_get_screen (widget);
+  gtk_widget_set_colormap (widget,
+                           gdk_screen_get_rgba_colormap (screen));
+
+  gtk_widget_set_app_paintable (widget,
+                                TRUE);
+
+  GTK_WIDGET_CLASS (example_label_home_applet_parent_class)->realize (widget);
+}
+
+static gboolean
+example_label_home_applet_expose_event (GtkWidget      *widget,
+                                        GdkEventExpose *event)
+{
+  cairo_t *cr;
+
+  /* Create cairo context */
+  cr = gdk_cairo_create (GDK_DRAWABLE (widget->window));
+  gdk_cairo_region (cr, event->region);
+  cairo_clip (cr);
+
+  /* Draw alpha background */
+  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
+  cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.0);
+  cairo_paint (cr);
+
+  /* Free context */
+  cairo_destroy (cr);
+
+  return GTK_WIDGET_CLASS (example_label_home_applet_parent_class)->expose_event (widget,
+                                                                                  event);
+}
+
+static void
 example_label_home_applet_class_init (ExampleLabelHomeAppletClass *klass)
 {
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+  widget_class->realize = example_label_home_applet_realize;
+  widget_class->expose_event = example_label_home_applet_expose_event;
+
   g_type_class_add_private (klass, sizeof (ExampleLabelHomeAppletPrivate));
 }
 

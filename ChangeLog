@@ -1,3 +1,13 @@
+2009-02-12  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* examples/home/example-label-home-applet.c
+	  (example_label_home_applet_realize,
+	  example_label_home_applet_expose_event,
+	  example_label_home_applet_class_init): Add alpha support to example
+	  applet (works only in sbox currently).
+	* libhildondesktop/hd-plugin-configuration.c
+	  (hd_plugin_configuration_plugin_dir_changed): Fix GnomeVFS unref.
+
 2009-02-11  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	* libhildondesktop/hd-plugin-configuration.c
