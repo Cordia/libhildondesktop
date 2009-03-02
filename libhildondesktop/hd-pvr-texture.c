@@ -92,9 +92,9 @@ gboolean hd_pvr_texture_save         (const gchar *file, GdkPixbuf *pixbuf)
                 }
               for (x=0;x<compress_width-width;x++)
                 {
-                  uc[0] = p[0];
-                  uc[1] = p[1];
-                  uc[2] = p[2];
+                  uc[0] = 0;
+                  uc[1] = 0;
+                  uc[2] = 0;
                   uc[3] = 255;
                   uc += 4;
                 }
