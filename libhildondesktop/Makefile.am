@@ -32,8 +32,10 @@ libhildondesktop_@API_VERSION_MAJOR@_la_SOURCES = \
 	hd-plugin-module.c							\
 	hd-shortcuts.c								\
 	hd-stamp-file.c								\
-	hd-status-menu-item.c							\
-	hd-status-plugin-item.c
+	hd-status-menu-item.c							\	
+	hd-status-plugin-item.c							\
+	hd-pvr-texture.c							\
+	pvr-texture.c
 
 libhildondesktop_@API_VERSION_MAJOR@_la_LIBADD = \
 	$(HILDON_LIBS)								\
@@ -60,6 +62,7 @@ libhildondesktop_@API_VERSION_MAJOR@_public_headers = \
 	hd-stamp-file.h								\
 	hd-status-menu-item.h							\
 	hd-status-plugin-item.h							\
+	hd-pvr-texture.h							\
 	libhildondesktop.h
 
 libhildondesktop_@API_VERSION_MAJOR@_include_HEADERS = \

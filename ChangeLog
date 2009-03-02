@@ -1,3 +1,20 @@
+2009-03-02  Gordon Williams <gordon.williams@collabora.co.uk>
+
+	* libhildondesktop/hd-pvr-texture.c (Added)
+	* libhildondesktop/hd-pvr-texture.h (Added)
+	* libhildondesktop/pvr-texture.c (Added)
+	* libhildondesktop/pvr-texture.h (Added)
+	* libhildondesktop/Makefile.am:
+	Added PVRTC4 texture compressor
+
+	* debian/compat
+	* configure.ac
+	* examples/pvr-texture (Added)
+	* examples/pvr-texture/example-pvr-texture.c (Added)
+	* examples/pvr-texture/Makefile.am (Added)
+	* examples/Makefile.am:
+	Added example for use (a command-line file converter)
+
 2009-02-23  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.17

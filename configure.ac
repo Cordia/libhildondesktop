@@ -152,6 +152,7 @@ examples/Makefile			\
 examples/home/Makefile			\
 examples/notification/Makefile		\
 examples/status-menu/Makefile		\
+examples/pvr-texture/Makefile		\
 libhildondesktop/Makefile		\
 libhildondesktop/libhildondesktop.pc	\
 ])

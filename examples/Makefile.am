@@ -1,1 +1,1 @@
-SUBDIRS = home notification status-menu
+SUBDIRS = home notification status-menu pvr-texture
