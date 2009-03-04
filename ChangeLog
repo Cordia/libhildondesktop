@@ -1,3 +1,15 @@
+2009-03-04  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* debian/compat: 5 should be enough.
+
+	* examples/pvr-texture/example-pvr-texture.c (main):
+	* libhildondesktop/hd-pvr-texture.c (hd_pvr_texture_save):
+	* libhildondesktop/hd-pvr-texture.h (__HD_PVR_TEXTURE_H__):
+	* libhildondesktop/pvr-texture.c (pvr_texture_save_pvrtc4,
+	  pvr_texture_save_pvrtc4_atomically):
+	* libhildondesktop/pvr-texture.h (PVR_FLAG_ALPHA): Add function with
+	  error handling which stores the file atomically.
+
 2009-03-02  Gordon Williams <gordon.williams@collabora.co.uk>
 
 	* libhildondesktop/hd-pvr-texture.c (Added)

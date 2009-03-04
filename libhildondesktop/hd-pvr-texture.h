@@ -27,7 +27,9 @@
 
 G_BEGIN_DECLS
 
-gboolean hd_pvr_texture_save         (const gchar *file, GdkPixbuf *pixbuf);
+gboolean hd_pvr_texture_save (const gchar  *file,
+                              GdkPixbuf    *pixbuf,
+                              GError      **error);
 
 G_END_DECLS
 

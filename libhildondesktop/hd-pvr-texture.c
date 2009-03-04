@@ -34,7 +34,10 @@
  * in width and height, so any texture not of these dimensions will be
  * padded with black (zero alpha if alpha is used).
  */
-gboolean hd_pvr_texture_save         (const gchar *file, GdkPixbuf *pixbuf)
+gboolean
+hd_pvr_texture_save (const gchar  *file,
+                     GdkPixbuf    *pixbuf,
+                     GError      **error)
 {
   guint width, height, bpp;
   guint compress_width, compress_height;
@@ -134,11 +137,21 @@ gboolean hd_pvr_texture_save         (const gchar *file, GdkPixbuf *pixbuf)
     g_free(allocated);
 
   if (!compressed)
-    return FALSE;
+    {
+      g_set_error (error,
+                   GDK_PIXBUF_ERROR,
+                   GDK_PIXBUF_ERROR_FAILED,
+                   "Could not compress to pvr texture.");
+      return FALSE;
+    }
 
   /* and finally write it out to a file! */
-  if (!pvr_texture_save_pvrtc4( file, compressed, compressed_size,
-                                compress_width, compress_height))
+  if (!pvr_texture_save_pvrtc4_atomically (file,
+                                           compressed,
+                                           compressed_size,
+                                           compress_width,
+                                           compress_height,
+                                           error))
     {
       g_free (compressed);
       return FALSE;

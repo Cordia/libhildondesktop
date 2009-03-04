@@ -9,6 +9,7 @@ int main(int argc, char *argv[]) {
   GdkPixbuf *pixbuf;
   gchar *in_file;
   gchar *out_file;
+  GError *error = NULL;
 
   if (argc!=2)
     {
@@ -37,9 +38,12 @@ int main(int argc, char *argv[]) {
   else
     strcat(out_file, ".pvr");
 
-  if (!hd_pvr_texture_save(out_file, pixbuf))
+  if (!hd_pvr_texture_save(out_file, pixbuf, &error))
     {
-      printf("Couldn't compress to PVR file %s\n", out_file);
+      printf("Couldn't compress to PVR file %s. %s\n",
+             out_file,
+             error->message);
+      g_error_free (error);
       g_free(out_file);
       return EXIT_FAILURE;
     }
