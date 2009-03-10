@@ -1,3 +1,8 @@
+2009-03-10  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
+
+	Release 2.1.18
+	* configure.ac: 2.1.18
+
 2009-03-04  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* debian/compat: 5 should be enough.
