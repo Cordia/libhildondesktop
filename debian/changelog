@@ -1,6 +1,6 @@
 libhildondesktop (2.1.19~unreleased) unstable; urgency=low
 
-  * WRITEME
+  * Fixes: NB#106453 - Bug in bookmark shortcuts with '?' in the URL.
 
  -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Fri, 13 Mar 2009 08:21:20 +0200
 
