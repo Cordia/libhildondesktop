@@ -95,6 +95,18 @@ example_label_home_applet_class_init (ExampleLabelHomeAppletClass *klass)
 }
 
 static void
+example_label_home_applet_visible_notify (GObject                *object,
+                                          GParamSpec             *spec,
+                                          ExampleLabelHomeApplet *applet)
+{
+  gboolean visible;
+
+  g_object_get (object, "is-on-current-desktop", &visible, NULL);
+
+  g_debug ("is-on-current-desktop changed. visible: %u", visible);
+}
+
+static void
 example_label_home_applet_init (ExampleLabelHomeApplet *applet)
 {
   GtkWidget *label;
@@ -105,4 +117,7 @@ example_label_home_applet_init (ExampleLabelHomeApplet *applet)
   gtk_widget_show (label);
 
   gtk_container_add (GTK_CONTAINER (applet), label);
+
+  g_signal_connect (applet, "notify::is-on-current-desktop",
+                    G_CALLBACK (example_label_home_applet_visible_notify), applet);
 }

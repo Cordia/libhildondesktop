@@ -1,7 +1,24 @@
+2009-03-19  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* examples/home/example-label-home-applet.c
+	  (example_label_home_applet_visible_notify,
+	  example_label_home_applet_init): Add is-on-current-desktop property
+	  example.
+
+	* libhildondesktop/hd-home-plugin-item.c (PROP_IS_ON_CURRENT_DESKTOP,
+	  display_on_all_views, is_on_current_desktop,
+	  hd_home_plugin_item_client_event,
+	  hd_home_plugin_item_property_notify_event,
+	  hd_home_plugin_item_get_property, hd_home_plugin_item_class_init,
+	  hd_home_plugin_item_init): Add is-on-current-desktop property.
+	  Fixes: NB#106343
+
+	* debian/changelog: Update.
+
 2009-03-18  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* libhildondesktop/hd-shortcuts.c (ID_VALID_CHARS): Remove '?' from
-	valid chars. Fixes: NB#106453.
+	valid chars. Fixes: NB#106453
 
 	* debian/changelog: Update.
 

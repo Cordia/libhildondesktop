@@ -56,6 +56,7 @@ enum
   PROP_0,
   PROP_PLUGIN_ID,
   PROP_SETTINGS,
+  PROP_IS_ON_CURRENT_DESKTOP
 };
 
 enum
@@ -73,6 +74,8 @@ struct _HDHomePluginItemPrivate
   gboolean                    settings;
 
   gboolean                    display_on_all_views; /* display on all views, loaded from .desktop */
+
+  gboolean                    is_on_current_desktop;
 };
 
 G_DEFINE_ABSTRACT_TYPE_WITH_CODE (HDHomePluginItem, hd_home_plugin_item, GTK_TYPE_WINDOW,
@@ -115,6 +118,37 @@ hd_home_plugin_item_client_event (GtkWidget      *widget,
 
       return TRUE;
     }
+
+  return FALSE;
+}
+
+static gboolean
+hd_home_plugin_item_property_notify_event (GtkWidget        *widget,
+                                           GdkEventProperty *event)
+{
+  HDHomePluginItemPrivate *priv = HD_HOME_PLUGIN_ITEM (widget)->priv;
+  static GdkAtom is_on_current_desktop_atom = GDK_NONE;
+
+  if (G_UNLIKELY (is_on_current_desktop_atom == GDK_NONE))
+    is_on_current_desktop_atom = gdk_atom_intern_static_string ("_HILDON_APPLET_ON_CURRENT_DESKTOP");
+
+  if (event->atom == is_on_current_desktop_atom)
+    {
+      gboolean old_value = priv->is_on_current_desktop;
+
+      if (event->state == GDK_PROPERTY_NEW_VALUE)
+        priv->is_on_current_desktop = TRUE;
+      else if (event->state == GDK_PROPERTY_DELETE)
+        priv->is_on_current_desktop = FALSE;
+
+      if (old_value != priv->is_on_current_desktop)
+        g_object_notify (G_OBJECT (widget), "is-on-current-desktop");
+
+      return TRUE;
+    }
+
+  if (GTK_WIDGET_CLASS (hd_home_plugin_item_parent_class)->property_notify_event)
+    return GTK_WIDGET_CLASS (hd_home_plugin_item_parent_class)->property_notify_event (widget, event);
 
   return FALSE;
 }
@@ -227,6 +261,10 @@ hd_home_plugin_item_get_property (GObject      *object,
       g_value_set_string (value, priv->plugin_id);
       break;
 
+    case PROP_IS_ON_CURRENT_DESKTOP:
+      g_value_set_boolean (value, priv->is_on_current_desktop);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -291,6 +329,7 @@ hd_home_plugin_item_class_init (HDHomePluginItemClass *klass)
   klass->get_applet_id = hd_home_plugin_item_get_applet_id_real;
 
   widget_class->client_event = hd_home_plugin_item_client_event;
+  widget_class->property_notify_event = hd_home_plugin_item_property_notify_event;
   widget_class->realize = hd_home_plugin_item_realize;
 
   object_class->constructed = hd_home_plugin_item_constructed;
@@ -311,6 +350,14 @@ hd_home_plugin_item_class_init (HDHomePluginItemClass *klass)
                                                          FALSE,
                                                          G_PARAM_WRITABLE));
 
+  g_object_class_install_property (object_class,
+                                   PROP_IS_ON_CURRENT_DESKTOP,
+                                   g_param_spec_boolean ("is-on-current-desktop",
+                                                         "Is On Current Desktop",
+                                                         "If the applet is shown on current desktop",
+                                                         FALSE,
+                                                         G_PARAM_READABLE));
+
   signals[SHOW_SETTINGS] = g_signal_new ("show-settings",
                                          HD_TYPE_HOME_PLUGIN_ITEM,
                                          G_SIGNAL_RUN_LAST,
@@ -327,7 +374,10 @@ hd_home_plugin_item_class_init (HDHomePluginItemClass *klass)
 static void
 hd_home_plugin_item_init (HDHomePluginItem *item)
 {
-  item->priv = HD_HOME_PLUGIN_ITEM_GET_PRIVATE (item);  
+  item->priv = HD_HOME_PLUGIN_ITEM_GET_PRIVATE (item);
+
+  gtk_widget_add_events (GTK_WIDGET (item),
+                         GDK_PROPERTY_CHANGE_MASK);
 }
 
 /**
