@@ -78,12 +78,16 @@ hd_pvr_texture_save (const gchar  *file,
       const guchar *p;
       uncompressed = uc = allocated = g_malloc(4*compress_width*compress_height);
       p = pixels;
+      /* Copy, padding the right-hand edge with the last colour value, then the
+       * first. Poor-man's tiling */
       if (bpp == 24)
         {
           /* for 24 bit we have to loop over everything as we need to pad
            * it all out */
           for (y=0;y<height;y++)
             {
+              const guchar *line_start = p;
+              guint mid = (compress_width+width)/2;
               for (x=0;x<width;x++)
                 {
                   uc[0] = p[0];
@@ -93,37 +97,55 @@ hd_pvr_texture_save (const gchar  *file,
                   uc += 4;
                   p += 3;
                 }
-              for (x=0;x<compress_width-width;x++)
+              for (x=width;x<mid;x++)
                 {
-                  uc[0] = 0;
-                  uc[1] = 0;
-                  uc[2] = 0;
+                  uc[0] = p[-3];
+                  uc[1] = p[-2];
+                  uc[2] = p[-1];
+                  uc[3] = 255;
+                  uc += 4;
+                }
+              for (x=mid;x<compress_width;x++)
+                {
+                  uc[0] = line_start[0];
+                  uc[1] = line_start[1];
+                  uc[2] = line_start[2];
                   uc[3] = 255;
                   uc += 4;
                 }
             }
-          for (x=0;x<(compress_height-height)*compress_width;x++)
-            {
-              uc[0] = 0;
-              uc[1] = 0;
-              uc[2] = 0;
-              uc[3] = 255;
-              uc += 4;
-            }
         }
       else
         {
-          /* for 32 bit we just do memcpy's and memsets */
+          /* for 32 bit we just do memcpy's */
           for (y=0;y<height;y++)
             {
+              const guchar *line_start = p;
+              guint mid = (compress_width+width)/2;
+
               memcpy(uc, p, width*4);
               uc += width*4;
               p += width*4;
-              memset(uc, '\0', (compress_width-width)*4);
-              uc += (compress_width-width)*4;
+
+              for (x=width;x<mid;x++)
+                {
+                  memcpy(uc, &p[-4], 4);
+                  uc += 4;
+                }
+              for (x=mid;x<compress_width;x++)
+                {
+                  memcpy(uc, line_start, 4);
+                  uc += 4;
+                }
             }
-          memset(uc, '\0', (compress_height-height)*compress_width*4);
-          uc += (compress_height-height)*compress_width*4;
+        }
+      /* Now pad the last few lines by copying the last line
+       * over and over */
+      for (y=height;y<compress_height;y++)
+        {
+          memcpy(&allocated[compress_width*4*y],
+                 &allocated[compress_width*4*(height-1)],
+                 compress_width*4);
         }
     }
 

@@ -1,3 +1,13 @@
+2009-03-09  Gordon Williams <gordon.williams@collabora.co.uk>
+
+	* libhildondesktop/pvr-texture.c
+	* libhildondesktop/pvr-texture.h:
+	  Keeping in sync with clutter versions
+	* libhildondesktop/hd-pvr-texture.c: 
+	  Modify padding to pad texture with the last colour, not with black.
+	  Solves problem with lines down side of textures in hildon-desktop
+	  home images.
+
 2009-03-19  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* examples/home/example-label-home-applet.c
