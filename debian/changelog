@@ -1,9 +1,11 @@
-libhildondesktop (2.1.19~unreleased) unstable; urgency=low
+libhildondesktop (2.1.19) unstable; urgency=low
 
+  Jan Arne:
   * Fixes: NB#106453 - Bug in bookmark shortcuts with '?' in the URL.
   * Fixes: NB#106343 - Add is-on-current-desktop property for Home widgets.
+  * Gordon: pvr fixes.
 
- -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Fri, 13 Mar 2009 08:21:20 +0200
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 23 Mar 2009 13:51:36 +0200
 
 libhildondesktop (2.1.18) unstable; urgency=low
 
