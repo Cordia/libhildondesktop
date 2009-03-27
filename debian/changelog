@@ -1,8 +1,8 @@
-libhildondesktop (2.1.20~unreleased) unstable; urgency=low
+libhildondesktop (2.1.20) unstable; urgency=low
 
-  * writeme
+  * Gordon: Compression quality improvements
 
- -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 23 Mar 2009 14:31:25 +0200
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Fri, 27 Mar 2009 09:16:28 +0200
 
 libhildondesktop (2.1.19) unstable; urgency=low
 
