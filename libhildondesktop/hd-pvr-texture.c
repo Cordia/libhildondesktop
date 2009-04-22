@@ -141,10 +141,17 @@ hd_pvr_texture_save (const gchar  *file,
         }
       /* Now pad the last few lines by copying the last line
        * over and over */
-      for (y=height;y<compress_height;y++)
+      guint mid = (compress_height+height)/2;
+      for (y=height;y<mid;y++)
         {
           memcpy(&allocated[compress_width*4*y],
                  &allocated[compress_width*4*(height-1)],
+                 compress_width*4);
+        }
+      for (y=mid;y<compress_height;y++)
+        {
+          memcpy(&allocated[compress_width*4*y],
+                 &allocated[0],
                  compress_width*4);
         }
     }

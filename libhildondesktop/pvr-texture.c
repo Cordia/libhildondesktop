@@ -31,6 +31,10 @@
 #include <errno.h>
 #include <unistd.h>
 
+#define RAND_BLOCK 0 /* apply random noise to blocks */
+#define DITHER_BLOCK 0 /* error-diffusion dither blocks */
+#define DITHER_PIXEL 1 /* error-diffusion dither pixels */
+
 #if USE_GL
 /* These are defined in GLES2/gl2ext + gl2extimg, but we want them available
  * so we can compile without the SGX/Imagination libraries */
@@ -49,10 +53,10 @@ typedef struct Color {
 } Color;
 
 static inline void
-color_interp     (const Color *src1,
+color_interp     (Color       *dest,
+                  const Color *src1,
                   const Color *src2,
-                  gint                amt,
-                  Color       *dest)
+                  gint                amt)
 {
   gint r,g,b,a;
   gint namt = 255-amt;
@@ -92,6 +96,42 @@ color_diff       (const Color *src1,
         abs((gint)src1->blue - (gint)src2->blue) +
         abs((gint)src1->alpha - (gint)src2->alpha);
 }
+
+#if DITHER_BLOCK | DITHER_PIXEL
+static inline void
+error_add       (Color *dst,
+                 const gint *error,
+                 const Color *src)
+{
+  gint red = (gint)src->red + error[0];
+  gint green = (gint)src->green + error[1];
+  gint blue = (gint)src->blue + error[2];
+  gint alpha = (gint)src->alpha + error[3];
+  if (red<0) red=0;
+  if (red>=255) red=255;
+  if (green<0) green=0;
+  if (green>=255) green=255;
+  if (blue<0) blue=0;
+  if (blue>=255) blue=255;
+  if (alpha<0) alpha=0;
+  if (alpha>=255) alpha=255;
+  dst->red = red;
+  dst->green = green;
+  dst->blue = blue;
+  dst->alpha = alpha;
+}
+
+static inline void
+error_update    (gint *error,
+                 const Color *src1,
+                 const Color *src2)
+{
+  error[0] += src1->red - src2->red;
+  error[1] += src1->green - src2->green;
+  error[2] += src1->blue - src2->blue;
+  error[3] += src1->alpha - src2->alpha;
+}
+#endif
 
 static inline gboolean
 color_equal      (const Color *src1,
@@ -300,17 +340,17 @@ inline static guchar find_best(
   amtx = x_interp * 64;
   amty = y_interp * 64;
 
-  color_interp(&low[0], &low[1], amtx, &tmpa);
-  color_interp(&low[block_stride], &low[block_stride+1], amtx, &tmpb);
-  color_interp(&tmpa, &tmpb, amty, &cl);
+  color_interp(&tmpa, &low[0], &low[1], amtx);
+  color_interp(&tmpb, &low[block_stride], &low[block_stride+1], amtx);
+  color_interp(&cl, &tmpa, &tmpb, amty);
 
-  color_interp(&high[0], &high[1], amtx, &tmpa);
-  color_interp(&high[block_stride], &high[block_stride+1], amtx, &tmpb);
-  color_interp(&tmpa, &tmpb, amty, &ch);
+  color_interp(&tmpa, &high[0], &high[1], amtx);
+  color_interp(&tmpb, &high[block_stride], &high[block_stride+1], amtx);
+  color_interp(&ch, &tmpa, &tmpb, amty);
 
   /* interpolate for the mid-colours */
-  color_interp(&cl, &ch, 96, &clm); /* 3/8 */
-  color_interp(&cl, &ch, 160, &chm); /* 5/8 */
+  color_interp(&clm, &cl, &ch, 96); /* 3/8 */
+  color_interp(&chm, &cl, &ch, 160); /* 5/8 */
 
   /* work out differences */
   diff[0] = color_diff(&pixel_col, &cl);
@@ -349,6 +389,14 @@ inline static guint color_to_pvr_color( Color *col )
     }
 }
 
+#if RAND_BLOCK
+inline static guchar clamp(gint x) {
+  if (x<0) x=0;
+  if (x>255) x=255;
+  return x;
+}
+#endif
+
 inline static void nearest_pvr_color( Color *col, gboolean use_max ) {
   if (col->alpha >= 224)
     {
@@ -357,6 +405,11 @@ inline static void nearest_pvr_color( Color *col, gboolean use_max ) {
         col->green = MIN(col->green + 7, 255);
         col->blue = MIN(col->blue + 7, 255);
       }
+#if RAND_BLOCK
+      col->red = clamp((gint)col->red + (rand()&7) - 4);
+      col->green = clamp((gint)col->green + (rand()&7) - 4);
+      col->blue = clamp((gint)col->blue + (rand()&7) - 4);
+#endif
       col->alpha = 0xFF;
       col->red   = (col->red & 0xF8) | (col->red >> 5);
       col->green = (col->green & 0xF8) | (col->green >> 5);
@@ -370,6 +423,12 @@ inline static void nearest_pvr_color( Color *col, gboolean use_max ) {
         col->green = MIN(col->green + 15, 255);
         col->blue = MIN(col->blue + 15, 255);
       }
+#if RAND_BLOCK
+      col->alpha = clamp((gint)col->alpha + (rand()&31) - 16);
+      col->red = clamp((gint)col->red + (rand()&15) - 8);
+      col->green = clamp((gint)col->green + (rand()&15) - 8);
+      col->blue = clamp((gint)col->blue + (rand()&15) - 8);
+#endif
       col->alpha = (col->alpha & 0xE0) | (col->alpha >> 3);
       col->red   = (col->red & 0xF0) | (col->red >> 4);
       col->green = (col->green & 0xF0) | (col->green >> 4);
@@ -466,7 +525,14 @@ guchar *pvr_texture_compress_pvrtc4(
   guchar *compressed_data = 0;
   guint width_block, height_block, block_stride;
   Color *col_low, *col_high;
-  gint x,y,z;
+#if DITHER_BLOCK
+  gint error_low[4] = {0,0,0,0};
+  gint error_high[4] = {0,0,0,0};
+#endif
+#if DITHER_PIXEL
+  gint error_pixel[4] = {0,0,0,0};
+#endif
+  gint x,y;
   guint32 *out_data;
   guint32 morton_mask, xshift, xmask, yshift, ymask;
 
@@ -496,34 +562,60 @@ guchar *pvr_texture_compress_pvrtc4(
       guint block_offs = (y+1)*block_stride;
       for (x=0;x<width_block;x++)
         {
-          Color clow, chigh;
+          Color clow, chigh, clow_dither, chigh_dither;
           Color *block;
+          Color *blockline;
 
+          /* We now don't include the very edges in what we use
+           * for our blocks, as this helps make the block values
+           * we get a little more 'rounded'
+           */
           block = (Color*)&uncompressed_data[(x + y*width) * 16];
-          clow = block[0];
-          chigh = block[0];
-          SETMIN(clow, block[1]);
-          SETMAX(chigh, block[1]);
+          clow = block[1];
+          chigh = block[1];
           SETMIN(clow, block[2]);
           SETMAX(chigh, block[2]);
-          SETMIN(clow, block[3]);
-          SETMAX(chigh, block[3]);
-          for (z=1;z<4;z++)
-            {
-              Color *blockline = &block[width*z];
-              SETMIN(clow, blockline[0]);
-              SETMAX(chigh, blockline[0]);
-              SETMIN(clow, blockline[1]);
-              SETMAX(chigh, blockline[1]);
-              SETMIN(clow, blockline[2]);
-              SETMAX(chigh, blockline[2]);
-              SETMIN(clow, blockline[3]);
-              SETMAX(chigh, blockline[3]);
-            }
-          nearest_pvr_color(&clow, FALSE);
-          nearest_pvr_color(&chigh, TRUE);
-          col_low[1+x+block_offs] = clow;
-          col_high[1+x+block_offs] = chigh;
+          blockline = &block[width*1];
+          SETMIN(clow, blockline[0]);
+          SETMAX(chigh, blockline[0]);
+          SETMIN(clow, blockline[1]);
+          SETMAX(chigh, blockline[1]);
+          SETMIN(clow, blockline[2]);
+          SETMAX(chigh, blockline[2]);
+          SETMIN(clow, blockline[3]);
+          SETMAX(chigh, blockline[3]);
+          blockline = &block[width*2];
+          SETMIN(clow, blockline[0]);
+          SETMAX(chigh, blockline[0]);
+          SETMIN(clow, blockline[1]);
+          SETMAX(chigh, blockline[1]);
+          SETMIN(clow, blockline[2]);
+          SETMAX(chigh, blockline[2]);
+          SETMIN(clow, blockline[3]);
+          SETMAX(chigh, blockline[3]);
+          blockline = &block[width*3];
+          SETMIN(clow, blockline[1]);
+          SETMAX(chigh, blockline[1]);
+          SETMIN(clow, blockline[2]);
+          SETMAX(chigh, blockline[2]);
+          /* add our current error */
+#if DITHER_BLOCK
+          error_add(&clow_dither, error_low, &clow);
+          error_add(&chigh_dither, error_high, &chigh);
+#else
+          clow_dither = clow;
+          chigh_dither = chigh;
+#endif
+          /* crop to the nearest color */
+          nearest_pvr_color(&clow_dither, FALSE);
+          nearest_pvr_color(&chigh_dither, TRUE);
+          col_low[1+x+block_offs] = clow_dither;
+          col_high[1+x+block_offs] = chigh_dither;
+          /* update errors */
+#if DITHER_BLOCK
+          error_update(error_low, &clow, &clow_dither);
+          error_update(error_high, &chigh, &chigh_dither);
+#endif
         }
       /* copy beginning and end */
       col_low[block_offs] = col_low[block_offs+1];
@@ -574,15 +666,29 @@ guchar *pvr_texture_compress_pvrtc4(
           for (by=3;by>=0;by--)
             for (bx=3;bx>=0;bx--)
               {
+                Color pixel_col = block[bx + by*width];
+#if DITHER_PIXEL
+                Color pixel_col_dither;
+#endif
                 gint boffs = offs + ((bx+2)>>2) + (((by+2)>>2) * block_stride);
+#if DITHER_PIXEL
+                error_add(&pixel_col_dither, error_pixel, &pixel_col);
+#endif
                 pixel_low_word = (pixel_low_word << 2) |
                           find_best(
-                                  block[bx + by*width],
+#if DITHER_PIXEL
+                                  pixel_col_dither,
+#else
+                                  pixel_col,
+#endif
                                   &col_low[boffs],
                                   &col_high[boffs],
                                   block_stride,
                                   (bx+2)&3,
                                   (by+2)&3);
+#if DITHER_PIXEL
+                error_update(error_pixel, &pixel_col, &pixel_col_dither);
+#endif
               }
            /* pack our two colours */
            col_a = color_to_pvr_color(&col_low[offs+1+block_stride]);
@@ -735,26 +841,26 @@ guchar *pvr_texture_decompress_pvrtc4(
                 pixel_bits = pixel_bits_word&3;
                 pixel_bits_word = pixel_bits_word >> 2;
 
-                color_interp(&col_low[boffs],
-                                &col_low[boffs+1], amtx, &tmpa);
-                color_interp(&col_low[boffs+block_stride],
-                                &col_low[boffs+block_stride+1], amtx, &tmpb);
-                color_interp(&tmpa, &tmpb, amty, &cl);
+                color_interp(&tmpa, &col_low[boffs],
+                                &col_low[boffs+1], amtx);
+                color_interp(&tmpb, &col_low[boffs+block_stride],
+                                &col_low[boffs+block_stride+1], amtx);
+                color_interp(&cl, &tmpa, &tmpb, amty);
 
-                color_interp(&col_high[boffs],
-                                &col_high[boffs+1], amtx, &tmpa);
-                color_interp(&col_high[boffs+block_stride],
-                                &col_high[boffs+block_stride+1], amtx, &tmpb);
-                color_interp(&tmpa, &tmpb, amty, &ch);
+                color_interp(&tmpa, &col_high[boffs],
+                                &col_high[boffs+1], amtx);
+                color_interp(&tmpb, &col_high[boffs+block_stride],
+                                &col_high[boffs+block_stride+1], amtx);
+                color_interp(&ch, &tmpa, &tmpb, amty);
 
                 if (block_alpha_mode)
                   {
                     if (pixel_bits==0)
                       col = cl;
                     else if (pixel_bits==1)
-                      color_interp(&cl, &ch, 128, &col);
+                      color_interp(&col, &cl, &ch, 128);
                     else if (pixel_bits==2) {
-                      color_interp(&cl, &ch, 128, &col);
+                      color_interp(&col, &cl, &ch, 128);
                       col.alpha = 0;
                     } else col = ch;
                   }
@@ -763,9 +869,9 @@ guchar *pvr_texture_decompress_pvrtc4(
                     if (pixel_bits==0)
                       col = cl;
                     else if (pixel_bits==1)
-                      color_interp(&cl, &ch, 96, &col);
+                      color_interp(&col, &cl, &ch, 96);
                     else if (pixel_bits==2) {
-                      color_interp(&cl, &ch, 160, &col);
+                      color_interp(&col, &cl, &ch, 160);
                     } else col = ch;
                   }
               uncompressed_data[(x*4) + (y*width*4) + bx + (by*width)]
