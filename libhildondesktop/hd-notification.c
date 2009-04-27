@@ -437,6 +437,8 @@ hd_notification_get_hint (HDNotification *notification,
 {
   HDNotificationPrivate *priv = notification->priv;
 
+  g_return_val_if_fail (HD_IS_NOTIFICATION (notification), NULL);
+
   if (priv->hints != NULL)
     return g_hash_table_lookup (priv->hints, key);
 

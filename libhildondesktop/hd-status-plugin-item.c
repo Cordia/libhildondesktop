@@ -34,9 +34,9 @@
 
 /** 
  * SECTION:hd-status-plugin-item
- * @short_description: Base class for plugable status Hildon Desktop items.
+ * @short_description: Base class for plugable status Hildon Status Area items.
  *
- * Base class for all plugable status Hildon Desktop items.
+ * Base class for all plugable status Hildon Status Area items.
  *
  * The class provides the hd_status_plugin_item_set_status_area_icon() function to set or update
  * the Status Area icon.
