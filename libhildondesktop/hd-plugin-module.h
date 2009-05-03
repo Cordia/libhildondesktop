@@ -69,6 +69,76 @@ GObject        *hd_plugin_module_new_object (HDPluginModule *module,
 void            hd_plugin_module_add_type   (HDPluginModule *module,
                                              GType           type);
 
+/**
+ * SECTION:hd-plugin-module-macros
+ * @short_description: Support for the definition of Hildon Desktop plugins.
+ * @include: libhildondesktop/libhildondesktop.h
+ *
+ * To define Hildon Desktop plugins the macros HD_DEFINE_PLUGIN() or 
+ * HD_DEFINE_PLUGIN_MODULE_EXTENDED() should be used.
+ *
+ * They are similar to the G_DEFINE_DYNAMIC_TYPE() macro but adds code to
+ * dynamically register the class on module loading.
+ *
+ * <example>
+ * <title>Using HD_DEFINE_PLUGIN_MODULE() to define a Home widget</title>
+ * <programlisting>
+ * #ifndef __EXAMPLE_HOME_APPLET_H__
+ * #define __EXAMPLE_HOME_APPLET_H__
+ * #include <libhildondesktop/libhildondesktop.h>
+ *
+ * G_BEGIN_DECLS
+ *
+ * typedef struct _ExampleHomeApplet        ExampleHomeApplet;
+ * typedef struct _ExampleHomeAppletClass   ExampleHomeAppletClass;
+ *   
+ * struct _ExampleHomeApplet
+ * {
+ *   HDHomePluginItem parent;
+ * };
+ *
+ * struct _ExampleHomeAppletClass
+ * {
+ *   HDHomePluginItemClass parent;
+ * };
+ *   
+ * GType example_home_applet_get_type (void);
+ *
+ * G_END_DECLS
+ * 
+ * #endif
+ * </programlisting>
+ * <programlisting>
+ * #include "example-home-applet.h"
+ * 
+ * HD_DEFINE_PLUGIN_MODULE (ExampleHomeApplet, example_home_applet, HD_TYPE_HOME_PLUGIN_ITEM);
+ * 
+ * static void
+ * example_home_applet_class_finalize (ExampleHomeAppletClass *klass)
+ * {
+ * }
+ *
+ * static void
+ * example_home_applet_class_init (ExampleHomeAppletClass *klass)
+ * {
+ * }
+ * 
+ * static void
+ * example_home_applet_init (ExampleHomeApplet *applet)
+ * {
+ * }
+ * </programlisting>
+ * </example>
+ **/
+
+/**
+ * HD_PLUGIN_MODULE_SYMBOLS:
+ * @t_n: The name of the object type, in lowercase, with words separated by '_'.  (ex: object_type)
+ *
+ * Defines exported functions to load and unload the modules. It is used by 
+ * HD_DEFINE_PLUGIN_MODULE() and should usually not used directly.
+ *
+ **/
 #define HD_PLUGIN_MODULE_SYMBOLS(t_n)					\
 G_MODULE_EXPORT void hd_plugin_module_load (HDPluginModule *plugin);	\
 void hd_plugin_module_load (HDPluginModule *plugin)			\
@@ -82,6 +152,16 @@ void hd_plugin_module_unload (HDPluginModule *plugin)			\
   (void) plugin;							\
 }
 
+/**
+ * HD_PLUGIN_MODULE_SYMBOLS_CODE:
+ * @t_n: The name of the object type, in lowercase, with words separated by '_'.  (ex: object_type)
+ * @CODE_LOAD: code executed when the plugin is loaded.
+ * @CODE_UNLOAD: code executed when the plugin is unloaded.
+ *
+ * Defines exported functions to load and unload the modules. It is used by 
+ * HD_DEFINE_PLUGIN_MODULE_EXTENDED() and should usually not used directly. 
+ *
+ **/
 #define HD_PLUGIN_MODULE_SYMBOLS_CODE(t_n, CODE_LOAD, CODE_UNLOAD)	\
 G_MODULE_EXPORT void hd_plugin_module_load (HDPluginModule *plugin); 	\
 void hd_plugin_module_load (HDPluginModule *plugin)		 	\
@@ -97,16 +177,6 @@ void hd_plugin_module_unload (HDPluginModule *plugin)			\
 }
 
 /**
- * SECTION:hd-plugin-module
- * @short_description: Support for the definition of Hildon Desktop plugins.
- *
- * There are some macros to define Hildon Desktop plugins:
- *
- * HD_DEFINE_PLUGIN_MODULE_EXTENDED()
- *
- */
-
-/**
  * HD_DEFINE_PLUGIN_MODULE_EXTENDED:
  * @TN: The name of the object type, in Camel case. (ex: ObjectType)
  * @t_n: The name of the object type, in lowercase, with words separated by '_'.  (ex: object_type)
@@ -116,6 +186,8 @@ void hd_plugin_module_unload (HDPluginModule *plugin)			\
  * @CODE_UNLOAD: code executed when the plugin is unloaded.
  *
  * Register an object supplied by a plugin in Hildon Desktop.
+ *
+ * See also G_DEFINE_DYNAMIC_TYPE().
  */
 #define HD_DEFINE_PLUGIN_MODULE_EXTENDED(TN, t_n, T_P, CODE, CODE_LOAD, CODE_UNLOAD)   	\
 G_DEFINE_DYNAMIC_TYPE_EXTENDED (TN, t_n, T_P, 0, CODE)                             	\
@@ -128,7 +200,8 @@ HD_PLUGIN_MODULE_SYMBOLS_CODE (t_n, CODE_LOAD, CODE_UNLOAD)
  * @T_P: The GType of the parent (ex: #STATUSBAR_TYPE_ITEM)
  *
  * Register an object supplied by a plugin in Hildon Desktop.
- * FIXME: link to an example.
+ * 
+ * See also to G_DEFINE_DYNAMIC_TYPE().
  */
 #define HD_DEFINE_PLUGIN_MODULE(TN, t_n, T_P)			\
 HD_DEFINE_PLUGIN_MODULE_EXTENDED (TN, t_n, T_P, {}, {}, {})
