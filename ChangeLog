@@ -1,3 +1,15 @@
+2009-05-05  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* libhildondesktop/hd-plugin-manager.c
+	  (HD_PLUGIN_MANAGER_CONFIG_KEY_SAFE_SET, debug_plugins, safe_set,
+	  hd_plugin_manager_load_plugin, hd_plugin_manager_finalize,
+	  hd_plugin_manager_configuration_loaded,
+	  hd_plugin_manager_items_configuration_loaded): Add support for an
+	  additional safe set defintion of plugins we are allowed to be loaded
+	  in safe mode.
+
+	* debian/changelog: Update.
+
 2009-05-03  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	Fixes: NB#113633 - HD_DEFINE_PLUGIN_MODULE() is undocumented

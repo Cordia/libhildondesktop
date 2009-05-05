@@ -2,6 +2,8 @@ libhildondesktop (2.1.22~unreleased) unstable; urgency=low
 
   Jan Arne: 
   * Fixes: NB#113633 - HD_DEFINE_PLUGIN_MODULE() is undocumented
+  * Add support for an additional safe set defintion of plugins we are allowed
+    to be loaded in safe mode
 
  -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Thu, 30 Apr 2009 14:46:28 +0300
 

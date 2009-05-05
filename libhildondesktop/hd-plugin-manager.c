@@ -45,6 +45,7 @@
 #define HD_PLUGIN_MANAGER_CONFIG_KEY_DEBUG_PLUGINS        "X-Debug-Plugins"
 #define HD_PLUGIN_MANAGER_CONFIG_KEY_LOAD_ALL_PLUGINS     "X-Load-All-Plugins"
 #define HD_PLUGIN_MANAGER_CONFIG_KEY_PLUGIN_CONFIGURATION "X-Plugin-Configuration"
+#define HD_PLUGIN_MANAGER_CONFIG_KEY_SAFE_SET             "X-Safe-Set"
 
 /* PluginInfo struct */
 typedef struct _HDPluginInfo HDPluginInfo;
@@ -83,6 +84,8 @@ struct _HDPluginManagerPrivate
   gboolean                load_all_plugins;
 
   gchar                 **debug_plugins;
+
+  gchar                  *safe_set;
 };
 
 static guint plugin_manager_signals [LAST_SIGNAL] = { 0 };
@@ -189,7 +192,9 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
 
   if (!g_file_test (desktop_file, G_FILE_TEST_EXISTS))
     {
-      g_warning ("Plugin desktop file not found, ignoring plugin");
+      g_warning ("%s. Plugin desktop file %s not found. Ignoring plugin",
+                 __FUNCTION__,
+                 desktop_file);
       return FALSE;
     }
 
@@ -216,7 +221,9 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
                              0);
   info->item = plugin;
 
-  g_debug ("Added plugin to list: %s", info->desktop_file);
+  g_debug ("%s Loaded plugin: %s",
+           __FUNCTION__,
+           info->desktop_file);
 
   p = g_list_append (NULL, info);
   priv->plugins = g_list_concat (priv->plugins, p);
@@ -312,6 +319,8 @@ hd_plugin_manager_finalize (GObject *object)
 
   g_strfreev (priv->debug_plugins);
   priv->debug_plugins = NULL;
+
+  priv->safe_set = (g_free (priv->safe_set), NULL);
 
   if (priv->load_priority_data && priv->load_priority_destroy)
     {
@@ -479,8 +488,8 @@ hd_plugin_manager_configuration_loaded (HDPluginConfiguration *configuration,
 {
   HDPluginManagerPrivate *priv = HD_PLUGIN_MANAGER (configuration)->priv;
 
-  g_strfreev (priv->debug_plugins);
-  priv->debug_plugins = NULL;
+  priv->debug_plugins = (g_strfreev (priv->debug_plugins), NULL);
+  priv->safe_set = (g_free (priv->safe_set), NULL);
 
   /* Load configuration ([X-PluginManager] group) */
   if (!g_key_file_has_group (keyfile, HD_PLUGIN_MANAGER_CONFIG_GROUP))
@@ -506,17 +515,60 @@ hd_plugin_manager_configuration_loaded (HDPluginConfiguration *configuration,
                                                     NULL,
                                                     NULL);
 
+  priv->safe_set = g_key_file_get_string (keyfile,
+                                          HD_PLUGIN_MANAGER_CONFIG_GROUP,
+                                          HD_PLUGIN_MANAGER_CONFIG_KEY_SAFE_SET,
+                                          NULL);
+
   HD_PLUGIN_CONFIGURATION_CLASS (hd_plugin_manager_parent_class)->configuration_loaded (configuration,
                                                                                         keyfile);
 }
 
 static void
 hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configuration,
-                                               GKeyFile              *keyfile)
+                                              GKeyFile              *keyfile)
 {
   HDPluginManager *manager = HD_PLUGIN_MANAGER (configuration);
   HDPluginManagerPrivate *priv = manager->priv;
   GList *new_plugins = NULL;
+  gchar **safe_set = NULL;
+
+  /* Get all plugins from the safe set file */
+  if (priv->safe_set && hd_stamp_file_get_safe_mode ())
+    {
+      gchar *filename, *contents = NULL;
+      GError *error = NULL;
+
+      filename = g_build_filename (HD_DESKTOP_CONFIG_PATH,
+                                   priv->safe_set,
+                                   NULL);
+      g_file_get_contents (filename,
+                           &contents,
+                           NULL,
+                           &error);
+      if (!error)
+        {
+          guint i;
+
+          safe_set = g_strsplit (contents, "\n", 0);
+
+          for (i = 0; safe_set && safe_set[i]; i++)
+            {
+              g_strstrip (safe_set[i]);
+            }
+        }
+      else
+        {
+          g_warning ("%s. Could not load safe set file %s. %s",
+                     __FUNCTION__,
+                     filename,
+                     error->message);
+          g_error_free (error);
+        }
+
+      g_free (filename);
+      g_free (contents);
+    }
 
   if (keyfile)
     {
@@ -547,6 +599,28 @@ hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configurati
                   continue;
                 }
 
+              /* If in safe mode and there is a separate safe set file only load plugins listed there */
+              if (hd_stamp_file_get_safe_mode () && priv->safe_set)
+                {
+                  guint i;
+                  gboolean in_safe_set = FALSE;
+
+                  for (i = 0; safe_set && safe_set[i]; i++)
+                    {
+                      if (strcmp (safe_set[i], desktop_file) == 0)
+                        {
+                          in_safe_set = TRUE;
+                          break;
+                        }
+                    }
+
+                  if (!in_safe_set)
+                    {
+                      g_free (desktop_file);
+                      continue;
+                    }
+                }
+
               /* Get the load priority of the plugin */
               if (priv->load_priority_func)
                 priority = priv->load_priority_func (groups[i], keyfile, priv->load_priority_data);
@@ -560,31 +634,61 @@ hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configurati
       g_strfreev (groups);
     }
 
-  /* Load all plugins in the X-Plugin-Dirs directories 
-   * if X-Load-All-Plugins is true */
-  if (priv->load_all_plugins && !hd_stamp_file_get_safe_mode ())
+  if (priv->load_all_plugins)
     {
-      gchar **all_plugins;
-      guint i;
-
-      all_plugins = hd_plugin_configuration_get_all_plugin_paths (configuration);
-
-      for (i = 0; all_plugins[i]; i++)
+      /*
+       * Load all plugins in the X-Plugin-Dirs directories 
+       * if X-Load-All-Plugins is true and not in safe 
+       */
+      if (!hd_stamp_file_get_safe_mode ())
         {
-          HDPluginInfo *info = hd_plugin_info_new (NULL,
-                                                   all_plugins[i],
-                                                   G_MAXUINT);
+          gchar **all_plugins;
+          guint i;
 
-          if (!g_list_find_custom (new_plugins, info, (GCompareFunc) cmp_info_desktop_file))
+          all_plugins = hd_plugin_configuration_get_all_plugin_paths (configuration);
+
+          for (i = 0; all_plugins[i]; i++)
             {
-              info->plugin_id = g_path_get_basename (info->desktop_file);
-              new_plugins = g_list_prepend (new_plugins, info);
-            }
-          else
-            hd_plugin_info_free (info);
-        }
+              HDPluginInfo *info = hd_plugin_info_new (NULL,
+                                                       all_plugins[i],
+                                                       G_MAXUINT);
 
-      g_strfreev (all_plugins);
+              if (!g_list_find_custom (new_plugins, info, (GCompareFunc) cmp_info_desktop_file))
+                {
+                  info->plugin_id = g_path_get_basename (info->desktop_file);
+                  new_plugins = g_list_prepend (new_plugins, info);
+                }
+              else
+                hd_plugin_info_free (info);
+            }
+
+          g_strfreev (all_plugins);
+        }
+      else if (priv->safe_set)
+        {
+          /* Load all plugins from the safe set file */
+          guint i;
+
+          for (i = 0; safe_set && safe_set[i]; i++)
+            {
+              HDPluginInfo *info;
+
+              if (!safe_set[i][0])
+                continue;
+
+              info = hd_plugin_info_new (NULL,
+                                         safe_set[i],
+                                         G_MAXUINT);
+
+              if (!g_list_find_custom (new_plugins, info, (GCompareFunc) cmp_info_desktop_file))
+                {
+                  info->plugin_id = g_path_get_basename (info->desktop_file);
+                  new_plugins = g_list_prepend (new_plugins, info);
+                }
+              else
+                hd_plugin_info_free (info);
+            }
+        }
     }
 
   /* Don't load plugins from X-Debug-Plugins list */
@@ -619,6 +723,8 @@ hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configurati
             }
         }
     }
+
+  g_strfreev (safe_set);
 
   hd_plugin_manager_sync_plugins (manager, new_plugins);
 }
