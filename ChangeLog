@@ -1,3 +1,12 @@
+2009-05-17  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Fixes: NB#116712 - HDPluginItem::plugin-id is undocumented	
+
+	* doc/libhildondesktop-sections.txt:
+	* libhildondesktop/hd-plugin-item.c (hd_plugin_item_class_init,
+	  hd_plugin_item_get_type, hd_plugin_item_get_dl_filename): Update
+	  HDPluginItem documentation.
+
 2009-05-11  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.22

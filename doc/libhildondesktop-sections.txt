@@ -6,6 +6,7 @@
 HDPluginItem
 hd_plugin_item_get_dl_filename
 hd_plugin_item_get_plugin_id
+hd_plugin_item_load_desktop_file
 <SUBSECTION Standard>
 hd_plugin_item_get_type
 HD_IS_PLUGIN_ITEM

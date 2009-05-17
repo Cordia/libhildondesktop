@@ -27,6 +27,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <gdk/gdk.h>
 #include <libgnomevfs/gnome-vfs.h>
 
 #include <string.h>
@@ -173,20 +174,25 @@ hd_plugin_manager_remove_plugin (HDPluginManager *manager,
     }
 }
 
-static gboolean 
-hd_plugin_manager_load_plugin (HDPluginManager *manager,
-                               const gchar     *desktop_file,
-                               const gchar     *plugin_id)
+typedef struct
 {
+  HDPluginManager *manager;
+  gchar           *desktop_file;
+  gchar           *plugin_id;
+} HDPluginManagerLoadPluginData;
+
+static gboolean
+load_plugin_idle (gpointer idle_data)
+{
+  HDPluginManagerLoadPluginData *data = idle_data;
+  HDPluginManager *manager = data->manager;
+  gchar *desktop_file = data->desktop_file;
+  gchar *plugin_id = data->plugin_id;
   HDPluginManagerPrivate *priv;
   HDPluginInfo *info;
   GList *p;
   GObject *plugin;
   GError *error = NULL;
-
-  g_return_val_if_fail (HD_IS_PLUGIN_MANAGER (manager), FALSE);
-  g_return_val_if_fail (desktop_file != NULL, FALSE);
-  g_return_val_if_fail (plugin_id != NULL, FALSE);
 
   priv = HD_PLUGIN_MANAGER (manager)->priv;
 
@@ -231,6 +237,35 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
   g_object_weak_ref (G_OBJECT (plugin), delete_plugin, p);
 
   g_signal_emit (manager, plugin_manager_signals[PLUGIN_ADDED], 0, plugin);
+
+  g_object_unref (data->manager);
+  g_free (data->desktop_file);
+  g_free (data->plugin_id);
+  g_slice_free (HDPluginManagerLoadPluginData, data);
+  
+  return FALSE;
+}
+
+static gboolean 
+hd_plugin_manager_load_plugin (HDPluginManager *manager,
+                               const gchar     *desktop_file,
+                               const gchar     *plugin_id)
+{
+  HDPluginManagerLoadPluginData *data;
+
+  g_return_val_if_fail (HD_IS_PLUGIN_MANAGER (manager), FALSE);
+  g_return_val_if_fail (desktop_file != NULL, FALSE);
+  g_return_val_if_fail (plugin_id != NULL, FALSE);
+
+  data = g_slice_new0 (HDPluginManagerLoadPluginData);
+  data->manager = g_object_ref (manager);
+  data->desktop_file = g_strdup (desktop_file);
+  data->plugin_id = g_strdup (plugin_id);
+
+  gdk_threads_add_idle_full (G_PRIORITY_HIGH_IDLE,
+                             load_plugin_idle,
+                             data,
+                             NULL);
 
   return TRUE;
 }

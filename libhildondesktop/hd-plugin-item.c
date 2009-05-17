@@ -31,12 +31,20 @@
 /** 
  * SECTION:hd-plugin-item
  * @short_description: Base interface for plugable items.
+ * @include: libhildondesktop/libhildondesktop.h
  *
- * #HDPluginItem is a base interface for plugable items. It defines the #HDPluginItem::plugin-id property
- * for the unique plugin ID.
+ * #HDPluginItem is a base interface for plugable items. It defines functions properties
+ * which are basically only useful for the Hildon desktop itself and not for widget/plugin
+ * developers.
  *
- * And a hd_plugin_item_get_dl_filename() function which returns the filename of
+ * It defines a hd_plugin_item_get_dl_filename() function which returns the filename of
  * the dynamic library for debugging purposes.
+ *
+ * It defines the #HDPluginItem::plugin-id property
+ * for the unique plugin ID which is used internally by the Hildon Desktop to identify widget/plugins. It is
+ * usually not used by widget/plugin developers.
+ *
+ * And it defines a hd_plugin_item_load_desktop_file() function for internal use by the Hildon desktop. 
  **/
 
 static void
@@ -45,7 +53,10 @@ hd_plugin_item_class_init (gpointer g_iface)
   g_object_interface_install_property (g_iface,
                                        g_param_spec_string ("plugin-id",
                                                             "Plugin id",
-                                                            "The id to identify the plugin item",
+                                                            "The id to identify the plugin item (used " \
+                                                            "internally by the Hildon desktop to identify " \
+                                                            "widgets/plugins. It is usually not used by " \
+                                                            "widget/plugin developers)",
                                                             NULL,
                                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 }
@@ -74,6 +85,9 @@ hd_plugin_item_get_type (void)
  * @item: a #HDPluginItem.
  *
  * Returns the unique plugin ID of @item.
+ *
+ * It is used internally by the Hildon desktop to identify widgets/plugins. It is usually 
+ * not used by widget/plugin developers.
  * 
  * Returns: the plugin ID. The result should be freed if no longer used.
  **/
@@ -117,6 +131,14 @@ hd_plugin_item_get_dl_filename (HDPluginItem *item)
   return g_type_get_qdata (type, dl_filename_quark);
 }
 
+/**
+ * hd_plugin_item_load_desktop_file:
+ * @item: a #HDPluginItem.
+ * @key_file: the plugins .desktop #GKeyFile
+ *
+ * Used internally by the Hildon desktop to load additional keys from
+ * the plugins .desktop file.
+ **/
 void
 hd_plugin_item_load_desktop_file (HDPluginItem *item,
                                   GKeyFile     *key_file)
