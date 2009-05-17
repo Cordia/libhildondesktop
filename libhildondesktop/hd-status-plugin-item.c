@@ -36,10 +36,12 @@
  * SECTION:hd-status-plugin-item
  * @short_description: Base class for plugable status Hildon Status Area items.
  *
- * Base class for all plugable status Hildon Status Area items.
+ * Base class for all plugable status Hildon Status Area items. Status Area plugin developer
+ * should usually also provide an item in the Status Menu and should therefore derive from 
+ * #HDStatusMenuItem instead of #HDStatusPluginItem.
  *
  * The class provides the hd_status_plugin_item_set_status_area_icon() function to set or update
- * the Status Area icon.
+ * the Status Area icon. The icon must be a 18x18 pixel sized #GdkPixbuf.
  *
  * The hd_status_plugin_item_get_dl_filename() function can be used to get the filename of
  * the dynamic library for debugging purposes.
@@ -264,7 +266,8 @@ hd_status_plugin_item_init (HDStatusPluginItem *item)
  * @item: a #HDStatusPluginItem
  * @icon: a #GdkPixbuf used as the new icon or %NULL
  *
- * Sets the Status Area icon corresponding to this item to @icon.
+ * Sets the Status Area icon corresponding to this item to @icon. The icon
+ * must have a size of 18x18 pixel.
  *
  * To hide (or unset) the Status Area icon use %NULL for @icon.
  *

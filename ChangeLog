@@ -1,5 +1,18 @@
 2009-05-17  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	Fixes: NB#113632 - Document how to make applet backgrounds transparent
+	Fixes: NB#113631 - hd_status_plugin_item_set_status_area_icon() pixbuf
+	documentation
+
+	* libhildondesktop/hd-home-plugin-item.c: Update HDHomePluginItem
+	documentation.
+
+	* libhildondesktop/hd-status-menu-item.c:
+	* libhildondesktop/hd-status-plugin-item.c: Update HDStatusMenuItem
+	and HDStatusPluginItem documentation.
+
+2009-05-17  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	Fixes: NB#116712 - HDPluginItem::plugin-id is undocumented	
 
 	* doc/libhildondesktop-sections.txt:

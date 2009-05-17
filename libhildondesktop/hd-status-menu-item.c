@@ -39,6 +39,30 @@
  * init function. To show (and hide) a plugin temporary or conditional use gtk_widget_show() 
  * and gtk_widget_hide() or #GtkWidget::visible.
  *
+ * Usually a #HildonButton should be used as a direct child of the #HDStatusMenuItem. Create
+ * the Button with hildon_button_new_with_text()
+ *
+ * <example>
+ * <title>Create a Status Menu plugin with a #HildonButton</title>
+ * <programlisting>
+ * static void
+ * example_plugin_init (ExamplePlugin *plugin)
+ * {
+ *   GtkWidget *button;
+ *
+ *   button = hildon_button_new_with_text (HILDON_SIZE_FINGER_HEIGHT | HILDON_SIZE_AUTO_WIDTH,
+ *                                         HILDON_BUTTON_ARRANGEMENT_VERTICAL,
+ *                                         "Example Title",
+ *                                         "Value");
+ *
+ *   gtk_widget_show (button);
+ *   gtk_container_add (GTK_CONTAINER (plugin), button);
+ *
+ *   gtk_widget_show (Gtk_WIDGET (plugin));   
+ * }
+ * </programlisting>
+ * </example>
+ *
  * If a button is added as a direct child of the #HDStatusMenuItem the Status Menu
  * will automatically closed on click. 
  *

@@ -40,9 +40,66 @@
 
 /** 
  * SECTION:hd-home-plugin-item
- * @short_description: Base class for Home applets.
+ * @short_description: Base class for Home widgets.
+ * @include: libhildondesktop/libhildondesktop.h
+ * 
+ * Base class for Home widgets. To create ur own Home widgets create a
+ * subclass of #HDHomePluginItem.
  *
- * Base class for Home applets.
+ * To support a settings dialog in the layout mode in the Hildon desktop
+ * connect to the #HDHomePluginItem::show-settings signal. And set the
+ * property #HDHomePluginItem::settings to %TRUE.
+ *
+ * To start and stop animations of the widgets listen to the #GObject::notify signal of
+ * the #HDHomePluginItem::is-on-current-desktop property. And show animations
+ * only when #HDHomePluginItem::is-on-current-desktop is %TRUE.
+ *
+ * To create an transparent Home widget you have to set the colormap of the
+ * widget to RGBA. See the following example:
+ * 
+ * <example>
+ * <title>Create a transparent Home widget</title>
+ * <programlisting>
+ * static void
+ * example_clock_applet_realize (GtkWidget *widget)
+ * {
+ *   GdkScreen *screen = gtk_widget_get_screen (widget);
+ *   gtk_widget_set_colormap (widget, gdk_screen_get_rgba_colormap (screen));
+ *   gtk_widget_set_app_paintable (widget, TRUE);
+ *
+ *   GTK_WIDGET_CLASS (example_clock_applet_parent_class)->realize (widget);
+ * }
+ *
+ * static gboolean
+ * example_clock_applet_expose_event (GtkWidget *widget,
+ *                                    GdkExposeEvent *event)
+ * {
+ *   cairo_t *cr;
+ *
+ *   cr = gdk_cairo_create (GDK_DRAWABLE (widget->window));
+ *   gdk_cairo_region (cr, event->region);
+ *   cairo_clip (cr);
+ *
+ *   cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
+ *   cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.0);
+ *   cairo_paint (cr);
+ *   
+ *   cairo_destroy (cr);
+ *
+ *   return GTK_WIDGET_CLASS (example_clock_applet_parent_class)->expose_event (widget,
+ *                                                                              event);
+ * }
+ *
+ * static void
+ * example_clock_applet_class_init (ExampleClockAppletClass *klass)
+ * {
+ *   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+ *
+ *   widget_class->realize = example_clock_applet_realize;
+ *   widget_class->expose_event = example_clock_applet_expose_event;
+ * }
+ * </programlisting>
+ * </example>
  *
  **/
 
