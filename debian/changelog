@@ -1,3 +1,9 @@
+libhildondesktop (2.1.24~unreleased) unstable; urgency=low
+
+  * write_something_here
+
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 18 May 2009 11:28:56 +0300
+
 libhildondesktop (2.1.23) unstable; urgency=low
 
   Jan Arne:
