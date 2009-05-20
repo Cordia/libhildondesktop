@@ -217,6 +217,8 @@ hd_home_plugin_item_realize (GtkWidget *widget)
   GdkDisplay *display;
   Atom atom, wm_type;
   gchar *applet_id;
+  GdkPixmap *pixmap;
+  cairo_t *cr;
 
   GTK_WIDGET_CLASS (hd_home_plugin_item_parent_class)->realize (widget);
 
@@ -273,6 +275,16 @@ hd_home_plugin_item_realize (GtkWidget *widget)
                      GDK_WINDOW_XID (widget->window),
                      gdk_x11_get_xatom_by_name_for_display (display,
                                                             "_HILDON_APPLET_DISPLAY_ON_ALL_VIEWS"));
+
+  /* Set background to transparent pixmap */
+  pixmap = gdk_pixmap_new (GDK_DRAWABLE (widget->window), 1, 1, -1);
+  cr = gdk_cairo_create (GDK_DRAWABLE (pixmap));
+  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
+  cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.0);
+  cairo_paint (cr);
+  cairo_destroy (cr);
+
+  gdk_window_set_back_pixmap (widget->window, pixmap, FALSE);
 }
 
 static void

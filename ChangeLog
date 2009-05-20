@@ -1,3 +1,9 @@
+2009-05-20  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* libhildondesktop/hd-home-plugin-item.c
+	(hd_home_plugin_item_realize): Set background pixmap to
+	transparent/black for RGB/RGBA Home widgets.
+
 2009-05-18  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.23
