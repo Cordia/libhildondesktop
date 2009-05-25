@@ -53,7 +53,7 @@
 #define BOOKMARKS_GCONF_KEY_ICON  BOOKMARKS_GCONF_PATH "/%s/icon"
 
 /* Definitions for the ID generation */ 
-#define ID_VALID_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_+"
+#define ID_VALID_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
 #define ID_SUBSTITUTOR '_'
 
 #define HD_SHORTCUTS_GET_PRIVATE(object) \

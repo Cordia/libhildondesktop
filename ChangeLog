@@ -1,3 +1,12 @@
+2009-05-25  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Fixes: NB#115366 - [freetest] add shortcut to home does not work if
+	space was entered in URL field in web startup view
+
+	* libhildondesktop/hd-shortcuts.c (ID_VALID_CHARS): '+' is invalid.
+
+	* debian/changelog: Update.
+
 2009-05-25  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.24
