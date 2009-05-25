@@ -1,3 +1,9 @@
+2009-05-25  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
+
+	Release 2.1.24
+
+	* configure.ac: 2.1.24
+
 2009-05-20  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	* libhildondesktop/hd-home-plugin-item.c

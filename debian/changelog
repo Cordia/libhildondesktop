@@ -1,8 +1,9 @@
-libhildondesktop (2.1.24~unreleased) unstable; urgency=low
+libhildondesktop (2.1.24) unstable; urgency=low
 
-  * write_something_here
+  Jan Arne:
+  * Set background pixmap to transparent/black for RGB/RGBA Home widgets.
 
- -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 18 May 2009 11:28:56 +0300
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 25 May 2009 09:54:37 +0300
 
 libhildondesktop (2.1.23) unstable; urgency=low
 
