@@ -1,10 +1,10 @@
-libhildondesktop (2.1.25~unreleased) unstable; urgency=low
+libhildondesktop (2.1.25) unstable; urgency=low
 
   Jan Arne:
   * Fixes: NB#115366 - [freetest] add shortcut to home does not work if space
     was entered in URL field in web startup view
 
- -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 25 May 2009 10:11:08 +0300
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 01 Jun 2009 08:31:01 +0300
 
 libhildondesktop (2.1.24) unstable; urgency=low
 
