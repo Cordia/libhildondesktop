@@ -1,3 +1,13 @@
+2009-06-05  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Fixes: NB#119181 - Hidlon-status-menu crashing while performing SSU
+
+	* libhildondesktop/hd-plugin-manager.c
+	  (hd_plugin_manager_plugin_module_added): Unload old plugins before
+	  reloading them on package update.
+
+	* debian/changelog: Update.
+
 2009-06-01  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.25

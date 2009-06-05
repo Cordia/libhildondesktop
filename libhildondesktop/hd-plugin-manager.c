@@ -296,6 +296,8 @@ hd_plugin_manager_plugin_module_added (HDPluginConfiguration *configuration,
 
       plugin_id = g_path_get_basename (desktop_file);
 
+      /* Remove old plugins first */
+      hd_plugin_manager_remove_plugin_module (manager, desktop_file);
       hd_plugin_manager_load_plugin (manager, desktop_file, plugin_id);
 
       g_free (plugin_id);
