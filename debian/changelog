@@ -1,9 +1,9 @@
-libhildondesktop (2.1.26~unreleased) unstable; urgency=low
+libhildondesktop (2.1.26) unstable; urgency=low
 
   Jan Arne:
   * Fixes: NB#119181 - Hidlon-status-menu crashing while performing SSU
 
- -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon,  1 Jun 2009 08:33:09 +0300
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 08 Jun 2009 10:33:04 +0300
 
 libhildondesktop (2.1.25) unstable; urgency=low
 
