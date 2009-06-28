@@ -64,6 +64,8 @@ static HDPluginInfo *hd_plugin_info_new  (const gchar           *plugin_id,
                                           guint                  priority);
 static void          hd_plugin_info_free (HDPluginInfo          *plugin_definition);
 
+static void hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configuration,
+                                                          GKeyFile              *keyfile);
 enum
 {
   PLUGIN_ADDED,
@@ -201,7 +203,7 @@ load_plugin_idle (gpointer idle_data)
       g_warning ("%s. Plugin desktop file %s not found. Ignoring plugin",
                  __FUNCTION__,
                  desktop_file);
-      return FALSE;
+      goto cleanup;
     }
 
   plugin = hd_plugin_loader_factory_create (HD_PLUGIN_LOADER_FACTORY (manager->priv->factory), 
@@ -217,9 +219,9 @@ load_plugin_idle (gpointer idle_data)
         }
       else
         {
-        g_warning ("Error loading plugin: %s", desktop_file);
+          g_warning ("Error loading plugin: %s", desktop_file);
         }
-      return FALSE;
+      goto cleanup;
     }
 
   info = hd_plugin_info_new (plugin_id,
@@ -238,11 +240,12 @@ load_plugin_idle (gpointer idle_data)
 
   g_signal_emit (manager, plugin_manager_signals[PLUGIN_ADDED], 0, plugin);
 
+cleanup:
   g_object_unref (data->manager);
   g_free (data->desktop_file);
   g_free (data->plugin_id);
   g_slice_free (HDPluginManagerLoadPluginData, data);
-  
+
   return FALSE;
 }
 
@@ -271,25 +274,24 @@ hd_plugin_manager_load_plugin (HDPluginManager *manager,
 }
 
 static void
-hd_plugin_manager_init (HDPluginManager *manager)
-{
-  manager->priv = HD_PLUGIN_MANAGER_GET_PRIVATE (manager);
-
-  manager->priv->factory = hd_plugin_loader_factory_new (); 
-}
-
-static void
 hd_plugin_manager_plugin_module_added (HDPluginConfiguration *configuration,
                                        const gchar           *desktop_file)
 {
   HDPluginManager *manager;
   HDPluginManagerPrivate *priv;
+  GKeyFile *items_file;
 
   g_return_if_fail (HD_IS_PLUGIN_MANAGER (configuration));
 
   manager = HD_PLUGIN_MANAGER (configuration);
   priv = manager->priv;
 
+  /* Try to load plugins in the items file where loading failed */
+  items_file = hd_plugin_configuration_get_items_key_file (configuration);
+  hd_plugin_manager_items_configuration_loaded (configuration,
+                                                items_file);
+
+  /* Load new plugin if configured to do so */
   if (priv->load_new_plugins && !hd_stamp_file_get_safe_mode ())
     {
       gchar *plugin_id;
@@ -325,6 +327,62 @@ hd_plugin_manager_plugin_module_removed (HDPluginConfiguration *configuration,
 {
   hd_plugin_manager_remove_plugin_module (HD_PLUGIN_MANAGER (configuration),
                                           desktop_file);
+}
+
+static void
+hd_plugin_manager_plugin_module_updated (HDPluginConfiguration *configuration,
+                                         const gchar           *desktop_file)
+{
+  HDPluginManager *manager = HD_PLUGIN_MANAGER (configuration);
+  HDPluginManagerPrivate *priv = manager->priv;
+  GList *p, *plugin_ids = NULL;
+  GKeyFile *items_file;
+
+  /* remove all plugins with desktop_file */
+  for (p = priv->plugins; p; p = p->next)
+    {
+      HDPluginInfo *info = p->data;
+
+      if (!info)
+        continue;
+
+      if (!strcmp (info->desktop_file, desktop_file))
+        {
+          plugin_ids = g_list_prepend (plugin_ids, g_strdup (info->plugin_id));
+
+          g_object_weak_unref (G_OBJECT (info->item), delete_plugin, p);
+          priv->plugins = g_list_delete_link (priv->plugins, p);
+          g_signal_emit (manager, plugin_manager_signals[PLUGIN_REMOVED], 0, info->item);
+        }
+    }
+
+  /* readd them again */
+  for (p = plugin_ids; p; p = p->next)
+    {
+      gchar *plugin_id = p->data;
+
+      hd_plugin_manager_load_plugin (manager, desktop_file, plugin_id);
+      
+      g_free (plugin_id);
+    }
+
+  g_list_free (plugin_ids);
+
+  /* Try to load plugins in the items file where loading failed */
+  items_file = hd_plugin_configuration_get_items_key_file (configuration);
+  hd_plugin_manager_items_configuration_loaded (configuration,
+                                                items_file);
+}
+
+static void
+hd_plugin_manager_init (HDPluginManager *manager)
+{
+  manager->priv = HD_PLUGIN_MANAGER_GET_PRIVATE (manager);
+
+  manager->priv->factory = hd_plugin_loader_factory_new (); 
+
+  g_signal_connect (manager, "plugin-module-updated",
+                    G_CALLBACK (hd_plugin_manager_plugin_module_updated), NULL);
 }
 
 static void

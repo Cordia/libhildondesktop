@@ -54,6 +54,7 @@ enum
 {
   PLUGIN_MODULE_ADDED,
   PLUGIN_MODULE_REMOVED,
+  PLUGIN_MODULE_UPDATED,
   CONFIGURATION_LOADED,
   ITEMS_CONFIGURATION_LOADED,
   LAST_SIGNAL
@@ -68,6 +69,8 @@ struct _HDPluginConfigurationPrivate
 
   gchar                 **plugin_dirs;
   GnomeVFSMonitorHandle **plugin_dir_monitors;
+
+  GHashTable             *available_plugins;
 };
 
 static guint plugin_configuration_signals [LAST_SIGNAL] = { 0 };
@@ -108,11 +111,23 @@ hd_plugin_configuration_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
                                             GnomeVFSMonitorEventType event_type,
                                             HDPluginConfiguration *configuration)
 {
+  HDPluginConfigurationPrivate *priv = configuration->priv;
+  /*
+  static char* event_string[] = {"changed", "deleted", "startexecuting", "stopexecuting",
+  "created", "metadate-changed"};
+
+  g_debug ("%s. Uri: %s. Event: %s",
+           __FUNCTION__,
+           info_uri,
+           event_string [event_type]);
+           */
+
   /* Ignore the temporary dpkg files */
   if (!g_str_has_suffix (info_uri, ".desktop"))
     return;
 
-  if (event_type == GNOME_VFS_MONITOR_EVENT_CREATED)
+  if (event_type == GNOME_VFS_MONITOR_EVENT_CREATED ||
+      event_type == GNOME_VFS_MONITOR_EVENT_CHANGED)
     {
       GnomeVFSURI *uri = gnome_vfs_uri_new (info_uri);
       gchar *uri_str;
@@ -120,15 +135,30 @@ hd_plugin_configuration_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
       uri_str = gnome_vfs_uri_to_string (uri,
                                          GNOME_VFS_URI_HIDE_TOPLEVEL_METHOD);
 
-      g_debug ("plugin-added: %s", uri_str);
+      if (g_hash_table_lookup (priv->available_plugins,
+                               uri_str))
+        {
+          g_debug ("plugin-updated: %s", uri_str);
 
-      /* FIXME: dpkg install involves some renaming */
-      hd_plugin_configuration_remove_plugin_module (configuration, uri_str);
+          g_signal_emit (configuration,
+                         plugin_configuration_signals[PLUGIN_MODULE_UPDATED], 0,
+                         uri_str);
+        }
+      else
+        {
+          g_debug ("plugin-added: %s", uri_str);
 
-      g_signal_emit (configuration,
-                     plugin_configuration_signals[PLUGIN_MODULE_ADDED], 0,
-                     uri_str);
+          g_hash_table_insert (priv->available_plugins,
+                               g_strdup (uri_str),
+                               GUINT_TO_POINTER (1));
+
+          g_signal_emit (configuration,
+                         plugin_configuration_signals[PLUGIN_MODULE_ADDED], 0,
+                         uri_str);
+        }
+
       gnome_vfs_uri_unref (uri);
+      g_free (uri_str);
     }
   else if (event_type == GNOME_VFS_MONITOR_EVENT_DELETED)
     {
@@ -140,17 +170,28 @@ hd_plugin_configuration_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
 
       g_debug ("plugin-removed: %s", uri_str);
 
+      g_hash_table_remove (priv->available_plugins,
+                           uri_str);
+
       g_signal_emit (configuration,
                      plugin_configuration_signals[PLUGIN_MODULE_REMOVED], 0,
                      uri_str);
       gnome_vfs_uri_unref (uri);
+      g_free (uri_str);
     }
 }
 
 static void
 hd_plugin_configuration_init (HDPluginConfiguration *configuration)
 {
+  HDPluginConfigurationPrivate *priv;
+
+  /* Get private structure */
   configuration->priv = HD_PLUGIN_CONFIGURATION_GET_PRIVATE (configuration);
+  priv = configuration->priv;
+
+  priv->available_plugins = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                   g_free, NULL);
 }
 
 static void
@@ -196,6 +237,9 @@ hd_plugin_configuration_finalize (GObject *object)
       priv->plugin_dir_monitors = (g_free (priv->plugin_dir_monitors), NULL);
       priv->plugin_dirs = (g_strfreev (priv->plugin_dirs), NULL);
     }
+
+  if (priv->available_plugins)
+    priv->available_plugins = (g_hash_table_destroy (priv->available_plugins), NULL);
 
   G_OBJECT_CLASS (hd_plugin_configuration_parent_class)->finalize (object);
 }
@@ -280,6 +324,8 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
   if (priv->items_config_file)
     priv->items_config_file = (g_object_unref (priv->items_config_file), NULL);
 
+  g_hash_table_remove_all (priv->available_plugins);
+
   /* Load configuration ([X-PluginConfiguration] group) */
   if (!g_key_file_has_group (keyfile, HD_PLUGIN_CONFIGURATION_CONFIG_GROUP))
     {
@@ -312,12 +358,49 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
 
       for (i = 0; priv->plugin_dirs[i] != NULL; i++)
         {
+          GDir *dir;
+          GError *error = NULL;
+          const gchar *name;
+
+          /* Strip spaces */
           g_strstrip (priv->plugin_dirs[i]);
+
+          /* Add monitor */
           gnome_vfs_monitor_add (&priv->plugin_dir_monitors[i],
                                  priv->plugin_dirs[i],
                                  GNOME_VFS_MONITOR_DIRECTORY,
                                  (GnomeVFSMonitorCallback) hd_plugin_configuration_plugin_dir_changed,
                                  configuration);
+
+          /* Get available .desktop files */
+          dir = g_dir_open (priv->plugin_dirs[i], 0, &error);
+
+          if (dir == NULL)
+            {
+              g_warning ("%s. Couldn't read plugin_paths in dir %s. Error: %s",
+                         __FUNCTION__,
+                         priv->plugin_dirs[i],
+                         error->message);
+              g_error_free (error);
+              continue;
+            }
+
+          for (name = g_dir_read_name (dir); name != NULL; name = g_dir_read_name (dir))
+            {
+              gchar *filename;
+
+              /* Ignore non .desktop files. */
+              if (!g_str_has_suffix (name, ".desktop"))
+                continue;
+
+              filename = g_build_filename (priv->plugin_dirs[i], name, NULL);
+
+              g_hash_table_insert (priv->available_plugins,
+                                   filename,
+                                   GUINT_TO_POINTER (1));
+            }
+
+          g_dir_close (dir);
         }
     }
 
@@ -465,6 +548,22 @@ hd_plugin_configuration_class_init (HDPluginConfigurationClass *klass)
                                                                        G_TYPE_STRING);
 
   /**
+   *  HDPluginConfiguration::plugin-module-updated:
+   *  @configuration: a #HDPluginConfiguration.
+   *  @desktop_file: filename of the plugin desktop file.
+   *
+   *  Emitted if a plugin desktop file is updated.
+   **/
+  plugin_configuration_signals [PLUGIN_MODULE_UPDATED] = g_signal_new ("plugin-module-updated",
+                                                                       G_TYPE_FROM_CLASS (klass),
+                                                                       G_SIGNAL_RUN_FIRST,
+                                                                       0, /* No class method associated */
+                                                                       NULL, NULL,
+                                                                       g_cclosure_marshal_VOID__STRING,
+                                                                       G_TYPE_NONE, 1,
+                                                                       G_TYPE_STRING);
+
+  /**
    *  HDPluginConfiguration::configuration-loaded:
    *  @configuration: a #HDPluginConfiguration.
    *  @key_file: the plugin configuration configuration #GKeyFile.
@@ -541,37 +640,16 @@ hd_plugin_configuration_run (HDPluginConfiguration *configuration)
 gchar **
 hd_plugin_configuration_get_all_plugin_paths (HDPluginConfiguration *configuration)
 {
-  HDPluginConfigurationPrivate *priv;
-  guint i;
+  HDPluginConfigurationPrivate *priv = configuration->priv;
+  GHashTableIter iter;
+  gpointer key, value;
   GPtrArray *plugin_paths = g_ptr_array_new ();
 
-  priv = HD_PLUGIN_CONFIGURATION_GET_PRIVATE (configuration);
-
-  for (i = 0; priv->plugin_dirs[i] != NULL; i++)
+  /* Iterate over available plugins */
+  g_hash_table_iter_init (&iter, priv->available_plugins);
+  while (g_hash_table_iter_next (&iter, &key, &value))
     {
-      GDir *dir;
-      GError *error = NULL;
-      const gchar *name;
-
-      dir = g_dir_open (priv->plugin_dirs[i], 0, &error);
-
-      if (dir == NULL)
-        {
-          g_warning ("Couldn't read plugin_paths in dir %s. Error: %s", priv->plugin_dirs[i], error->message);
-          g_error_free (error);
-          continue;
-        }
-
-      for (name = g_dir_read_name (dir); name != NULL; name = g_dir_read_name (dir))
-        {
-          gchar *filename;
-
-          filename = g_build_filename (priv->plugin_dirs[i], name, NULL);
-
-          g_ptr_array_add (plugin_paths, filename);
-        }
-
-      g_dir_close (dir);
+      g_ptr_array_add (plugin_paths, g_strdup (key));
     }
 
   /* Should return a NULL terminated array */

@@ -1,6 +1,10 @@
 libhildondesktop (2.1.27~unreleased) unstable; urgency=low
 
-  * foo
+  Jan Arne
+  * Fixes: NB#123171 - After SSU update Location widget is coming along with
+    other applet
+  * Fixes: NB#123195 - After upgrade, applets from all desktops are shifted to
+    the first active screen.
 
  -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon,  8 Jun 2009 10:34:49 +0300
 

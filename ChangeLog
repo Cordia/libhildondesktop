@@ -1,3 +1,24 @@
+2009-06-29  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Fixes: NB#123171 - After SSU update Location widget is coming along
+	with other applet
+	Fixes: NB#123195 - After upgrade, applets from all desktops are
+	shifted to the first active screen.
+
+	* libhildondesktop/hd-plugin-configuration.c (PLUGIN_MODULE_UPDATED,
+	  _HDPluginConfigurationPrivate::plugin_dir_monitors,
+	  _HDPluginConfigurationPrivate::available_plugins,
+	  hd_plugin_configuration_plugin_dir_changed,
+	  hd_plugin_configuration_init, hd_plugin_configuration_finalize,
+	  hd_plugin_configuration_configuration_loaded,
+	  hd_plugin_configuration_class_init,
+	  hd_plugin_configuration_get_all_plugin_paths):
+	* libhildondesktop/hd-plugin-manager.c (_HDPluginInfo::item,
+	  load_plugin_idle, hd_plugin_manager_plugin_module_added,
+	  hd_plugin_manager_plugin_module_updated, hd_plugin_manager_init):
+
+	* debian/changelog: Update.
+
 2009-06-08  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.26
