@@ -1,4 +1,4 @@
-libhildondesktop (2.1.27~unreleased) unstable; urgency=low
+libhildondesktop (2.1.27) unstable; urgency=low
 
   Jan Arne
   * Fixes: NB#123171 - After SSU update Location widget is coming along with
@@ -7,7 +7,7 @@ libhildondesktop (2.1.27~unreleased) unstable; urgency=low
     the first active screen.
   * Fix memory leaks.
 
- -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon,  8 Jun 2009 10:34:49 +0300
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 29 Jun 2009 10:23:58 +0300
 
 libhildondesktop (2.1.26) unstable; urgency=low
 
