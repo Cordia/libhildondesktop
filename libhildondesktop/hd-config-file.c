@@ -350,6 +350,7 @@ hd_config_file_load_file (HDConfigFile *config_file,
           g_debug ("User configuration file `%s' is treated as empty. %s",
                    filename,
                    error->message);
+          g_error_free (error);
           g_free (filename);
           return key_file;
         }

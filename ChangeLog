@@ -1,5 +1,12 @@
 2009-06-29  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	* libhildondesktop/hd-config-file.c (hd_config_file_load_file): Fix
+	leaking GError.
+
+	* debian/changelog: Update.
+
+2009-06-29  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	Fixes: NB#123171 - After SSU update Location widget is coming along
 	with other applet
 	Fixes: NB#123195 - After upgrade, applets from all desktops are
