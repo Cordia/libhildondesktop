@@ -65,14 +65,15 @@ struct _HDPluginConfigurationClass
 
 GType                  hd_plugin_configuration_get_type             (void);
 
-HDPluginConfiguration *hd_plugin_configuration_new                  (HDConfigFile             *config_file);
+HDPluginConfiguration *hd_plugin_configuration_new                  (HDConfigFile          *config_file);
 
-void                   hd_plugin_configuration_run                  (HDPluginConfiguration    *configuration);
+void                   hd_plugin_configuration_run                  (HDPluginConfiguration *configuration);
 
-gchar **               hd_plugin_configuration_get_all_plugin_paths (HDPluginConfiguration    *configuration);
+gchar **               hd_plugin_configuration_get_all_plugin_paths (HDPluginConfiguration *configuration);
 
-GKeyFile *             hd_plugin_configuration_get_items_key_file   (HDPluginConfiguration    *configuration);
-gboolean               hd_plugin_configuration_store_items_key_file (HDPluginConfiguration    *configuration);
+GKeyFile *             hd_plugin_configuration_get_items_key_file   (HDPluginConfiguration *configuration);
+gboolean               hd_plugin_configuration_store_items_key_file (HDPluginConfiguration *configuration);
+gboolean               hd_plugin_configuration_get_in_startup       (HDPluginConfiguration *configuration);
 
 G_END_DECLS
 

@@ -627,6 +627,8 @@ hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configurati
   HDPluginManagerPrivate *priv = manager->priv;
   GList *new_plugins = NULL;
   gchar **safe_set = NULL;
+  gboolean removed_unsafe_plugins = FALSE;
+  gboolean in_startup = hd_plugin_configuration_get_in_startup (configuration);
 
   /* Get all plugins from the safe set file */
   if (priv->safe_set && hd_stamp_file_get_safe_mode ())
@@ -695,14 +697,14 @@ hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configurati
                 }
 
               /* If in safe mode and there is a separate safe set file only load plugins listed there */
-              if (hd_stamp_file_get_safe_mode () && priv->safe_set)
+              if (hd_stamp_file_get_safe_mode () && priv->safe_set && in_startup)
                 {
-                  guint i;
+                  guint j;
                   gboolean in_safe_set = FALSE;
 
-                  for (i = 0; safe_set && safe_set[i]; i++)
+                  for (j = 0; safe_set && safe_set[j]; j++)
                     {
-                      if (strcmp (safe_set[i], desktop_file) == 0)
+                      if (strcmp (safe_set[j], desktop_file) == 0)
                         {
                           in_safe_set = TRUE;
                           break;
@@ -711,6 +713,20 @@ hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configurati
 
                   if (!in_safe_set)
                     {
+                      GError *error = NULL;
+
+                      /* Remove widget from installed widgets so it can be added again */
+                      if (g_key_file_remove_group (keyfile,
+                                                   groups[i],
+                                                   &error))
+                        removed_unsafe_plugins = TRUE;
+                      if (error)
+                        {
+                          g_warning ("%s. Could not remove un-safe plugin from *.plugins Keyfile. %s",
+                                     __FUNCTION__,
+                                     error->message);
+                          g_error_free (error);
+                        }
                       g_free (desktop_file);
                       continue;
                     }
@@ -822,6 +838,10 @@ hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configurati
   g_strfreev (safe_set);
 
   hd_plugin_manager_sync_plugins (manager, new_plugins);
+
+  /* Unsafe plugins were removed from the configuration */
+  if (removed_unsafe_plugins)
+    hd_plugin_configuration_store_items_key_file (configuration);
 }
 
 static void

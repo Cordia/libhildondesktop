@@ -71,28 +71,21 @@ struct _HDPluginConfigurationPrivate
   GnomeVFSMonitorHandle **plugin_dir_monitors;
 
   GHashTable             *available_plugins;
+
+  gboolean                startup;
 };
 
 static guint plugin_configuration_signals [LAST_SIGNAL] = { 0 };
 
 /** 
  * SECTION:hd-plugin-configuration
- * @short_description: Manages plugins defined by configuration files
+ * @short_description: Manages plugin modules defined by configuration files
  *
- * A #HDPluginConfiguration manages plugins defined in configuration files.
+ * A #HDPluginConfiguration manages plugin modules defined in configuration 
+ * files and .desktop files. 
  *
- * The configuration is read from the configuration file specified on creation
- * of the #HDPluginConfiguration instance.
- *
- * To use the #HDPluginConfiguration connect to the #HDPluginConfiguration::plugin-added and
- * #HDPluginConfiguration::plugin-removed signals. These signals are emitted if a plugin
- * should be added or removed from the application.
- *
- * Calling hd_plugin_configuration_run() results in an initial read of the configuration files
- * in which the #HDPluginConfiguration::plugin-added is emitted for each plugin which
- * is loaded.
- *
- *
+ * Usually #HDPluginManager should be used which handles the creation of plugins
+ * from the configuration.
  * 
  **/
 
@@ -189,6 +182,8 @@ hd_plugin_configuration_init (HDPluginConfiguration *configuration)
   /* Get private structure */
   configuration->priv = HD_PLUGIN_CONFIGURATION_GET_PRIVATE (configuration);
   priv = configuration->priv;
+
+  priv->startup = TRUE;
 
   priv->available_plugins = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                    g_free, NULL);
@@ -635,6 +630,7 @@ hd_plugin_configuration_run (HDPluginConfiguration *configuration)
   priv = configuration->priv;
 
   hd_plugin_configuration_load_configuration (configuration);
+  priv->startup = FALSE;
 }
 
 gchar **
@@ -676,6 +672,14 @@ hd_plugin_configuration_get_items_key_file (HDPluginConfiguration *configuration
   return priv->items_key_file;
 }
 
+/**
+ * hd_plugin_configuration_store_items_key_file:
+ * @configuration: a #HDPluginConfiguration
+ *
+ * Stores an updated plugin configuration key file back to disk.
+ *
+ * Returns: %TRUE when file was successful stored.
+ **/
 gboolean
 hd_plugin_configuration_store_items_key_file (HDPluginConfiguration *configuration)
 {
@@ -687,4 +691,24 @@ hd_plugin_configuration_store_items_key_file (HDPluginConfiguration *configurati
     return hd_config_file_save_file (priv->items_config_file, priv->items_key_file);
 
   return FALSE;
+}
+
+
+/**
+ * hd_plugin_configuration_get_in_startup:
+ * @configuration: a #HDPluginConfiguration
+ *
+ * Returns if the configuration is just reading the configuration files for the
+ * first time after startup.
+ *
+ * Returns: %TRUE when the configuration files are read for startup.
+ **/
+gboolean
+hd_plugin_configuration_get_in_startup (HDPluginConfiguration *configuration)
+{
+  HDPluginConfigurationPrivate *priv = configuration->priv;
+
+  g_return_val_if_fail (HD_IS_PLUGIN_CONFIGURATION (configuration), FALSE);
+
+  return priv->startup;
 }

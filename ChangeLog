@@ -1,3 +1,17 @@
+2009-06-29  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Fixes: NB#123991 - Not able to launch the home applet again after it
+	crashes.
+
+	* libhildondesktop/hd-plugin-configuration.c
+	  (hd_plugin_configuration_get_in_startup):
+	* libhildondesktop/hd-plugin-configuration.h: Add in_startup function.
+
+	* libhildondesktop/hd-plugin-manager.c
+	  (hd_plugin_manager_items_configuration_loaded): After a crash remove
+	  non safe plugins from the config file so they can be added back
+	  later. Do not refuse to add non safe plugins later. 
+
 2009-06-29  Aapo Kojo <aapo.kojo@nokia.com>
 
 	Released 2.1.27
