@@ -1,6 +1,7 @@
 libhildondesktop (2.1.28~unreleased) unstable; urgency=low
 
-  * foo
+  Jan Arne
+  * Fixes: NB#123991 - Not able to launch the home applet again after it crashes.
 
  -- Aapo Kojo <aapo.kojo@nokia.com>  Mon, 29 Jun 2009 10:31:21 +0300
 
