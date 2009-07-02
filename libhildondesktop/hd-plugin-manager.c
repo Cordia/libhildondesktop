@@ -66,6 +66,9 @@ static void          hd_plugin_info_free (HDPluginInfo          *plugin_definiti
 
 static void hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configuration,
                                                           GKeyFile              *keyfile);
+
+static gint cmp_info_plugin_id (const HDPluginInfo *a, const HDPluginInfo *b);
+
 enum
 {
   PLUGIN_ADDED,
@@ -206,6 +209,26 @@ load_plugin_idle (gpointer idle_data)
       goto cleanup;
     }
 
+  g_debug ("%s. Try to load plugin_id: %s", __FUNCTION__, plugin_id);
+
+  info = hd_plugin_info_new (plugin_id,
+                             desktop_file,
+                             0);
+
+  if (g_list_find_custom (priv->plugins,
+                          info,
+                          (GCompareFunc) cmp_info_plugin_id))
+    {
+      /* plugin already loaded*/
+      g_debug ("%s. Plugin with id %s already loaded.",
+               __FUNCTION__,
+               plugin_id);
+
+      hd_plugin_info_free (info);
+
+      goto cleanup;
+    }
+
   plugin = hd_plugin_loader_factory_create (HD_PLUGIN_LOADER_FACTORY (manager->priv->factory), 
                                             plugin_id,
                                             desktop_file,
@@ -221,12 +244,12 @@ load_plugin_idle (gpointer idle_data)
         {
           g_warning ("Error loading plugin: %s", desktop_file);
         }
+
+      hd_plugin_info_free (info);
+
       goto cleanup;
     }
 
-  info = hd_plugin_info_new (plugin_id,
-                             desktop_file,
-                             0);
   info->item = plugin;
 
   g_debug ("%s Loaded plugin: %s",
@@ -495,7 +518,7 @@ cmp_info_plugin_id (const HDPluginInfo *a,
 {
   gint result;
 
-  result = strcmp (a->plugin_id, b->plugin_id);
+  result = g_strcmp0 (a->plugin_id, b->plugin_id);
 
   if (result)
     return result;
