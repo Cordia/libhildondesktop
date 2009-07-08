@@ -1,10 +1,10 @@
-libhildondesktop (2.1.29~unreleased) unstable; urgency=low
+libhildondesktop (2.1.29) unstable; urgency=low
 
   Jan Arne:
   * Fixes: NB#126225 - SSU update of plugins results in loading multiple
     plugin instances
 
- -- Aapo Kojo <aapo.kojo@nokia.com>  Wed, 01 Jul 2009 14:27:32 +0300
+ -- Aapo Kojo <aapo.kojo@nokia.com>  Wed, 08 Jul 2009 14:00:20 +0300
 
 libhildondesktop (2.1.28) unstable; urgency=low
 
