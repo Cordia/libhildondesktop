@@ -76,6 +76,7 @@ const gchar    *hd_notification_get_body        (HDNotification *notification);
 gchar         **hd_notification_get_actions     (HDNotification *notification);
 GValue         *hd_notification_get_hint        (HDNotification *notification,
                                                  const gchar    *key);
+GHashTable     *hd_notification_get_hints       (HDNotification *notification);
 const gchar    *hd_notification_get_sender      (HDNotification *notification);
 
 const gchar    *hd_notification_get_category    (HDNotification *notification);

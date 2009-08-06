@@ -1,3 +1,15 @@
+2009-08-06  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Fixes: NB#127303 - Very late or almost unsuccessful ringtone/vibra
+	playback on loaded system
+
+	* libhildondesktop/hd-notification.c (hd_notification_get_property,
+	  hd_notification_get_hint, hd_notification_get_hints):
+	* libhildondesktop/hd-notification.h: Add function required to fix
+	NB#127303.
+
+	* debian/changelog: Update.
+
 2009-07-08  Aapo Kojo <aapo.kojo@nokia.com>
 
 	Released 2.1.29

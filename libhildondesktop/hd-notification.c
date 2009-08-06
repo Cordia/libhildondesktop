@@ -142,6 +142,18 @@ hd_notification_get_property (GObject      *object,
       g_value_set_boxed (value, priv->actions);
       break;
 
+    case PROP_HINTS:
+      g_value_set_pointer (value, priv->hints);
+      break;
+
+    case PROP_TIMEOUT:
+      g_value_set_int (value, priv->timeout);
+      break;
+
+    case PROP_SENDER:
+      g_value_set_string (value, priv->sender);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -443,6 +455,24 @@ hd_notification_get_hint (HDNotification *notification,
     return g_hash_table_lookup (priv->hints, key);
 
   return NULL;
+}
+
+/**
+ * hd_notification_get_hints:
+ * @notification: a #HDNotification
+ *
+ * Returns all hints of %notification
+ *
+ * Returns: a #GHashTable owned by the notification.
+ **/
+GHashTable *
+hd_notification_get_hints (HDNotification *notification)
+{
+  HDNotificationPrivate *priv = notification->priv;
+
+  g_return_val_if_fail (HD_IS_NOTIFICATION (notification), NULL);
+
+  return priv->hints; 
 }
 
 /**
