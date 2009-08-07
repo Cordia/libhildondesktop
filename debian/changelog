@@ -1,10 +1,10 @@
-libhildondesktop (2.1.30~unreleased) unstable; urgency=low
+libhildondesktop (2.1.30) unstable; urgency=low
 
   Jan Arne:
   * Fixes: NB#127303 - Very late or almost unsuccessful ringtone/vibra
     playback on loaded system
 
- -- Aapo Kojo <aapo.kojo@nokia.com>  Wed, 08 Jul 2009 14:15:17 +0300
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Fri, 07 Aug 2009 11:07:40 +0300
 
 libhildondesktop (2.1.29) unstable; urgency=low
 
