@@ -1,3 +1,12 @@
+2009-08-13  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Fixes: NB#132861 - "time" hint can not be set with
+	notify_notification_set_hint_int32 to new notifications
+
+	* libhildondesktop/hd-notification.c (hd_notification_get_time):
+
+	* debian/changelog: Update.
+
 2009-08-07  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.30

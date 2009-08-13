@@ -556,7 +556,14 @@ hd_notification_get_time (HDNotification *notification)
   GValue *hint = hd_notification_get_hint (notification,
                                            "time");
 
-  return hint ? (time_t) g_value_get_int64 (hint) : (time_t) -1;
+  if (G_VALUE_HOLDS_INT64 (hint))
+    return (time_t) g_value_get_int64 (hint);
+  else if (G_VALUE_HOLDS_LONG (hint))
+    return (time_t) g_value_get_long (hint);
+  else if (G_VALUE_HOLDS_INT (hint))
+    return (time_t) g_value_get_int (hint);
+  else
+    return (time_t) -1;
 }
 
 /**
