@@ -1,3 +1,13 @@
+2009-08-27  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Fixes: NB#127057 - Deleting views and rebooting device causes applets
+	from other views to appear on the first desktop view
+
+	* libhildondesktop/hd-shortcuts.c: Do not use GConfClient to cache the
+	current list shortcuts, but cahce it on our own.
+
+	* debian/changelog: Update.
+
 2009-08-13  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.31

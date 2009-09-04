@@ -51,6 +51,7 @@
 #define BOOKMARKS_GCONF_KEY_LABEL BOOKMARKS_GCONF_PATH "/%s/label"
 #define BOOKMARKS_GCONF_KEY_URL   BOOKMARKS_GCONF_PATH "/%s/url"
 #define BOOKMARKS_GCONF_KEY_ICON  BOOKMARKS_GCONF_PATH "/%s/icon"
+#define BOOKMARKS_GCONF_KEY       BOOKMARKS_GCONF_PATH "/%s"
 
 /* Definitions for the ID generation */ 
 #define ID_VALID_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
@@ -65,6 +66,8 @@ struct _HDShortcutsPrivate
   GConfClient *gconf_client;
   gchar *gconf_key;
   GType shortcut_type;
+
+  GSList *current_list;
 };
 
 enum
@@ -83,54 +86,46 @@ delete_event_cb (GtkWidget   *shortcut,
 {
   HDShortcutsPrivate *priv = shortcuts->priv;
   gchar *plugin_id;
-  GSList *list, *l;
+  GSList *l;
   GError *error = NULL;
-
-  /* Get the list of strings of task shortcuts */
-  list = gconf_client_get_list (priv->gconf_client,
-                                priv->gconf_key,
-                                GCONF_VALUE_STRING,
-                                &error);
-
-  /* Check if there was an error */
-  if (error)
-    {
-      g_debug ("Could not get list of shortcuts from GConf: %s", error->message);
-      g_error_free (error);
-    }
 
   /* Remove the this shortcut from the list */
   g_object_get (shortcut, "plugin-id", &plugin_id, NULL);
 
-  g_debug ("delete_event_cb for plugin %s.", plugin_id);
+  g_debug ("%s. Plugin %s.", __FUNCTION__, plugin_id);
 
-  for (l = list; l; l = l->next)
+  l = g_slist_find_custom (priv->current_list, plugin_id, (GCompareFunc) strcmp);
+  if (l)
     {
-      if (strcmp (l->data, plugin_id) == 0)
-        {
-          g_free (l->data);
-          list = g_slist_delete_link (list, l);
-          break;
-        }
+      g_free (l->data);
+      priv->current_list = g_slist_delete_link (priv->current_list, l);
     }
-  g_free (plugin_id);
 
   /* Save the new list of strings of task shortcuts */
   gconf_client_set_list (priv->gconf_client,
                          priv->gconf_key,
                          GCONF_VALUE_STRING,
-                         list,
+                         priv->current_list,
                          &error);
 
   /* Check if there was an error */
   if (error)
     {
       g_warning ("Could not store list of shortcuts to GConf: %s", error->message);
-      g_error_free (error);
+      g_clear_error (&error);
     }
 
-  g_slist_foreach (list, (GFunc) g_free, NULL);
-  g_slist_free (list);
+  gconf_client_suggest_sync (priv->gconf_client,
+                             &error);
+  if (error)
+    {
+      g_warning ("%s. Could not suggest sync to GConf: %s.",
+                 __FUNCTION__,
+                 error->message);
+      g_clear_error (&error);
+    }
+
+  g_free (plugin_id);
 
   /* Do not destroy the widget here, it will be destroyed after syncing the lists */
   gtk_widget_hide (shortcut);
@@ -201,13 +196,12 @@ create_sync_lists (GSList         *old,
 }
 
 static void
-shortcuts_sync (HDShortcuts *shortcuts,
-                GSList      *new)
+shortcuts_sync (HDShortcuts *shortcuts)
 {
   HDShortcutsPrivate *priv = shortcuts->priv;
   GHashTableIter iter;
   gpointer key;
-  GSList *old = NULL;
+  GSList *old = NULL, *new = NULL, *i;
   GSList *to_add, *to_remove;
   GSList *s;
 
@@ -215,6 +209,13 @@ shortcuts_sync (HDShortcuts *shortcuts,
   while (g_hash_table_iter_next (&iter, &key, NULL)) 
     {
       old = g_slist_append (old, g_strdup (key));
+    }
+
+  for (i = priv->current_list; i; i = i->next)
+    {
+      gchar *str = i->data;
+
+      new = g_slist_append (new, g_strdup (str));
     }
 
   create_sync_lists (old, new,
@@ -245,6 +246,50 @@ shortcuts_sync (HDShortcuts *shortcuts,
   g_slist_free (to_add);
 }
 
+static gboolean
+is_value_a_string_list (GConfValue *value)
+{
+  return value->type == GCONF_VALUE_LIST &&
+         gconf_value_get_list_type (value) == GCONF_VALUE_STRING;
+}
+
+static GSList *
+copy_and_convert_string_list (GSList *list)
+{
+  GSList *i;
+  GSList *result = NULL;
+
+  for (i = list; i; i = i->next)
+    {
+      GConfValue *v = i->data;
+
+      result = g_slist_append (result, g_strdup (gconf_value_get_string (v)));
+    }
+
+  return result;
+}
+
+static GSList *
+get_shortcuts_list_from_value (GConfValue *value)
+{
+  if (is_value_a_string_list (value))
+    {
+      return copy_and_convert_string_list (gconf_value_get_list (value));
+    }
+
+  return NULL;
+}
+
+static GSList *
+get_shortcuts_list_from_entry (GConfEntry *entry)
+{
+  GConfValue *value;
+
+  value = gconf_entry_get_value (entry);
+
+  return get_shortcuts_list_from_value (value);
+}
+
 static void
 shortcuts_notify (GConfClient *client,
                   guint        cnxn_id,
@@ -252,23 +297,13 @@ shortcuts_notify (GConfClient *client,
                   HDShortcuts *shortcuts)
 {
   HDShortcutsPrivate *priv = shortcuts->priv;
-  GSList *list;
-  GError *error = NULL;
 
-  /* Get the list of strings of task shortcuts */
-  list = gconf_client_get_list (priv->gconf_client,
-                                priv->gconf_key,
-                                GCONF_VALUE_STRING,
-                                &error);
+  g_slist_foreach (priv->current_list, (GFunc) g_free, NULL);
+  g_slist_free (priv->current_list);
 
-  /* Check if there was an error */
-  if (error)
-    {
-      g_debug ("Could not get list of task shortcuts from GConf: %s", error->message);
-      g_error_free (error);
-    }
+  priv->current_list = get_shortcuts_list_from_entry (entry);
 
-  shortcuts_sync (shortcuts, list);
+  shortcuts_sync (shortcuts);
 }
 
 static void
@@ -320,8 +355,6 @@ hd_shortcuts_constructed (GObject *object)
 {
   HDShortcuts *shortcuts = HD_SHORTCUTS (object);
   HDShortcutsPrivate *priv = shortcuts->priv;
-  GSList *list;
-  GError *error = NULL;
 
   /* Add notification of shortcuts key */
   gconf_client_notify_add (priv->gconf_client,
@@ -331,25 +364,17 @@ hd_shortcuts_constructed (GObject *object)
                            NULL, NULL);
 
   /* Get the list of strings shortcuts */
-  list = gconf_client_get_list (priv->gconf_client,
-                                priv->gconf_key,
-                                GCONF_VALUE_STRING,
-                                &error);
-
-  /* Check if there was an error */
-  if (error)
-    {
-      g_debug ("Could not get list of task shortcuts from GConf: %s", error->message);
-      g_error_free (error);
-    }
-
-  shortcuts_sync (shortcuts, list);
+  gconf_client_notify (priv->gconf_client,
+                       priv->gconf_key);
 }
 
 static void
 hd_shortcuts_finalize (GObject *object)
 {
   HDShortcutsPrivate *priv = HD_SHORTCUTS (object)->priv;
+
+  g_slist_foreach (priv->current_list, (GFunc) g_free, NULL);
+  g_slist_free (priv->current_list);
 
   g_hash_table_destroy (priv->applets);
   g_object_unref (priv->gconf_client);
@@ -510,22 +535,22 @@ hd_shortcuts_add_bookmark_shortcut (const gchar *url,
           error = NULL;
         }
       g_free (key);
-
-      key = g_strdup_printf (BOOKMARKS_GCONF_KEY_URL, id);
-      gconf_client_set_string (client,
-                               key,
-                               url,
-                               &error);
-      if (error)
-        {
-          g_warning ("Could not store URL for bookmark %s into GConf: %s.",
-                     id,
-                     error->message);
-          g_error_free (error);
-          error = NULL;
-        }
-      g_free (key);
     }
+
+  key = g_strdup_printf (BOOKMARKS_GCONF_KEY_URL, id);
+  gconf_client_set_string (client,
+                           key,
+                           url,
+                           &error);
+  if (error)
+    {
+      g_warning ("Could not store URL for bookmark %s into GConf: %s.",
+                 id,
+                 error->message);
+      g_error_free (error);
+      error = NULL;
+    }
+  g_free (key);
 
   /* Append the new bookmark to bookmark shortcut list */
   list = g_slist_append (list, id);

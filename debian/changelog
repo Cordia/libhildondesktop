@@ -1,6 +1,8 @@
 libhildondesktop (2.1.32~unreleased) unstable; urgency=low
 
-  * foo
+  Jan Arne:
+  * Fixes: NB#127057 - Deleting views and rebooting device causes applets from
+    other views to appear on the first desktop view
 
  -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Thu, 13 Aug 2009 17:17:47 +0300
 
