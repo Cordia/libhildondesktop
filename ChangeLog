@@ -1,3 +1,13 @@
+2009-10-09  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Fixes regression crashers.
+
+	* libhildondesktop/hd-plugin-manager.c
+	  (hd_plugin_manager_remove_plugin_module,
+	  hd_plugin_manager_plugin_module_updated): Fix for loops.
+	* libhildondesktop/hd-shortcuts.c (is_value_a_string_list): Check if
+	value != NULL.
+
 2009-10-09  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.32

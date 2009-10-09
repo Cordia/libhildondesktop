@@ -249,8 +249,9 @@ shortcuts_sync (HDShortcuts *shortcuts)
 static gboolean
 is_value_a_string_list (GConfValue *value)
 {
-  return value->type == GCONF_VALUE_LIST &&
-         gconf_value_get_list_type (value) == GCONF_VALUE_STRING;
+  return value &&
+    value->type == GCONF_VALUE_LIST &&
+    gconf_value_get_list_type (value) == GCONF_VALUE_STRING;
 }
 
 static GSList *

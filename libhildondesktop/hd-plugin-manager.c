@@ -137,8 +137,9 @@ hd_plugin_manager_remove_plugin_module (HDPluginManager *manager,
   GList *p;
 
   /* remove all plugins with desktop_file */
-  for (p = priv->plugins; p; p = p->next)
+  for (p = priv->plugins; p; )
     {
+      GList *next = p->next;
       HDPluginInfo *info = p->data;
 
       if (!info)
@@ -150,6 +151,8 @@ hd_plugin_manager_remove_plugin_module (HDPluginManager *manager,
           priv->plugins = g_list_delete_link (priv->plugins, p);
           g_signal_emit (manager, plugin_manager_signals[PLUGIN_REMOVED], 0, info->item);
         }
+
+      p = next;
     }
 }
 
@@ -362,8 +365,9 @@ hd_plugin_manager_plugin_module_updated (HDPluginConfiguration *configuration,
   GKeyFile *items_file;
 
   /* remove all plugins with desktop_file */
-  for (p = priv->plugins; p; p = p->next)
+  for (p = priv->plugins; p; )
     {
+      GList *next = p->next;
       HDPluginInfo *info = p->data;
 
       if (!info)
@@ -377,6 +381,8 @@ hd_plugin_manager_plugin_module_updated (HDPluginConfiguration *configuration,
           priv->plugins = g_list_delete_link (priv->plugins, p);
           g_signal_emit (manager, plugin_manager_signals[PLUGIN_REMOVED], 0, info->item);
         }
+
+      p = next;
     }
 
   /* readd them again */
