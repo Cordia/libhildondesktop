@@ -1,5 +1,10 @@
 2009-10-09  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	Release 2.1.33
+	* configure.ac: 2.1.33
+
+2009-10-09  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	Fixes regression crashers.
 
 	* libhildondesktop/hd-plugin-manager.c
