@@ -1,3 +1,11 @@
+2009-10-20  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Fixes: NB#143531 - Status menu example plugin .desktop file X-Path
+	broken
+
+	* examples/status-menu/example-plugin.desktop: Fix example plugin
+	path.
+
 2009-10-09  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	Release 2.1.33
