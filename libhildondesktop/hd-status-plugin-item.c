@@ -62,6 +62,7 @@ enum
   PROP_PLUGIN_ID,
   PROP_STATUS_AREA_ICON,
   PROP_STATUS_AREA_WIDGET,
+  PROP_STATUS_AREA_VISIBLE,
 };
 
 struct _HDStatusPluginItemPrivate
@@ -71,6 +72,8 @@ struct _HDStatusPluginItemPrivate
   GdkPixbuf *status_area_icon;
 
   GtkWidget *status_area_widget;
+
+  gboolean   status_area_visible;
 };
 
 G_DEFINE_ABSTRACT_TYPE_WITH_CODE (HDStatusPluginItem, hd_status_plugin_item, GTK_TYPE_BIN,
@@ -179,6 +182,10 @@ hd_status_plugin_item_get_property (GObject      *object,
       g_value_set_object (value, priv->status_area_icon);
       break;
 
+    case PROP_STATUS_AREA_VISIBLE:
+      g_value_set_boolean (value, priv->status_area_visible);
+      break;
+
     case PROP_STATUS_AREA_WIDGET:
       g_value_set_object (value, priv->status_area_widget);
       break;
@@ -206,6 +213,11 @@ hd_status_plugin_item_set_property (GObject      *object,
     case PROP_STATUS_AREA_ICON:
       hd_status_plugin_item_set_status_area_icon (HD_STATUS_PLUGIN_ITEM (object),
                                                   g_value_get_object (value));
+      break;
+
+    case PROP_STATUS_AREA_VISIBLE:
+      priv->status_area_visible = g_value_get_boolean (value);
+      g_object_notify (object, "status-area-visible");
       break;
 
     case PROP_STATUS_AREA_WIDGET:
@@ -243,6 +255,14 @@ hd_status_plugin_item_class_init (HDStatusPluginItemClass *klass)
                                                         "The Status Area icon which should be displayed for the item",
                                                         GDK_TYPE_PIXBUF,
                                                         G_PARAM_READWRITE));
+
+  g_object_class_install_property (object_class,
+                                   PROP_STATUS_AREA_VISIBLE,
+                                   g_param_spec_boolean ("status-area-visible",
+                                                         "Visibility of pseudo-parent widget",
+                                                         "Whether the status area the plugin belongs to is visible (maintained by the status area itself)",
+                                                         TRUE,
+                                                         G_PARAM_READWRITE));
 
   g_object_class_install_property (object_class,
                                    PROP_STATUS_AREA_WIDGET,
