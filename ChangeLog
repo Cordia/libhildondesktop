@@ -1,3 +1,9 @@
+2009-10-26  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
+
+	* libhildondesktop/hd-plugin-manager.c
+	(hd_plugin_manager_items_configuration_loaded): Fix Coverity warning
+	about not checking the return value of g_file_get_contents.
+
 2009-10-21  Travis Reitter  <travis.reitter@collabora.co.uk>
 
 	Support an API for status menu plugins to determine when the status

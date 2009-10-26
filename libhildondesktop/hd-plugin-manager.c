@@ -668,11 +668,8 @@ hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configurati
       filename = g_build_filename (HD_DESKTOP_CONFIG_PATH,
                                    priv->safe_set,
                                    NULL);
-      g_file_get_contents (filename,
-                           &contents,
-                           NULL,
-                           &error);
-      if (!error)
+
+      if (g_file_get_contents (filename, &contents, NULL, &error) && !error)
         {
           guint i;
 
@@ -683,7 +680,7 @@ hd_plugin_manager_items_configuration_loaded (HDPluginConfiguration *configurati
               g_strstrip (safe_set[i]);
             }
         }
-      else
+      else if (error)
         {
           g_warning ("%s. Could not load safe set file %s. %s",
                      __FUNCTION__,
