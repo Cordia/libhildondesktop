@@ -1,5 +1,8 @@
 2009-10-26  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
+	Release 2.1.34
+	* configure.ac: 2.1.34
+
 	* libhildondesktop/hd-plugin-manager.c
 	(hd_plugin_manager_items_configuration_loaded): Fix Coverity warning
 	about not checking the return value of g_file_get_contents.

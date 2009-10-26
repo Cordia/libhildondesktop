@@ -1,11 +1,12 @@
-libhildondesktop (2.1.34~unreleased) unstable; urgency=low
+libhildondesktop (2.1.34) unstable; urgency=low
 
   Travis Reitter:
   * Support an API for status menu plugins to determine when the status area
-    is hidden. See NB#141707 - API for status area applets to detect if they
+    is hidden.
+  * Fixes: NB#141707 - API for status area applets to detect if they
     are invisible is absent.
 
- -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Fri,  9 Oct 2009 15:25:27 +0200
+ -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Mon, 26 Oct 2009 10:33:13 +0200
 
 libhildondesktop (2.1.33) unstable; urgency=low
 
