@@ -57,6 +57,8 @@
 #define ID_VALID_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
 #define ID_SUBSTITUTOR '_'
 
+#define MAX_URL_LENGTH 150
+
 #define HD_SHORTCUTS_GET_PRIVATE(object) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((object), HD_TYPE_SHORTCUTS, HDShortcutsPrivate))
 
@@ -494,7 +496,7 @@ hd_shortcuts_add_bookmark_shortcut (const gchar *url,
     }
 
   /* Create an unique id for the bookmark */
-  canon_url = g_strdup (url);
+  canon_url = g_strndup (url, MAX_URL_LENGTH);
   g_strcanon (canon_url, ID_VALID_CHARS, ID_SUBSTITUTOR);
   do
     {

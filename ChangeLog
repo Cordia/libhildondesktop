@@ -1,3 +1,11 @@
+2009-10-28  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Fixes: NB#143259 - desktop bookmark disappears after reboot
+
+	* libhildondesktop/hd-shortcuts.c (MAX_URL_LENGTH,
+	  hd_shortcuts_add_bookmark_shortcut): Add a max length of the ID so
+	  it works with GConf.
+
 2009-10-26  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.34
