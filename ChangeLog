@@ -1,5 +1,12 @@
 2009-10-28  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	Release 2.1.35
+
+	* configure.ac: 2.1.35
+	* debian/changelog: 2.1.35
+
+2009-10-28  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	Fixes: NB#143259 - desktop bookmark disappears after reboot
 
 	* libhildondesktop/hd-shortcuts.c (MAX_URL_LENGTH,
