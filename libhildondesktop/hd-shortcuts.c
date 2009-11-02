@@ -27,6 +27,7 @@
 #include <glib.h>
 #include <gconf/gconf-client.h>
 #include <libhildondesktop/libhildondesktop.h>
+#include <libgnomevfs/gnome-vfs.h>
 
 #include <string.h>
 
@@ -48,10 +49,6 @@
 
 /* GConf path for boomarks */
 #define BOOKMARKS_GCONF_PATH      "/apps/osso/hildon-home/bookmarks"
-#define BOOKMARKS_GCONF_KEY_LABEL BOOKMARKS_GCONF_PATH "/%s/label"
-#define BOOKMARKS_GCONF_KEY_URL   BOOKMARKS_GCONF_PATH "/%s/url"
-#define BOOKMARKS_GCONF_KEY_ICON  BOOKMARKS_GCONF_PATH "/%s/icon"
-#define BOOKMARKS_GCONF_KEY       BOOKMARKS_GCONF_PATH "/%s"
 
 /* Definitions for the ID generation */ 
 #define ID_VALID_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
@@ -451,6 +448,130 @@ hd_shortcuts_new (const gchar *gconf_key, GType shortcut_type)
                        NULL);
 }
 
+static gchar *
+get_gconf_key_for_bookmark (const gchar *id,
+                            const gchar *suffix)
+{
+  return g_strdup_printf ("%s/%s/%s",
+                          BOOKMARKS_GCONF_PATH,
+                          id,
+                          suffix);
+}
+
+static void
+store_string_to_gconf (GConfClient *client,
+                       const gchar *id,
+                       const gchar *suffix,
+                       const gchar *value)
+{
+  gchar *key;
+  GError *error = NULL;
+
+  key = get_gconf_key_for_bookmark (id, suffix);
+  gconf_client_set_string (client,
+                           key,
+                           value,
+                           &error);
+  if (error)
+    {
+      g_warning ("%s. Could not store %s for bookmark %s into GConf: %s.",
+                 __FUNCTION__,
+                 suffix,
+                 id,
+                 error->message);
+      g_error_free (error);
+    }
+  g_free (key);
+}
+
+static inline gchar *
+get_home_thumbnails_dir (void)
+{
+  return g_build_filename (g_get_home_dir (),
+                           ".bookmarks",
+                           "home-thumbnails",
+                           NULL);
+}
+
+static inline void
+create_home_thumbnails_dir (void)
+{
+  gchar *dir;
+
+  dir = get_home_thumbnails_dir ();
+  if (g_mkdir_with_parents (dir,
+                            S_IRWXU |
+                            S_IRGRP | S_IXGRP |
+                            S_IROTH | S_IXOTH))
+    {
+      GnomeVFSResult result = gnome_vfs_result_from_errno ();
+
+      g_warning ("%s. Could not mkdir %s. %s",
+                 __FUNCTION__,
+                 dir,
+                 gnome_vfs_result_to_string (result));
+    }
+  g_free (dir);
+}
+
+static gchar *
+get_filename_for_shortcut_thumbnail (const gchar *id)
+{
+  gchar *dir, *filename;
+
+  dir = get_home_thumbnails_dir ();
+  filename = g_strdup_printf ("%s/%s.png", dir, id);
+  g_free (dir);
+
+  return filename;
+}
+
+static gboolean
+copy_shortcut_to_home_thumbnails_dir (const gchar *source,
+                                      const gchar *id)
+{
+  gboolean result = FALSE;
+  gchar *contents;
+  gsize length;
+  GError *error = NULL;
+
+  if (!g_file_get_contents (source,
+                            &contents,
+                            &length,
+                            &error))
+    {
+      g_warning ("%s. Could not read file %s. %s.",
+                 __FUNCTION__,
+                 source,
+                 error->message);
+      g_error_free (error);
+    }
+
+  if (contents && length)
+    {
+      gchar *target_filename = get_filename_for_shortcut_thumbnail (id);
+
+      result = g_file_set_contents (target_filename,
+                                    contents,
+                                    length,
+                                    &error);
+      if (!result)
+        {
+          g_warning ("%s. Could not write file %s. %s.",
+                     __FUNCTION__,
+                     target_filename,
+                     error->message);
+          g_error_free (error);
+        }
+
+      g_free (target_filename);
+    }
+
+  g_free (contents);
+
+  return result;
+}
+
 /**
  * hd_shortcuts_add_bookmark_shortcut:
  * @url: the URL of the bookmark
@@ -471,7 +592,6 @@ hd_shortcuts_add_bookmark_shortcut (const gchar *url,
   GConfClient *client;
   gchar *canon_url, *id = NULL;
   guint count = 0;
-  gchar *key;
   GSList *list;
   GError *error = NULL;
 
@@ -491,8 +611,7 @@ hd_shortcuts_add_bookmark_shortcut (const gchar *url,
       g_debug ("Could not get string list from GConf (%s): %s.",
                BOOKMARK_SHORTCUTS_GCONF_KEY,
                error->message);
-      g_error_free (error);
-      error = NULL;
+      g_clear_error (&error);
     }
 
   /* Create an unique id for the bookmark */
@@ -506,54 +625,28 @@ hd_shortcuts_add_bookmark_shortcut (const gchar *url,
   while (g_slist_find_custom (list, id, (GCompareFunc) strcmp));
 
   /* Store the bookmark itself into GConf */
-  key = g_strdup_printf (BOOKMARKS_GCONF_KEY_LABEL, id);
-  gconf_client_set_string (client,
-                           key,
-                           label,
-                           &error);
-  if (error)
-    {
-      g_warning ("Could not store label for bookmark %s into GConf: %s.",
-                 id,
-                 error->message);
-      g_error_free (error);
-      error = NULL;
-    }
-  g_free (key);
-
-  /* Store icon if available */
+  store_string_to_gconf (client,
+                         id,
+                         "label",
+                         label);
   if (icon)
     {
-      key = g_strdup_printf (BOOKMARKS_GCONF_KEY_ICON, id);
-      gconf_client_set_string (client,
-                               key,
-                               icon,
-                               &error);
-      if (error)
+      create_home_thumbnails_dir ();
+      if (copy_shortcut_to_home_thumbnails_dir (icon,
+                                                id))
         {
-          g_warning ("Could not store icon for bookmark %s into GConf: %s.",
-                     id,
-                     error->message);
-          g_error_free (error);
-          error = NULL;
+          gchar *shortcut_icon = get_filename_for_shortcut_thumbnail (id);
+          store_string_to_gconf (client,
+                                 id,
+                                 "icon",
+                                 shortcut_icon);
+          g_free (shortcut_icon);
         }
-      g_free (key);
     }
-
-  key = g_strdup_printf (BOOKMARKS_GCONF_KEY_URL, id);
-  gconf_client_set_string (client,
-                           key,
-                           url,
-                           &error);
-  if (error)
-    {
-      g_warning ("Could not store URL for bookmark %s into GConf: %s.",
-                 id,
-                 error->message);
-      g_error_free (error);
-      error = NULL;
-    }
-  g_free (key);
+  store_string_to_gconf (client,
+                         id,
+                         "url",
+                         url);
 
   /* Append the new bookmark to bookmark shortcut list */
   list = g_slist_append (list, id);
@@ -569,8 +662,7 @@ hd_shortcuts_add_bookmark_shortcut (const gchar *url,
       g_warning ("Could not write string list to GConf (%s): %s.",
                  BOOKMARK_SHORTCUTS_GCONF_KEY,
                  error->message);
-      g_error_free (error);
-      error = NULL;
+      g_clear_error (&error);
     }
 
   g_free (canon_url);
@@ -581,3 +673,79 @@ hd_shortcuts_add_bookmark_shortcut (const gchar *url,
   g_object_unref (client);
 }
 
+static void
+unset_key_in_gconf (GConfClient *client,
+                    const gchar *id,
+                    const gchar *suffix)
+{
+  gchar *key;
+  GError *error = NULL;
+
+  key = get_gconf_key_for_bookmark (id, suffix);
+ 
+  gconf_client_unset (client,
+                      key,
+                      &error);
+
+  /* Warn on error */
+  if (error)
+    {
+      g_warning ("%s. Could not unset %s in GConf for bookmark shortcut %s. %s",
+                 __FUNCTION__,
+                 suffix,
+                 id,
+                 error->message);
+      g_error_free (error);
+    }
+
+  g_free (key);
+}
+
+static inline void
+remove_bookmark_thumnail_file (const gchar *id)
+{
+  gchar *filename;
+      
+  filename = get_filename_for_shortcut_thumbnail (id);
+
+  if (unlink (filename))
+    {
+      GnomeVFSResult result = gnome_vfs_result_from_errno ();
+
+      g_debug ("%s. Could not unlink %s. %s",
+               __FUNCTION__,
+               filename,
+               gnome_vfs_result_to_string (result));
+    }
+
+  g_free (filename);
+}
+
+/**
+ * hd_shortcuts_remove_bookmark_shortcut:
+ * @id: the bookmark id
+ *
+ * Delete a bookmark shortcut from GConf and delete the thumbnail.
+ *
+ **/
+void
+hd_shortcuts_remove_bookmark_shortcut (const gchar *id)
+{
+  GConfClient *client;
+
+  client = gconf_client_get_default ();
+
+  unset_key_in_gconf (client,
+                      id,
+                      "label");
+  unset_key_in_gconf (client,
+                      id,
+                      "icon");
+  unset_key_in_gconf (client,
+                      id,
+                      "url");
+
+  remove_bookmark_thumnail_file (id);
+
+  g_object_unref (client);
+}
