@@ -1,5 +1,9 @@
 2009-11-04  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	Release 2.1.38
+
+2009-11-04  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	* configure.ac: Increase version to 2.1.37
 
 	* libhildondesktop/hd-notification.c:
