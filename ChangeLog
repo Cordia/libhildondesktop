@@ -1,3 +1,11 @@
+2009-11-04  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	* configure.ac: Increase version to 2.1.37
+
+	* libhildondesktop/hd-notification.c:
+	* libhildondesktop/hd-notification.h: Add hd_notification_is_closed
+	function.
+
 2009-11-03  Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
 
 	Release 2.1.36

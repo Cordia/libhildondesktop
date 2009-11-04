@@ -88,6 +88,7 @@ time_t          hd_notification_get_time        (HDNotification *notification);
 
 void            hd_notification_closed          (HDNotification *notification);
 void            hd_notification_updated         (HDNotification *notification);
+gboolean        hd_notification_is_closed       (HDNotification *notification);
 
 G_END_DECLS
 

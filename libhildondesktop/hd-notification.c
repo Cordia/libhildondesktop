@@ -71,6 +71,8 @@ struct _HDNotificationPrivate
   gint timeout;
 
   gchar *sender;
+
+  gboolean closed : 1;
 };
 
 G_DEFINE_TYPE (HDNotification, hd_notification, G_TYPE_OBJECT);
@@ -600,9 +602,34 @@ hd_notification_get_dbus_cb (HDNotification *notification,
 void
 hd_notification_closed (HDNotification *notification)
 {
+  HDNotificationPrivate *priv;
+
+  g_return_if_fail (HD_IS_NOTIFICATION (notification));
+
+  priv = notification->priv;
+
   g_signal_emit (notification, signals[CLOSED], 0);
+
+  priv->closed = TRUE;
 }
 
+/**
+ * hd_notification_is_closed:
+ * @notification: a #HDNotification
+ *
+ * Returns: %TRUE when the notification is closed.
+ **/
+gboolean
+hd_notification_is_closed (HDNotification *notification)
+{
+  HDNotificationPrivate *priv;
+
+  g_return_val_if_fail (HD_IS_NOTIFICATION (notification), FALSE);
+
+  priv = notification->priv;
+
+  return priv->closed;
+}
 /**
  * hd_notification_updated:
  * @notification: a #HDNotification
