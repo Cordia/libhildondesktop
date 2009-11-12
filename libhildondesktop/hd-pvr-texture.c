@@ -64,9 +64,9 @@ hd_pvr_texture_save (const gchar  *file,
   /* work out what size width + height we need */
   compress_width = 4;
   compress_height = 4;
-  while (compress_width <= width)
+  while (compress_width < width)
     compress_width *= 2;
-  while (compress_height <= height)
+  while (compress_height < height)
     compress_height *= 2;
 
   /* If we had to change something, we need to allocate another memory
