@@ -1,3 +1,12 @@
+2009-12-03  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Do not install /usr/share/doc files.
+
+	Fixes: NB#149321 - Remove doc files from libhildondesktop deb
+
+	* debian/rules (DEB_DH_INSTALLCHANGELOGS_ARGS): Do not generate
+	/usr/share/doc/*/changelog.gz files.
+
 2009-11-12  Gordon Williams <gordon.williams@collabora.co.uk>
 
 	Fixes: NB#143569 libhildondesktop pvr texture compression doesn't deal
