@@ -176,6 +176,9 @@ hd_home_plugin_item_client_event (GtkWidget      *widget,
       return TRUE;
     }
 
+  if (GTK_WIDGET_CLASS (hd_home_plugin_item_parent_class)->client_event)
+    return GTK_WIDGET_CLASS (hd_home_plugin_item_parent_class)->client_event (widget, event); 
+
   return FALSE;
 }
 

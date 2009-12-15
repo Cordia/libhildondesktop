@@ -1,3 +1,15 @@
+2009-12-15  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Make sure HDHomePluginItem::client-event is propagated to parent
+	class.
+
+	Fixes: NB#150792 - "style-set" signal is not emitted on
+	HdHomePluginItem
+
+	* libhildondesktop/hd-home-plugin-item.c
+	  (hd_home_plugin_item_client_event): Make sure
+	  HDHomePluginItem::client-event is propagated to parent class.
+
 2009-12-03  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	Do not install /usr/share/doc files.
