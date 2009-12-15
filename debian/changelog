@@ -1,8 +1,14 @@
-libhildondesktop (2.1.38~unreleased) unstable; urgency=low
+libhildondesktop (2.1.38) unstable; urgency=low
 
-  * foo
+  Gordon:
+  * Fixes: NB#143569 libhildondesktop pvr texture compression doesn't deal
+    with 2^n size textures correctly
 
- -- Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>  Wed,  4 Nov 2009 16:03:25 +0100
+  Jan Arne:
+  * Fixes: NB#150792 - "style-set" signal is not emitted on HdHomePluginItem
+  * Fixes: NB#149321 - Remove doc files from libhildondesktop deb
+
+ -- Jan Arne Petersen <jpetersen@openismus.com>  Tue, 15 Dec 2009 13:13:38 +0100
 
 libhildondesktop (2.1.37) unstable; urgency=low
 
