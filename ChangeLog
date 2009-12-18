@@ -1,3 +1,11 @@
+2009-12-18  Jan Arne Petersen  <jpetersen@openismus.com>
+
+	Disable dh_installdocs.
+
+	Fixes: NB#149321 - Remove doc files from libhildondesktop deb
+
+	* debian/rules: Disable dh_installdocs
+
 2009-12-15  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	Release 2.1.38
