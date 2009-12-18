@@ -1,3 +1,10 @@
+libhildondesktop (2.1.39) unstable; urgency=low
+
+  Jan Arne:
+  * Fixes: NB#149321 - Remove doc files from libhildondesktop deb
+
+ -- Jan Arne Petersen <jpetersen@openismus.com>  Fri, 18 Dec 2009 12:59:48 +0100
+
 libhildondesktop (2.1.38) unstable; urgency=low
 
   Gordon:

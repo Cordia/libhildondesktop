@@ -1,5 +1,9 @@
 2009-12-18  Jan Arne Petersen  <jpetersen@openismus.com>
 
+	Release 2.1.39
+
+2009-12-18  Jan Arne Petersen  <jpetersen@openismus.com>
+
 	Disable dh_installdocs.
 
 	Fixes: NB#149321 - Remove doc files from libhildondesktop deb
