@@ -173,6 +173,7 @@ void hd_plugin_module_load (HDPluginModule *plugin)		 	\
 G_MODULE_EXPORT void hd_plugin_module_unload (HDPluginModule *plugin); 	\
 void hd_plugin_module_unload (HDPluginModule *plugin)			\
 {									\
+  (void) plugin;							\
   { CODE_UNLOAD }							\
 }
 
