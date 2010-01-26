@@ -101,6 +101,22 @@
  * </programlisting>
  * </example>
  *
+ * Plugin code is loaded and unloaded from memory using the Glib dynamic loader, #GModule.
+ * In some cases (for example the plugin defines a #GType with pointers to code in the plugin)
+ * the plugin code cannot be safely unloaded from memory even after the plugin object has
+ * been finalized.  In that case, unloading can be prevented by including the following
+ * code somewhere in the code for the plugin:
+ * |[
+ * const gchar *
+ * g_module_check_init (GModule *module)
+ * {
+ *      g_module_make_resident(module);
+ *      return NULL;
+ * }
+ * ]|
+ * In this case, of course, the plugin code can only be updated by restarting hildon-home
+ * so users wanting to update the widget will need to reboot.
+ *
  **/
 
 #define HD_HOME_PLUGIN_ITEM_GET_PRIVATE(object) \
@@ -573,6 +589,16 @@ hd_home_plugin_item_get_dbus_g_connection (HDHomePluginItem  *item,
  * Sets a function to be called at regular intervals. The @source_func is called repeatedly until 
  * it returns FALSE, at which point it is automatically destroyed and the function will not be
  * called again.
+ *
+ * <note><para>Care must be taken when using this function not to crash hildon-home.  
+ * If the plugin is removed from the desktop by the user, the timer 
+ * <emphasis>must</emphasis> be cancelled in the class finalize function to
+ * avoid the timer firing after the plugin code has been unloaded from memory. 
+ * The only way to cancel the timer is to destroy the event source. To do this,
+ * save the event source ID returned by this function (assume it is called "timer_source")
+ * and include something like
+ * |[if (timer_source) g_source_destroy(g_main_context_find_source_by_id(NULL,timer_source));]|
+ * in the class finalize function.</para></note>
  *
  * It is wise to have maxtime-mintime quite big so all users of this service get synced.
  *
