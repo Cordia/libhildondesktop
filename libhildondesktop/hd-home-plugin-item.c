@@ -46,13 +46,12 @@
  * Base class for Home widgets. To create ur own Home widgets create a
  * subclass of #HDHomePluginItem.
  *
- * To support a settings dialog in the layout mode in the Hildon desktop
- * connect to the #HDHomePluginItem::show-settings signal. And set the
- * property #HDHomePluginItem::settings to %TRUE.
- *
- * To start and stop animations of the widgets listen to the #GObject::notify signal of
- * the #HDHomePluginItem::is-on-current-desktop property. And show animations
- * only when #HDHomePluginItem::is-on-current-desktop is %TRUE.
+ * Eventhough #HdHomePluginItem is a GtkWindow it should mostly be used just as
+ * a simple widget, where the content is drawn into it with cairo. Since there is
+ * only tapping support for desktop widgets it is not possible to add complex
+ * widgets like pannable widgets into a desktop widget. It is also not possible
+ * to use clutter directly for implementing desktop widgets eventhough the window
+ * manager (hildon-desktop) is clutter based.
  *
  * To create an transparent Home widget you have to set the colormap of the
  * widget to RGBA. See the following example:
@@ -100,6 +99,14 @@
  * }
  * </programlisting>
  * </example>
+ *
+ * To support a settings dialog in the layout mode in the Hildon desktop
+ * connect to the #HDHomePluginItem::show-settings signal. And set the
+ * property #HDHomePluginItem::settings to %TRUE.
+ *
+ * To start and stop animations of the widgets listen to the #GObject::notify signal of
+ * the #HDHomePluginItem::is-on-current-desktop property. And show animations
+ * only when #HDHomePluginItem::is-on-current-desktop is %TRUE.
  *
  * Plugin code is loaded and unloaded from memory using the Glib dynamic loader, #GModule.
  * In some cases (for example the plugin defines a #GType with pointers to code in the plugin)
@@ -446,6 +453,16 @@ hd_home_plugin_item_class_init (HDHomePluginItemClass *klass)
                                                          FALSE,
                                                          G_PARAM_READABLE));
 
+  /**
+   * HDHomePluginItem::show-settings
+   * @item: The #HDHomePluginItem which emitted the signal  
+   *
+   * The #HDHomePluginItem::show-settings signal is emmited when the settings button
+   * is clicked on a desktop widget in the desktop layout mode. The settings button 
+   * is only displayed when the #HDHomePluginItem::settings property is set to %TRUE.
+   *
+   * In repsonse to this signal a settings dialog should be shown.
+   */
   signals[SHOW_SETTINGS] = g_signal_new ("show-settings",
                                          HD_TYPE_HOME_PLUGIN_ITEM,
                                          G_SIGNAL_RUN_LAST,
@@ -588,17 +605,21 @@ hd_home_plugin_item_get_dbus_g_connection (HDHomePluginItem  *item,
  *
  * Sets a function to be called at regular intervals. The @source_func is called repeatedly until 
  * it returns FALSE, at which point it is automatically destroyed and the function will not be
- * called again.
- *
- * <note><para>Care must be taken when using this function not to crash hildon-home.  
+ * called again. The advantage of using this function over g_timeout_add_seconds_full() is
+ * that all services using iphb on the device will wakeup synchronized, which will result in a
+ * less power consumptioess  <note><para>Care must be taken when using this function not to crash hildon-home.  
  * If the plugin is removed from the desktop by the user, the timer 
- * <emphasis>must</emphasis> be cancelled in the class finalize function to
+ * <emphasis>must</emphasis> be cancelled in the dispose or finalize function to
  * avoid the timer firing after the plugin code has been unloaded from memory. 
  * The only way to cancel the timer is to destroy the event source. To do this,
  * save the event source ID returned by this function (assume it is called "timer_source")
  * and include something like
- * |[if (timer_source) g_source_destroy(g_main_context_find_source_by_id(NULL,timer_source));]|
- * in the class finalize function.</para></note>
+ * |[if (timer_source)
+ *     {
+ *       g_source_remove (timer_source);
+ *       timer_source = 0;
+ *     }]|
+ * in the dispose or finalize function.</para></note>
  *
  * It is wise to have maxtime-mintime quite big so all users of this service get synced.
  *
