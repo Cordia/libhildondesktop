@@ -1,3 +1,11 @@
+2010-02-19  Adam Endrodi <adam.endrodi@blumsoft.eu>
+
+	NB#157376 Copy and paste mistake in desktop item prevents xatom
+		  to be set for settings
+
+	* libhildondesktop/hd-home-plugin-item.c (hd_home_plugin_item_realize, hd_home_plugin_item_set_settings):
+	  Copy paste fix.
+
 2009-12-18  Jan Arne Petersen  <jpetersen@openismus.com>
 
 	Release 2.1.39

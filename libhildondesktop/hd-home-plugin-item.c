@@ -281,7 +281,7 @@ hd_home_plugin_item_realize (GtkWidget *widget)
                      gdk_x11_get_xatom_by_name_for_display (display,
                                                             "_HILDON_APPLET_SETTINGS"),
                      XA_CARDINAL, 32, PropModeReplace,
-                     (unsigned char *) &(priv->display_on_all_views), 1);
+                     (unsigned char *) &(priv->settings), 1);
   else
     XDeleteProperty (GDK_WINDOW_XDISPLAY (widget->window),
                      GDK_WINDOW_XID (widget->window),
@@ -710,7 +710,7 @@ hd_home_plugin_item_set_settings (HDHomePluginItem *item,
                          gdk_x11_get_xatom_by_name_for_display (display,
                                                                 "_HILDON_APPLET_SETTINGS"),
                          XA_CARDINAL, 32, PropModeReplace,
-                         (unsigned char *) &(priv->display_on_all_views), 1);
+                         (unsigned char *) &(priv->settings), 1);
       else
         XDeleteProperty (GDK_WINDOW_XDISPLAY (widget->window),
                          GDK_WINDOW_XID (widget->window),
