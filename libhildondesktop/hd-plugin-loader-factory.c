@@ -291,6 +291,15 @@ hd_plugin_loader_factory_create (HDPluginLoaderFactory  *factory,
         {
           GModule *module = g_hash_table_lookup (priv->modules, type);
 
+          /* If we can't find the module, it's possible it got installed
+           * recently, so build the list again.
+           */
+          if (!module)
+            {
+              hd_plugin_loader_factory_load_modules (factory);
+              module = g_hash_table_lookup (priv->modules, type);
+            }
+
           if (module)
             {
               if (g_module_symbol (module,

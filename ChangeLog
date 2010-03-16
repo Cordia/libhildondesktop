@@ -1,3 +1,9 @@
+2010-03-16  Marc Ordinas i Llopis <marc.ordinasillopis@collabora.co.uk>
+
+	Re-check loaders when the correct one cannot be found, in case it was just
+	installed.
+	Fixes: NB#159193 - Home plugin loaders are not being loaded automatically.
+
 2010-02-19  Adam Endrodi <adam.endrodi@blumsoft.eu>
 
 	NB#157376 Copy and paste mistake in desktop item prevents xatom
