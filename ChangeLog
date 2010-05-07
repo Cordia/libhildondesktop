@@ -1,3 +1,9 @@
+2010-05-07  Adam Endrodi <adam.endrodi@blumsoft.eu>
+
+	NB#162675 desktop recompilation with G_DISABLE_CAST_CHECKS
+
+	* configure.ac: add to $CFLAGS
+
 2010-03-16  Marc Ordinas i Llopis <marc.ordinasillopis@collabora.co.uk>
 
 	Re-check loaders when the correct one cannot be found, in case it was just
