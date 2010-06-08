@@ -6,10 +6,6 @@ libhildondesktop (2.1.42) unstable; urgency=low
 
 libhildondesktop (2.1.41) unstable; urgency=low
 
-  Adam:
-  * Fixes: NB#157376 - Copy and paste mistake in desktop item prevents xatom
-    to be set for settings.
-
   Marc:
   * Fixes: NB#159193 - Home plugin loaders are not being loaded automatically.
 
