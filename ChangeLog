@@ -4,6 +4,14 @@
 	* libhildondesktop/hd-plugin-configuration.c (hd_plugin_configuration_get_available_plugins):
 	  New function to return the hash table directly.
 
+2010-06-21  Adam Endrodi <adam.endrodi@blumsoft.eu>
+
+	For NB#137880.  Delay showing widgets until we're told so.
+
+	* libhildondesktop/hd-shortcuts.c:
+	  Implement a "throttled" GObject property and don't show the widgets
+	  as long as it's TRUE, and show them all when it becomes FALSE.
+
 2010-05-25  Adam Endrodi <adam.endrodi@blumsoft.eu>
 
 	Release 2.1.42,
