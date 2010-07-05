@@ -69,6 +69,7 @@ HDPluginConfiguration *hd_plugin_configuration_new                  (HDConfigFil
 
 void                   hd_plugin_configuration_run                  (HDPluginConfiguration *configuration);
 
+GHashTable *           hd_plugin_configuration_get_available_plugins(HDPluginConfiguration *configuration);
 gchar **               hd_plugin_configuration_get_all_plugin_paths (HDPluginConfiguration *configuration);
 
 GKeyFile *             hd_plugin_configuration_get_items_key_file   (HDPluginConfiguration *configuration);

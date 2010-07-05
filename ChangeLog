@@ -1,3 +1,9 @@
+2010-07-05  Adam Endrodi <adam.endrodi@blumsoft.eu>
+
+	NB#127188 3PO: Uninstalled applications are still present in the Add Widget list
+	* libhildondesktop/hd-plugin-configuration.c (hd_plugin_configuration_get_available_plugins):
+	  New function to return the hash table directly.
+
 2010-05-25  Adam Endrodi <adam.endrodi@blumsoft.eu>
 
 	Release 2.1.42,

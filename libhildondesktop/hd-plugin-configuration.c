@@ -633,6 +633,12 @@ hd_plugin_configuration_run (HDPluginConfiguration *configuration)
   priv->startup = FALSE;
 }
 
+GHashTable *
+hd_plugin_configuration_get_available_plugins (HDPluginConfiguration *configuration)
+{
+  return configuration->priv->available_plugins;
+}
+
 gchar **
 hd_plugin_configuration_get_all_plugin_paths (HDPluginConfiguration *configuration)
 {
