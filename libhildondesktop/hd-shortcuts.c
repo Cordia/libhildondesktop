@@ -65,6 +65,7 @@ struct _HDShortcutsPrivate
   GConfClient *gconf_client;
   gchar *gconf_key;
   GType shortcut_type;
+  gboolean throttled;
 
   GSList *current_list;
 };
@@ -74,6 +75,7 @@ enum
   PROP_0,
   PROP_GCONF_KEY,
   PROP_SHORTCUT_TYPE,
+  PROP_THROTTLED,
 };
 
 G_DEFINE_TYPE (HDShortcuts, hd_shortcuts, G_TYPE_OBJECT);
@@ -238,7 +240,10 @@ shortcuts_sync (HDShortcuts *shortcuts)
 
       g_hash_table_insert (priv->applets, s->data, shortcut);
 
-      gtk_widget_show (shortcut);
+      if (priv->throttled)
+        gtk_widget_hide (shortcut);
+      else
+        gtk_widget_show (shortcut);
     }
 
   g_slist_free (to_remove);
@@ -323,6 +328,10 @@ hd_shortcuts_get_property (GObject      *object,
       g_value_set_gtype (value, priv->shortcut_type);
       break;
 
+    case PROP_THROTTLED:
+      g_value_set_boolean (value, priv->throttled);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
   }
@@ -343,6 +352,19 @@ hd_shortcuts_set_property (GObject      *object,
 
     case PROP_SHORTCUT_TYPE:
       priv->shortcut_type = g_value_get_gtype (value);
+      break;
+
+    case PROP_THROTTLED:
+      priv->throttled = g_value_get_boolean (value);
+      if (!priv->throttled)
+        {
+          gpointer widget;
+          GHashTableIter iter;
+
+          g_hash_table_iter_init (&iter, priv->applets);
+          while (g_hash_table_iter_next (&iter, NULL, &widget))
+            gtk_widget_show (widget);
+        }
       break;
 
     default:
@@ -410,6 +432,15 @@ hd_shortcuts_class_init (HDShortcutsClass *klass)
                                                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY |
                                                        G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK |
                                                        G_PARAM_STATIC_BLURB));
+
+  g_object_class_install_property (object_class, PROP_THROTTLED,
+                                   g_param_spec_boolean ("throttled",
+                                                         "Don't show the shortcuts yet",
+                                                         "Don't show the shortcuts until this property is unset",
+                                                         FALSE,
+                                                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT |
+                                                         G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK |
+                                                         G_PARAM_STATIC_BLURB));
 
   g_type_class_add_private (klass, sizeof (HDShortcutsPrivate));
 }
