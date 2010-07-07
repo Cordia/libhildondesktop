@@ -1,8 +1,8 @@
-libhildondesktop (2.1.43~unreleased) unstable; urgency=low
+libhildondesktop (2.1.43) unstable; urgency=low
 
-  * :)
+  * Fixes: NB#137880 - Selecting bookmark is slow to launch site, resulting in multiple clicks and multiple browser instances
 
- -- Adam Endrodi <adam.endrodi@blumsoft.eu>  Tue, 25 May 2010 13:05:58 +0300
+ -- Adam Endrodi <adam.endrodi@blumsoft.eu>  Wed, 07 Jul 2010 14:55:55 +0300
 
 libhildondesktop (2.1.42) unstable; urgency=low
 
