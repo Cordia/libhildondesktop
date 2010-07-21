@@ -1,6 +1,14 @@
+libhildondesktop (2.1.44) unstable; urgency=low
+
+  * Release 2.1.44 reverts fixes for NB#137880 (set to WONTFIX), leaving fixes
+    for NB#127188
+
+ -- Cosimo Alfarano <cosimo.alfarano@collabora.co.uk>  Wed, 21 Jul 2010 18:22:35 +0100
+
 libhildondesktop (2.1.43) unstable; urgency=low
 
-  * Fixes: NB#137880 - Selecting bookmark is slow to launch site, resulting in multiple clicks and multiple browser instances
+  * possible fix for NB#137880 (reverted in 2.1.44)
+    Selecting bookmark is slow to launch site, resulting in multiple clicks and multiple browser instances
 
  -- Adam Endrodi <adam.endrodi@blumsoft.eu>  Wed, 07 Jul 2010 14:55:55 +0300
 

@@ -1,3 +1,9 @@
+2010-07-07  Cosimo Alfarano <cosimo.alfarano@collabora.co.uk>
+
+	Relase 2.1.44.
+
+	This reverts the patch fixing bug NB#137880 introduced in log entry 2010-06-21
+
 2010-07-07  Adam Endrodi <adam.endrodi@blumsoft.eu>
 
 	Release 2.1.43.
