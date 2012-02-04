@@ -28,7 +28,7 @@
 
 #include <glib-object.h>
 #include <gmodule.h>
-#include <libgnomevfs/gnome-vfs.h>
+#include <gio/gio.h>
 
 #include "hd-plugin-loader-factory.h"
 #include "hd-plugin-loader.h"
@@ -49,9 +49,10 @@ G_DEFINE_TYPE (HDPluginLoaderFactory, hd_plugin_loader_factory, G_TYPE_OBJECT);
 
 struct _HDPluginLoaderFactoryPrivate 
 {
-  GHashTable            *registry;
-  GHashTable            *modules;
-  GnomeVFSMonitorHandle *monitor;
+  GHashTable   *registry;
+  GHashTable   *modules;
+  GFile        *file;
+  GFileMonitor *monitor;
 
   gchar 	  *(*load_module)   (void);
   HDPluginLoader  *(*get_instance)  (void);
@@ -62,10 +63,10 @@ static int callback_pending = 0;
 static void hd_plugin_loader_factory_load_modules (HDPluginLoaderFactory *factory);
 
 static void
-hd_plugin_loader_factory_dir_changed (GnomeVFSMonitorHandle *handle,
-                                      const gchar *monitor_uri,
-                                      const gchar *info_uri,
-                                      GnomeVFSMonitorEventType event_type,
+hd_plugin_loader_factory_dir_changed (GFileMonitor      *monitor,
+                                      GFile             *monitor_file,
+                                      GFile             *info,
+                                      GFileMonitorEvent  event_type,
                                       HDPluginLoaderFactory *factory)
 {
   if (!callback_pending) 
@@ -102,17 +103,31 @@ hd_plugin_loader_factory_load_modules (HDPluginLoaderFactory *factory)
   path_modules = g_dir_open (HD_PLUGIN_LOADER_MODULES_PATH, 0, &error);
 
   if (factory->priv->monitor)
-    gnome_vfs_monitor_cancel (factory->priv->monitor);
+    {
+      g_file_monitor_cancel (factory->priv->monitor);
+      g_object_unref (factory->priv->monitor);
+    }
+
+  if (factory->priv->file)
+    {
+      g_object_unref (factory->priv->file);
+    }
 
   if (error != NULL)
     { 
       g_error_free (error);
 
-      gnome_vfs_monitor_add (&factory->priv->monitor, 
-                             HD_DESKTOP_MODULE_PATH,
-                             GNOME_VFS_MONITOR_DIRECTORY,
-                             (GnomeVFSMonitorCallback) hd_plugin_loader_factory_dir_changed,
-                             factory);
+      factory->priv->file = g_file_new_for_path (HD_DESKTOP_MODULE_PATH);
+
+      factory->priv->monitor =
+        g_file_monitor_directory (factory->priv->file,
+                                  G_FILE_MONITOR_NONE,
+                                  NULL,NULL);
+
+      g_signal_connect (G_OBJECT (factory->priv->monitor),
+                        "changed",
+                        G_CALLBACK (hd_plugin_loader_factory_dir_changed),
+                        (gpointer)factory);
 
       callback_pending = 0;
 
@@ -153,11 +168,15 @@ hd_plugin_loader_factory_load_modules (HDPluginLoaderFactory *factory)
 
   g_dir_close (path_modules);
 
-  gnome_vfs_monitor_add (&factory->priv->monitor, 
-                         HD_PLUGIN_LOADER_MODULES_PATH,
-                         GNOME_VFS_MONITOR_DIRECTORY,
-                         (GnomeVFSMonitorCallback) hd_plugin_loader_factory_dir_changed,
-                         factory);
+  factory->priv->file = g_file_new_for_path (HD_PLUGIN_LOADER_MODULES_PATH);
+  factory->priv->monitor =
+    g_file_monitor_directory (factory->priv->file,
+                              G_FILE_MONITOR_NONE,
+                              NULL,NULL);
+  g_signal_connect (G_OBJECT (factory->priv->monitor),
+                    "changed",
+                    G_CALLBACK (hd_plugin_loader_factory_dir_changed),
+                    (gpointer)factory);
 
   callback_pending = 0;
 }
@@ -180,6 +199,7 @@ hd_plugin_loader_factory_init (HDPluginLoaderFactory *factory)
                            (GDestroyNotify) g_module_close);
 
   factory->priv->monitor = NULL;
+  factory->priv->file = NULL;
 
   hd_plugin_loader_factory_load_modules (factory);
 }
@@ -206,8 +226,15 @@ hd_plugin_loader_factory_finalize (GObject *object)
 
   if (priv->monitor != NULL) 
     {
-      gnome_vfs_monitor_cancel (priv->monitor);
+      g_file_monitor_cancel (priv->monitor);
+      g_object_unref (priv->monitor);
       priv->monitor = NULL;
+    }
+
+  if (priv->file != NULL) 
+    {
+      g_object_unref (priv->file);
+      priv->file = NULL;
     }
 
   G_OBJECT_CLASS (hd_plugin_loader_factory_parent_class)->finalize (object);

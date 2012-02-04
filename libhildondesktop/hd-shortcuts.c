@@ -27,8 +27,9 @@
 #include <glib.h>
 #include <gconf/gconf-client.h>
 #include <libhildondesktop/libhildondesktop.h>
-#include <libgnomevfs/gnome-vfs.h>
+#include <glib/gstdio.h>
 
+#include <errno.h>
 #include <string.h>
 
 #include "hd-shortcuts.h"
@@ -535,12 +536,10 @@ create_home_thumbnails_dir (void)
                             S_IRGRP | S_IXGRP |
                             S_IROTH | S_IXOTH))
     {
-      GnomeVFSResult result = gnome_vfs_result_from_errno ();
-
       g_warning ("%s. Could not mkdir %s. %s",
                  __FUNCTION__,
                  dir,
-                 gnome_vfs_result_to_string (result));
+                 g_strerror (errno));
     }
   g_free (dir);
 }
@@ -741,12 +740,10 @@ remove_bookmark_thumnail_file (const gchar *id)
 
   if (unlink (filename))
     {
-      GnomeVFSResult result = gnome_vfs_result_from_errno ();
-
       g_debug ("%s. Could not unlink %s. %s",
                __FUNCTION__,
                filename,
-               gnome_vfs_result_to_string (result));
+               g_strerror (errno));
     }
 
   g_free (filename);

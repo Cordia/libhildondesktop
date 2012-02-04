@@ -27,7 +27,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
-#include <libgnomevfs/gnome-vfs.h>
+#include <gio/gio.h>
 
 #include <string.h>
 
@@ -62,17 +62,18 @@ enum
 
 struct _HDPluginConfigurationPrivate 
 {
-  HDConfigFile           *config_file;
+  HDConfigFile  *config_file;
 
-  HDConfigFile           *items_config_file;
-  GKeyFile               *items_key_file;
+  HDConfigFile  *items_config_file;
+  GKeyFile      *items_key_file;
 
-  gchar                 **plugin_dirs;
-  GnomeVFSMonitorHandle **plugin_dir_monitors;
+  gchar        **plugin_dirs;
+  GFile        **plugin_dir_files;
+  GFileMonitor **plugin_dir_monitors;
 
-  GHashTable             *available_plugins;
+  GHashTable    *available_plugins;
 
-  gboolean                startup;
+  gboolean       startup;
 };
 
 static guint plugin_configuration_signals [LAST_SIGNAL] = { 0 };
@@ -98,12 +99,13 @@ hd_plugin_configuration_remove_plugin_module (HDPluginConfiguration *configurati
 }
 
 static void
-hd_plugin_configuration_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
-                                            const gchar *monitor_uri,
-                                            const gchar *info_uri,
-                                            GnomeVFSMonitorEventType event_type,
+hd_plugin_configuration_plugin_dir_changed (GFileMonitor      *monitor,
+                                            GFile             *monitor_file,
+                                            GFile             *info,
+                                            GFileMonitorEvent  event_type,
                                             HDPluginConfiguration *configuration)
 {
+  gchar *info_uri = g_file_get_uri (info);
   HDPluginConfigurationPrivate *priv = configuration->priv;
   /*
   static char* event_string[] = {"changed", "deleted", "startexecuting", "stopexecuting",
@@ -117,61 +119,47 @@ hd_plugin_configuration_plugin_dir_changed (GnomeVFSMonitorHandle *handle,
 
   /* Ignore the temporary dpkg files */
   if (!g_str_has_suffix (info_uri, ".desktop"))
-    return;
-
-  if (event_type == GNOME_VFS_MONITOR_EVENT_CREATED ||
-      event_type == GNOME_VFS_MONITOR_EVENT_CHANGED)
     {
-      GnomeVFSURI *uri = gnome_vfs_uri_new (info_uri);
-      gchar *uri_str;
+      g_free (info_uri);
+      return;
+    }
 
-      uri_str = gnome_vfs_uri_to_string (uri,
-                                         GNOME_VFS_URI_HIDE_TOPLEVEL_METHOD);
-
-      if (g_hash_table_lookup (priv->available_plugins,
-                               uri_str))
+  if (event_type == G_FILE_MONITOR_EVENT_CREATED ||
+      event_type == G_FILE_MONITOR_EVENT_CHANGED)
+    {
+      if (g_hash_table_lookup (priv->available_plugins, info_uri))
         {
-          g_debug ("plugin-updated: %s", uri_str);
+          g_debug ("plugin-updated: %s", info_uri);
 
           g_signal_emit (configuration,
                          plugin_configuration_signals[PLUGIN_MODULE_UPDATED], 0,
-                         uri_str);
+                         info_uri);
         }
       else
         {
-          g_debug ("plugin-added: %s", uri_str);
+          g_debug ("plugin-added: %s", info_uri);
 
           g_hash_table_insert (priv->available_plugins,
-                               g_strdup (uri_str),
+                               g_strdup (info_uri),
                                GUINT_TO_POINTER (1));
 
           g_signal_emit (configuration,
                          plugin_configuration_signals[PLUGIN_MODULE_ADDED], 0,
-                         uri_str);
+                         info_uri);
         }
-
-      gnome_vfs_uri_unref (uri);
-      g_free (uri_str);
     }
-  else if (event_type == GNOME_VFS_MONITOR_EVENT_DELETED)
+  else if (event_type == G_FILE_MONITOR_EVENT_DELETED)
     {
-      GnomeVFSURI *uri = gnome_vfs_uri_new (info_uri);
-      gchar *uri_str;
+      g_debug ("plugin-removed: %s", info_uri);
 
-      uri_str = gnome_vfs_uri_to_string (uri,
-                                         GNOME_VFS_URI_HIDE_TOPLEVEL_METHOD);
-
-      g_debug ("plugin-removed: %s", uri_str);
-
-      g_hash_table_remove (priv->available_plugins,
-                           uri_str);
+      g_hash_table_remove (priv->available_plugins, info_uri);
 
       g_signal_emit (configuration,
                      plugin_configuration_signals[PLUGIN_MODULE_REMOVED], 0,
-                     uri_str);
-      gnome_vfs_uri_unref (uri);
-      g_free (uri_str);
+                     info_uri);
     }
+
+    g_free (info_uri);
 }
 
 static void
@@ -193,11 +181,11 @@ static void
 hd_plugin_configuration_plugin_module_added (HDPluginConfiguration *configuration,
                                              const gchar     *desktop_file)
 {
-  HDPluginConfigurationPrivate *priv;
+//HDPluginConfigurationPrivate *priv;
 
   g_return_if_fail (HD_IS_PLUGIN_CONFIGURATION (configuration));
 
-  priv = HD_PLUGIN_CONFIGURATION (configuration)->priv;
+//priv = HD_PLUGIN_CONFIGURATION (configuration)->priv;
 
 }
 
@@ -226,10 +214,13 @@ hd_plugin_configuration_finalize (GObject *object)
 
       for (i = 0; priv->plugin_dirs[i] != NULL; i++)
         {
-          gnome_vfs_monitor_cancel (priv->plugin_dir_monitors[i]);
+          g_file_monitor_cancel (priv->plugin_dir_monitors[i]);
+          g_object_unref (priv->plugin_dir_monitors[i]);
+          g_object_unref (priv->plugin_dir_files[i]);
         }
       
       priv->plugin_dir_monitors = (g_free (priv->plugin_dir_monitors), NULL);
+      priv->plugin_dir_files = (g_free (priv->plugin_dir_files), NULL);
       priv->plugin_dirs = (g_strfreev (priv->plugin_dirs), NULL);
     }
 
@@ -310,10 +301,13 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
 
       for (i = 0; priv->plugin_dirs[i] != NULL; i++)
         {
-          gnome_vfs_monitor_cancel (priv->plugin_dir_monitors[i]);
+          g_file_monitor_cancel (priv->plugin_dir_monitors[i]);
+          g_object_unref (priv->plugin_dir_monitors[i]);
+          g_object_unref (priv->plugin_dir_files[i]);
         }
 
       priv->plugin_dir_monitors = (g_free (priv->plugin_dir_monitors), NULL);
+      priv->plugin_dir_files = (g_free (priv->plugin_dir_files), NULL);
       priv->plugin_dirs = (g_strfreev (priv->plugin_dirs), NULL);
     }
   if (priv->items_config_file)
@@ -349,7 +343,8 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
     {
       guint i;
 
-      priv->plugin_dir_monitors = g_new0 (GnomeVFSMonitorHandle*, n_plugin_dir);
+      priv->plugin_dir_files = g_new0 (GFile*, n_plugin_dir);
+      priv->plugin_dir_monitors = g_new0 (GFileMonitor*, n_plugin_dir);
 
       for (i = 0; priv->plugin_dirs[i] != NULL; i++)
         {
@@ -361,11 +356,15 @@ hd_plugin_configuration_configuration_loaded (HDPluginConfiguration *configurati
           g_strstrip (priv->plugin_dirs[i]);
 
           /* Add monitor */
-          gnome_vfs_monitor_add (&priv->plugin_dir_monitors[i],
-                                 priv->plugin_dirs[i],
-                                 GNOME_VFS_MONITOR_DIRECTORY,
-                                 (GnomeVFSMonitorCallback) hd_plugin_configuration_plugin_dir_changed,
-                                 configuration);
+          priv->plugin_dir_files[i] = g_file_new_for_path (priv->plugin_dirs[i]);
+          priv->plugin_dir_monitors[i] =
+            g_file_monitor_directory (priv->plugin_dir_files[i],
+                                      G_FILE_MONITOR_NONE,
+                                      NULL,NULL);
+          g_signal_connect (G_OBJECT (priv->plugin_dir_monitors[i]),
+                            "changed",
+                            G_CALLBACK (hd_plugin_configuration_plugin_dir_changed),
+                            (gpointer)configuration);
 
           /* Get available .desktop files */
           dir = g_dir_open (priv->plugin_dirs[i], 0, &error);

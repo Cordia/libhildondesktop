@@ -24,11 +24,12 @@
 #endif
 
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <glib-object.h>
-#include <libgnomevfs/gnome-vfs.h>
+#include <gio/gio.h>
 
 #include <string.h>
-#include <stdio.h>
+#include <errno.h>
 
 #include "hd-config-file.h"
 
@@ -54,12 +55,14 @@ enum
 
 struct _HDConfigFilePrivate 
 {
-  gchar                 *system_conf_dir;
-  gchar                 *user_conf_dir;
-  gchar                 *filename;
+  gchar        *system_conf_dir;
+  gchar        *user_conf_dir;
+  gchar        *filename;
 
-  GnomeVFSMonitorHandle *system_conf_monitor;
-  GnomeVFSMonitorHandle *user_conf_monitor;
+  GFileMonitor *system_conf_monitor;
+  GFileMonitor *user_conf_monitor;
+  GFile        *system_conf_file;
+  GFile        *user_conf_file;
 };
 
 static guint signals[LAST_SIGNAL] = { 0 };
@@ -67,14 +70,15 @@ static guint signals[LAST_SIGNAL] = { 0 };
 G_DEFINE_TYPE (HDConfigFile, hd_config_file, G_TYPE_INITIALLY_UNOWNED);
 
 static void
-hd_config_file_monitored_dir_changed (GnomeVFSMonitorHandle    *handle,
-                                      const gchar              *monitor_uri,
-                                      const gchar              *info_uri,
-                                      GnomeVFSMonitorEventType  event_type,
-                                      HDConfigFile             *config_file)
+hd_config_file_monitored_dir_changed (GFileMonitor      *monitor,
+                                      GFile             *monitor_file,
+                                      GFile             *info,
+                                      GFileMonitorEvent  event_type,
+                                      HDConfigFile      *config_file)
 {
   gchar *basename;
   HDConfigFilePrivate *priv;
+  gchar *info_uri = g_file_get_uri (info);
 
   priv = config_file->priv;
 
@@ -83,6 +87,7 @@ hd_config_file_monitored_dir_changed (GnomeVFSMonitorHandle    *handle,
     {
       g_signal_emit (config_file, signals[CHANGED], 0);
     }
+  g_free (info_uri);
   g_free (basename);
 }
 
@@ -92,15 +97,22 @@ hd_config_file_constructed (GObject *object)
   HDConfigFilePrivate *priv = HD_CONFIG_FILE (object)->priv;
 
   if (priv->system_conf_dir != NULL)
-    gnome_vfs_monitor_add (&priv->system_conf_monitor,
-                           priv->system_conf_dir,
-                           GNOME_VFS_MONITOR_DIRECTORY,
-                           (GnomeVFSMonitorCallback) hd_config_file_monitored_dir_changed,
-                           object);
+    {
+      priv->system_conf_file = g_file_new_for_path (priv->system_conf_dir);
+
+      priv->system_conf_monitor =
+        g_file_monitor_directory (priv->system_conf_file,
+                                  G_FILE_MONITOR_NONE,
+                                  NULL,NULL);
+
+      g_signal_connect (G_OBJECT (priv->system_conf_monitor),
+                        "changed",
+                        G_CALLBACK (hd_config_file_monitored_dir_changed),
+                        (gpointer)object);
+    }
+
   if (priv->user_conf_dir != NULL)
     {
-      GnomeVFSResult result;
-
       /* Try to create the user config dir if it not exist yet */
       if (!g_mkdir_with_parents (priv->user_conf_dir,
                                  S_IRWXU |
@@ -108,26 +120,24 @@ hd_config_file_constructed (GObject *object)
                                  S_IROTH | S_IXOTH))
         {
           /* There exist an user config dir, try to monitor */
-          result = gnome_vfs_monitor_add (&priv->user_conf_monitor,
-                                          priv->user_conf_dir,
-                                          GNOME_VFS_MONITOR_DIRECTORY,
-                                          (GnomeVFSMonitorCallback) hd_config_file_monitored_dir_changed,
-                                          object);
+          priv->user_conf_file = g_file_new_for_path (priv->user_conf_dir);
 
-          if (result == GNOME_VFS_OK)
-            g_debug ("Started to monitor '%s'.", priv->user_conf_dir);
-          else
-            g_warning ("Could not monitor '%s'. %s",
-                       priv->user_conf_dir,
-                       gnome_vfs_result_to_string (result));
+          priv->user_conf_monitor =
+            g_file_monitor_directory (priv->user_conf_file,
+                                      G_FILE_MONITOR_NONE,
+                                      NULL,NULL);
+
+          g_signal_connect (G_OBJECT (priv->user_conf_monitor),
+                            "changed",
+                            G_CALLBACK (hd_config_file_monitored_dir_changed),
+                            (gpointer)object);
         }
       else
         {
           /* User config dir could not be created */
-          result = gnome_vfs_result_from_errno ();
           g_warning ("Could not mkdir '%s', %s",
                      priv->user_conf_dir,
-                     gnome_vfs_result_to_string (result));
+                     g_strerror (errno));
         }
     }
 }
@@ -151,12 +161,28 @@ hd_config_file_finalize (GObject *object)
   priv->filename = NULL;
 
   if (priv->system_conf_monitor)
-    gnome_vfs_monitor_cancel (priv->system_conf_monitor);
+    {
+      g_file_monitor_cancel (priv->system_conf_monitor);
+      g_object_unref (priv->system_conf_monitor);
+    }
   priv->system_conf_monitor = NULL;
+  if (priv->system_conf_file)
+    {
+      g_object_unref (priv->system_conf_file);
+    }
+  priv->system_conf_file = NULL;
 
   if (priv->user_conf_monitor)
-    gnome_vfs_monitor_cancel (priv->user_conf_monitor);
+    {
+      g_file_monitor_cancel (priv->user_conf_monitor);
+      g_object_unref (priv->user_conf_monitor);
+    }
   priv->user_conf_monitor = NULL;
+  if (priv->user_conf_file)
+    {
+      g_object_unref (priv->user_conf_file);
+    }
+  priv->user_conf_file = NULL;
 
   G_OBJECT_CLASS (hd_config_file_parent_class)->finalize (object);
 }
@@ -269,6 +295,12 @@ static void
 hd_config_file_init (HDConfigFile *config_file)
 {
   config_file->priv = HD_CONFIG_FILE_GET_PRIVATE (config_file);
+
+  config_file->priv->system_conf_monitor = NULL;
+  config_file->priv->system_conf_file = NULL;
+
+  config_file->priv->user_conf_monitor = NULL;
+  config_file->priv->user_conf_file = NULL;
 }
 
 HDConfigFile *

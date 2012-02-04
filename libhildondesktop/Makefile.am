@@ -4,7 +4,7 @@ libhildondesktop_@API_VERSION_MAJOR@_la_LDFLAGS = $(LIBHILDONDESKTOP_LT_LDFLAGS)
 
 libhildondesktop_@API_VERSION_MAJOR@_la_CFLAGS = \
 	$(HILDON_CFLAGS)							\
-	$(GNOME_VFS_CFLAGS)							\
+	$(GCONF_CFLAGS)							\
 	$(DBUS_CFLAGS)								\
 	-I$(top_srcdir) 							\
 	-DLOCALEDIR=\"$(localedir)\" 						\
@@ -32,14 +32,14 @@ libhildondesktop_@API_VERSION_MAJOR@_la_SOURCES = \
 	hd-plugin-module.c							\
 	hd-shortcuts.c								\
 	hd-stamp-file.c								\
-	hd-status-menu-item.c							\	
+	hd-status-menu-item.c							\
 	hd-status-plugin-item.c							\
 	hd-pvr-texture.c							\
 	pvr-texture.c
 
 libhildondesktop_@API_VERSION_MAJOR@_la_LIBADD = \
 	$(HILDON_LIBS)								\
-	$(GNOME_VFS_LIBS)							\
+	$(GCONF_LIBS)							\
 	$(DBUS_LIBS)								\
 	@LIBHILDONDESKTOP_LT_LDFLAGS@
 

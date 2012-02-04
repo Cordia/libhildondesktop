@@ -30,14 +30,12 @@ IGNORE_HFILES=
 # if $(DOC_MODULE).types is non-empty.
 INCLUDES = \
 	$(HILDON_CFLAGS)		\
-	$(GNOME_VFS_CFLAGS)		\
 	-I$(srcdir) 			\
 	-I$(top_srcdir) 		\
 	-I$(top_builddir)
 
 GTKDOC_LIBS = \
 	$(HILDON_LIBS)								\
-	$(GNOME_VFS_LIBS)							\
 	$(top_builddir)/libhildondesktop/libhildondesktop-@API_VERSION_MAJOR@.la
 
 # Extra options to supply to gtkdoc-mkdb.

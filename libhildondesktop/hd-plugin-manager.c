@@ -28,7 +28,6 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gdk/gdk.h>
-#include <libgnomevfs/gnome-vfs.h>
 
 #include <string.h>
 
