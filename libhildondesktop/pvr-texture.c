@@ -159,6 +159,7 @@ gboolean pvr_texture_save_pvrtc4(
                       gint width, gint height)
 {
     FILE *texfile;
+    int ret;
     PVR_TEXTURE_HEADER head;
     head.dwHeaderSize = sizeof(PVR_TEXTURE_HEADER);     /* size of the structure */
     head.dwHeight = height;         /* height of surface to be created */
@@ -179,9 +180,15 @@ gboolean pvr_texture_save_pvrtc4(
     if (!texfile)
       return FALSE;
 
-    fwrite(&head, 1, sizeof(PVR_TEXTURE_HEADER), texfile);
-    fwrite(data, 1, data_size, texfile);
-    fclose(texfile);
+    ret = fwrite(&head, 1, sizeof(PVR_TEXTURE_HEADER), texfile);
+    if (ret != sizeof(PVR_TEXTURE_HEADER))
+      return FALSE;
+    ret = fwrite(data, 1, data_size, texfile);
+    if (ret != data_size)
+      return FALSE;
+    ret = fclose(texfile);
+    if (!ret)
+      return FALSE;
 
     return TRUE;
 }
