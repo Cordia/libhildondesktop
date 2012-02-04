@@ -97,7 +97,7 @@ hd_status_plugin_item_size_allocate (GtkWidget     *widget,
   GTK_WIDGET_CLASS (hd_status_plugin_item_parent_class)->size_allocate (widget,
                                                                         allocation);
 
-  child = GTK_BIN (widget)->child;
+  child = gtk_bin_get_child (GTK_BIN (widget));
 
   if (child)
     {
@@ -116,19 +116,29 @@ hd_status_plugin_item_size_allocate (GtkWidget     *widget,
 }
 
 static void
-hd_status_plugin_item_size_request (GtkWidget      *widget,
-                                    GtkRequisition *requisition)
+hd_status_plugin_item_get_preferred_width (GtkWidget *widget,
+                                           gint      *minimal_width,
+                                           gint      *natural_width)
 {
   GtkWidget *child;
-  GtkRequisition child_requisition = {0, 0};
 
-  child = GTK_BIN (widget)->child;
+  child = gtk_bin_get_child (GTK_BIN (widget));
 
   if (child)
-    gtk_widget_size_request (child, &child_requisition);
+    gtk_widget_get_preferred_width (child, minimal_width, natural_width);
+}
 
-  requisition->width = child_requisition.width;
-  requisition->height = child_requisition.height;
+static void
+hd_status_plugin_item_get_preferred_height (GtkWidget *widget,
+                                            gint      *minimal_height,
+                                            gint      *natural_height)
+{
+  GtkWidget *child;
+
+  child = gtk_bin_get_child (GTK_BIN (widget));
+
+  if (child)
+    gtk_widget_get_preferred_height (child, minimal_height, natural_height);
 }
 
 static void
@@ -237,7 +247,8 @@ hd_status_plugin_item_class_init (HDStatusPluginItemClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
   widget_class->size_allocate = hd_status_plugin_item_size_allocate;
-  widget_class->size_request = hd_status_plugin_item_size_request;
+  widget_class->get_preferred_width = hd_status_plugin_item_get_preferred_width;
+  widget_class->get_preferred_height = hd_status_plugin_item_get_preferred_height;
 
   object_class->dispose = hd_status_plugin_item_dispose;
   object_class->finalize = hd_status_plugin_item_finalize;
@@ -382,12 +393,9 @@ hd_status_plugin_item_get_dbus_connection (HDStatusPluginItem *item,
                                            DBusBusType         type,
                                            DBusError          *error)
 {
-  HDStatusPluginItemPrivate *priv;
   DBusConnection *connection;
 
   g_return_val_if_fail (HD_IS_STATUS_PLUGIN_ITEM (item), NULL);
-
-  priv = item->priv;
 
   /* Create a private connection */
   connection = dbus_bus_get_private (type, error);
@@ -423,14 +431,11 @@ hd_status_plugin_item_get_dbus_g_connection (HDStatusPluginItem  *item,
                                              DBusBusType          type,
                                              GError             **error)
 {
-  HDStatusPluginItemPrivate *priv;
   DBusGConnection *g_connection;
   DBusConnection *connection;
   GError *tmp_error = NULL;
 
   g_return_val_if_fail (HD_IS_STATUS_PLUGIN_ITEM (item), NULL);
-
-  priv = item->priv;
 
   /* Create a DBusGConnection (not private yet) */
   g_connection = dbus_g_bus_get (type, &tmp_error);

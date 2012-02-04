@@ -147,6 +147,8 @@ enum
 
 static guint signals[LAST_SIGNAL] = { 0, };
 
+static GdkAtom show_settings_atom = GDK_NONE;
+
 struct _HDHomePluginItemPrivate
 {
   gchar                      *plugin_id;
@@ -183,26 +185,20 @@ hd_home_plugin_item_init_plugin_item (HDPluginItemIface *iface)
   return;
 }
 
-static gboolean
-hd_home_plugin_item_client_event (GtkWidget      *widget,
-                                  GdkEventClient *event)
+static GdkFilterReturn
+hd_home_plugin_item_event_filter (GdkXEvent *xevent,
+                                  GdkEvent *event,
+                                  gpointer data)
 {
-  static GdkAtom show_settings_atom = GDK_NONE;
-  
-  if (show_settings_atom == GDK_NONE)
-    show_settings_atom = gdk_atom_intern_static_string ("_HILDON_APPLET_SHOW_SETTINGS");
-
-  if (event->message_type == show_settings_atom)
+  if (((XClientMessageEvent*)xevent)->type == ClientMessage &&
+      ((XClientMessageEvent*)xevent)->message_type == gdk_x11_atom_to_xatom (show_settings_atom))
     {
-      g_signal_emit (widget, signals[SHOW_SETTINGS], 0);
+      g_signal_emit (GTK_WIDGET (data), signals[SHOW_SETTINGS], 0);
 
-      return TRUE;
+      return GDK_FILTER_REMOVE;
     }
 
-  if (GTK_WIDGET_CLASS (hd_home_plugin_item_parent_class)->client_event)
-    return GTK_WIDGET_CLASS (hd_home_plugin_item_parent_class)->client_event (widget, event); 
-
-  return FALSE;
+  return GDK_FILTER_CONTINUE;
 }
 
 static gboolean
@@ -243,29 +239,31 @@ hd_home_plugin_item_realize (GtkWidget *widget)
   GdkDisplay *display;
   Atom atom, wm_type;
   gchar *applet_id;
-  GdkPixmap *pixmap;
-  cairo_t *cr;
+  GdkRGBA transparent = {0.0, 0.0, 0.0, 0.0};
+  GdkWindow *window;
 
   GTK_WIDGET_CLASS (hd_home_plugin_item_parent_class)->realize (widget);
 
+  window = gtk_widget_get_window (widget);
+
   /* No border as decoration */
-  gdk_window_set_decorations (widget->window, 0);
+  gdk_window_set_decorations (window, 0);
 
   /* Set the _NET_WM_WINDOW_TYPE property to _HILDON_WM_WINDOW_TYPE_HOME_APPLET */
-  display = gdk_drawable_get_display (widget->window);
+  display = gdk_window_get_display (window);
   atom = gdk_x11_get_xatom_by_name_for_display (display,
                                                 "_NET_WM_WINDOW_TYPE");
   wm_type = gdk_x11_get_xatom_by_name_for_display (display,
                                                    "_HILDON_WM_WINDOW_TYPE_HOME_APPLET");
 
-  XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
-                   GDK_WINDOW_XID (widget->window),
+  XChangeProperty (GDK_WINDOW_XDISPLAY (window),
+                   GDK_WINDOW_XID (window),
                    atom, XA_ATOM, 32, PropModeReplace,
                    (unsigned char *)&wm_type, 1);
 
   applet_id = hd_home_plugin_item_get_applet_id (HD_HOME_PLUGIN_ITEM (widget));
-  XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
-                   GDK_WINDOW_XID (widget->window),
+  XChangeProperty (GDK_WINDOW_XDISPLAY (window),
+                   GDK_WINDOW_XID (window),
                    gdk_x11_get_xatom_by_name_for_display (display,
                                                           "_HILDON_APPLET_ID"),
                    gdk_x11_get_xatom_by_name_for_display (display,
@@ -276,41 +274,51 @@ hd_home_plugin_item_realize (GtkWidget *widget)
 
   /* Set or remove settings property */
   if (priv->settings)
-    XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
-                     GDK_WINDOW_XID (widget->window),
+    XChangeProperty (GDK_WINDOW_XDISPLAY (window),
+                     GDK_WINDOW_XID (window),
                      gdk_x11_get_xatom_by_name_for_display (display,
                                                             "_HILDON_APPLET_SETTINGS"),
                      XA_CARDINAL, 32, PropModeReplace,
                      (unsigned char *) &(priv->settings), 1);
   else
-    XDeleteProperty (GDK_WINDOW_XDISPLAY (widget->window),
-                     GDK_WINDOW_XID (widget->window),
+    XDeleteProperty (GDK_WINDOW_XDISPLAY (window),
+                     GDK_WINDOW_XID (window),
                      gdk_x11_get_xatom_by_name_for_display (display,
                                                             "_HILDON_APPLET_SETTINGS"));
 
   /* Set display on all views property */
   if (priv->display_on_all_views)
-    XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
-                     GDK_WINDOW_XID (widget->window),
+    XChangeProperty (GDK_WINDOW_XDISPLAY (window),
+                     GDK_WINDOW_XID (window),
                      gdk_x11_get_xatom_by_name_for_display (display,
                                                             "_HILDON_APPLET_DISPLAY_ON_ALL_VIEWS"),
                      XA_CARDINAL, 32, PropModeReplace,
                      (unsigned char *) &(priv->display_on_all_views), 1);
   else
-    XDeleteProperty (GDK_WINDOW_XDISPLAY (widget->window),
-                     GDK_WINDOW_XID (widget->window),
+    XDeleteProperty (GDK_WINDOW_XDISPLAY (window),
+                     GDK_WINDOW_XID (window),
                      gdk_x11_get_xatom_by_name_for_display (display,
                                                             "_HILDON_APPLET_DISPLAY_ON_ALL_VIEWS"));
 
-  /* Set background to transparent pixmap */
-  pixmap = gdk_pixmap_new (GDK_DRAWABLE (widget->window), 1, 1, -1);
-  cr = gdk_cairo_create (GDK_DRAWABLE (pixmap));
-  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
-  cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.0);
-  cairo_paint (cr);
-  cairo_destroy (cr);
 
-  gdk_window_set_back_pixmap (widget->window, pixmap, FALSE);
+  /* Install client message filter */
+  if (show_settings_atom == GDK_NONE)
+    show_settings_atom = gdk_atom_intern_static_string ("_HILDON_APPLET_SHOW_SETTINGS");
+
+  gdk_window_add_filter (window,
+                         hd_home_plugin_item_event_filter, widget);
+
+  /* Set background to transparent */
+  gdk_window_set_background_rgba (window, &transparent);
+}
+
+static void
+hd_home_plugin_item_unrealize (GtkWidget *widget)
+{
+  gdk_window_remove_filter (gtk_widget_get_window (widget),
+                            hd_home_plugin_item_event_filter, widget);
+
+  GTK_WIDGET_CLASS (hd_home_plugin_item_parent_class)->unrealize (widget);
 }
 
 static void
@@ -324,9 +332,9 @@ hd_home_plugin_item_constructed (GObject *object)
 static void
 hd_home_plugin_item_dispose (GObject *object)
 {
-  HDHomePluginItemPrivate *priv;
+//HDHomePluginItemPrivate *priv;
 
-  priv = HD_HOME_PLUGIN_ITEM (object)->priv;
+//priv = HD_HOME_PLUGIN_ITEM (object)->priv;
 
   G_OBJECT_CLASS (hd_home_plugin_item_parent_class)->dispose (object);
 }
@@ -423,9 +431,9 @@ hd_home_plugin_item_class_init (HDHomePluginItemClass *klass)
 
   klass->get_applet_id = hd_home_plugin_item_get_applet_id_real;
 
-  widget_class->client_event = hd_home_plugin_item_client_event;
   widget_class->property_notify_event = hd_home_plugin_item_property_notify_event;
   widget_class->realize = hd_home_plugin_item_realize;
+  widget_class->unrealize = hd_home_plugin_item_unrealize;
 
   object_class->constructed = hd_home_plugin_item_constructed;
   object_class->dispose = hd_home_plugin_item_dispose;
@@ -525,12 +533,9 @@ hd_home_plugin_item_get_dbus_connection (HDHomePluginItem *item,
                                          DBusBusType         type,
                                          DBusError          *error)
 {
-  HDHomePluginItemPrivate *priv;
   DBusConnection *connection;
 
   g_return_val_if_fail (HD_IS_HOME_PLUGIN_ITEM (item), NULL);
-
-  priv = item->priv;
 
   /* Create a private connection */
   connection = dbus_bus_get_private (type, error);
@@ -566,14 +571,11 @@ hd_home_plugin_item_get_dbus_g_connection (HDHomePluginItem  *item,
                                            DBusBusType          type,
                                            GError             **error)
 {
-  HDHomePluginItemPrivate *priv;
   DBusGConnection *g_connection;
   DBusConnection *connection;
   GError *tmp_error = NULL;
 
   g_return_val_if_fail (HD_IS_HOME_PLUGIN_ITEM (item), NULL);
-
-  priv = item->priv;
 
   /* Create a DBusGConnection (not private yet) */
   g_connection = dbus_g_bus_get (type, &tmp_error);
@@ -688,32 +690,29 @@ void
 hd_home_plugin_item_set_settings (HDHomePluginItem *item,
                                   gboolean          settings)
 {
-  HDHomePluginItemPrivate *priv;
-
   g_return_if_fail (HD_IS_HOME_PLUGIN_ITEM (item));
 
-  priv = item->priv;
+  item->priv->settings = settings;
 
-  priv->settings = settings;
-
-  if (GTK_WIDGET_REALIZED (item))
+  if (gtk_widget_get_realized (GTK_WIDGET (item)))
     {
-      GtkWidget *widget = GTK_WIDGET (item);
+      GdkWindow *window;
       GdkDisplay *display;
 
-      display = gdk_drawable_get_display (widget->window);
+      window = gtk_widget_get_window (GTK_WIDGET (item));
+      display = gdk_window_get_display (window);
 
       /* Set or remove settings property from the window */
-      if (priv->settings)
-        XChangeProperty (GDK_WINDOW_XDISPLAY (widget->window),
-                         GDK_WINDOW_XID (widget->window),
+      if (item->priv->settings)
+        XChangeProperty (GDK_WINDOW_XDISPLAY (window),
+                         GDK_WINDOW_XID (window),
                          gdk_x11_get_xatom_by_name_for_display (display,
                                                                 "_HILDON_APPLET_SETTINGS"),
                          XA_CARDINAL, 32, PropModeReplace,
-                         (unsigned char *) &(priv->settings), 1);
+                         (unsigned char *) &(item->priv->settings), 1);
       else
-        XDeleteProperty (GDK_WINDOW_XDISPLAY (widget->window),
-                         GDK_WINDOW_XID (widget->window),
+        XDeleteProperty (GDK_WINDOW_XDISPLAY (window),
+                         GDK_WINDOW_XID (window),
                          gdk_x11_get_xatom_by_name_for_display (display,
                                                                 "_HILDON_APPLET_SETTINGS"));
     }

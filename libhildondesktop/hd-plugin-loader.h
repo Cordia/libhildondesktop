@@ -25,8 +25,7 @@
 #ifndef __HD_PLUGIN_LOADER_H__
 #define __HD_PLUGIN_LOADER_H__
 
-#include <glib-object.h>
-#include <glib/gkeyfile.h>
+#include <glib.h>
 
 #include <libhildondesktop/hd-plugin-item.h>
 
