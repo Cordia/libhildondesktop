@@ -177,7 +177,7 @@ hd_plugin_module_load (GTypeModule *gmodule)
 
   if (!plugin->priv->library) 
     {
-      g_warning (g_module_error ());
+      g_warning ("%s", g_module_error ());
 
       return FALSE;
     }
@@ -189,7 +189,7 @@ hd_plugin_module_load (GTypeModule *gmodule)
                         "hd_plugin_module_unload",
                         (void *) &plugin->priv->unload)) 
     {
-      g_warning (g_module_error ());
+      g_warning ("%s", g_module_error ());
 
       g_module_close (plugin->priv->library);
 

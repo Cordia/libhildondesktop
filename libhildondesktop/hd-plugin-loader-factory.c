@@ -140,13 +140,13 @@ hd_plugin_loader_factory_load_modules (HDPluginLoaderFactory *factory)
                 }
               else
                 {
-                  g_warning (g_module_error ());
+                  g_warning ("%s", g_module_error ());
                   g_module_close (module);
                 }	  
             }
           else
             {
-              g_warning (g_module_error ());
+              g_warning ("%s", g_module_error ());
             }
         } 
     }
