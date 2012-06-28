@@ -30,6 +30,7 @@ IGNORE_HFILES=
 # if $(DOC_MODULE).types is non-empty.
 INCLUDES = \
 	$(HILDON_CFLAGS)		\
+	$(DBUS_CFLAGS)			\
 	-I$(srcdir) 			\
 	-I$(top_srcdir) 		\
 	-I$(top_builddir)
